@@ -3,9 +3,8 @@ import {Card, Row, Col, Icon, Table} from 'antd';
 import {Chart, Axis, Geom, Tooltip, Legend, Coord, Label, Guide} from 'bizcharts';
 import DataSet from "@antv/data-set";
 import MapofToday from './Components/MapofToday';
+import _ from 'lodash';
 import {HttpClientImmidIot} from "../../common/HttpClientImmidIot";
-
-
 
 
 
@@ -13,15 +12,14 @@ export default class Today extends Component {
     constructor(props) {
         super(props);
         this.state = {
-          firstdata:{
-            a:0,
-            b:0,
-            c:0,
-            d:0,
-            e:0,
-            i:0,
-            }
-        }
+          firstdata:{},
+          data :[],
+          bztdata : [],
+          data2:[],
+          ddtdata:[],
+          numbers : [],
+          maxmoney:12800,
+          };
     }
 
     // 组件挂载之前
@@ -30,8 +28,8 @@ export default class Today extends Component {
 
     // 组件挂载后
     componentDidMount() {
-      HttpClientImmidIot.query('/today/data', 'GET', null, this.handleQueryData.bind(this));
-      HttpClientImmidIot.query('/today/tabledata', 'GET', null, this.handleQueryData1.bind(this));
+      //HttpClientImmidIot.query('/parking-report/report/road/today/base?cityCode=440300', 'GET', null, this.handleQueryData.bind(this));
+      //HttpClientImmidIot.query('/parking-report/report/road/today/count?cityCode=440300', 'GET', null, this.handleQueryData1.bind(this));
     }
 
     // 组件卸载之前
@@ -39,34 +37,40 @@ export default class Today extends Component {
     }
     handleQueryData(d, type){
       this.setState({
-          firstdata: d.data.firstdata,
+          firstdata: d.data,
       })
     }
     handleQueryData1(d, type){
+      for(let i=0;i<d.data.areaConsume.length;i++){
+        d.data.areaConsume[i].index = i+1;
+      }
       this.setState({
-        data :d.data.data,
-        bztdata : d.data.bztdata,
-        data2:d.data.data2,
-        ddtdata:d.data.ddtdata,
-        numbers : d.data.numbers,
+        data :d.data.areaConsume,
+        bztdata : d.data.payType,
+        data2:d.data.areaSaturations,
+        ddtdata:d.data.platformEarning,
+        numbers : d.data.parkingEarning,
+        maxmoney: d.data.parkingEarning[0].money,
       })
     }
     render() {
-        const {firstdata,data,bztdata,data2,ddtdata,numbers} = this.state;
+        const {firstdata,data,bztdata,data2,ddtdata,numbers,maxmoney} = this.state;
         const columns = [{
             title: '排名',
-            dataIndex: 'key',
+            dataIndex: 'index',
         }, {
             title: '区域',
-            dataIndex: 'name',
+            dataIndex: 'areaName',
         }, {
             title: '消费金额',
-            dataIndex: 'age',
+            dataIndex: 'money',
         }, {
             title: '日涨幅',
             render: (text, record) => (
-                <span style={{ color: 'gray' }}><Icon type="caret-up"
-                                                      style={{ color: 'green' }}/>{record.address ? record.address : '--'} %</span>
+                <span style={{ color: 'gray' }}>
+                  <Icon type={record.ratio>0?"caret-up":"caret-down"} style={{ color: 'green' }}/>
+                  {record.ratio ? record.ratio : '--'} %
+                </span>
             )
         }];
 
@@ -74,14 +78,14 @@ export default class Today extends Component {
         const bzt = new DataView();
         bzt.source(bztdata).transform({
             type: 'percent',
-            field: 'count',
-            dimension: 'item',
+            field: 'ratio',
+            dimension: 'payType',
             as: 'percent',
         });
         const bztcols = {
             percent: {
                 formatter: val => {
-                    val = val * 100 + '%';
+                    val = _.ceil((val * 100),2) + '%';
                     return val;
                 },
             },
@@ -93,14 +97,14 @@ export default class Today extends Component {
         const dv2 = ds2.createView().source(data2);
         dv2.transform({
             type: "fold",
-            fields: ["路外停车"],
+            fields: 'saturation',
             // 展开字段集
             key: "city",
             // key字段
             value: "temperature" // value字段
         });
         const cols2 = {
-            month: {
+            areaName: {
                 range: [0, 1]
             }
         };
@@ -108,14 +112,15 @@ export default class Today extends Component {
         const ddt = dd.createView().source(ddtdata);
         ddt.transform({
             type: 'fold',
-            fields: ['red', 'blue', 'green'], // 展开字段集
+            fields: 'money', // 展开字段集
             key: 'city', // key字段
             value: 'temperature', // value字段
         });
         const ddtcols = {
-            month: {
-                range: [0, 1],
-            },
+           dataKey: 'day',
+            // day: {
+            //     range: [0, 1],
+            // },
         }
         const cols3 = {
             percent: {
@@ -126,7 +131,13 @@ export default class Today extends Component {
             }
         };
         const bijiao = (num) =>{
-          const a = 400*num.money/12800.80;
+          let a = 1;
+          if(num.money<=maxmoney){
+
+             a = 400*num.money/maxmoney;
+          }else{
+             a = 1;
+          }
           const style = {
             background:'#3AA1FF',
             width:a,
@@ -139,8 +150,8 @@ export default class Today extends Component {
 
         };
         const listItems = numbers.map((number) =>
-          <Col xs={24} key={number.name}>
-            <span style={{ fontSize: 14 ,float:'left',width:50}}>{number.name}</span>
+          <Col xs={24} key={number.parkingName}>
+            <span style={{ fontSize: 14 ,float:'left',width:100}}>{number.parkingName}</span>
             <div style={bijiao(number)}></div>
             <span style={{ fontSize: 14 ,float:'left',width:50,marginLeft:10}}>{number.money}</span>
           </Col>
@@ -171,7 +182,7 @@ export default class Today extends Component {
                                                     fontSize: 28,
                                                     color: 'red',
                                                     marginLeft: 45
-                                                }}>{firstdata.a}</span>
+                                                }}>{firstdata.paidMoney}</span>
                                             </Col>
                                         </Row>
                                     </Card>
@@ -193,7 +204,7 @@ export default class Today extends Component {
                                                     fontSize: 28,
                                                     color: '#6B6B6B',
                                                     marginLeft: 45
-                                                }}>{firstdata.c}</span>
+                                                }}>{firstdata.paidCount}</span>
                                             </Col>
                                         </Row>
                                     </Card>
@@ -222,7 +233,7 @@ export default class Today extends Component {
                                                     fontSize: 28,
                                                     color: 'red',
                                                     marginLeft: 45
-                                                }}>{firstdata.b}</span>
+                                                }}>{firstdata.customerCount}</span>
                                             </Col>
                                         </Row>
                                     </Card>
@@ -241,7 +252,7 @@ export default class Today extends Component {
                                             </Col>
                                             <Col xs={24} style={{paddingBottom:20,paddingTop:20}}>
                                                 <span
-                                                    style={{ fontSize: 28, color: '#6B6B6B', marginLeft: 45 }}>{firstdata.d}</span>
+                                                    style={{ fontSize: 28, color: '#6B6B6B', marginLeft: 45 }}>{firstdata.customerNewCount}</span>
                                             </Col>
                                         </Row>
                                     </Card>
@@ -260,7 +271,7 @@ export default class Today extends Component {
                                         <span style={{ fontSize: 14, float: 'left', marginLeft: 10 }}>今日充值金额(元)：</span>
                                     </Col>
                                     <Col xs={24} style={{paddingBottom:20,paddingTop:20}}>
-                                        <span style={{ fontSize: 28, color: 'red', marginLeft: 45 }}>{firstdata.e}</span>
+                                        <span style={{ fontSize: 28, color: 'red', marginLeft: 45 }}>{firstdata.chargeMoney}</span>
                                     </Col>
                                 </Row>
                             </Card>
@@ -274,7 +285,7 @@ export default class Today extends Component {
                                         <span style={{ fontSize: 14, float: 'left', marginLeft: 10 }}>今日充值次数(笔)：</span>
                                     </Col>
                                     <Col xs={24} style={{paddingBottom:20,paddingTop:20}}>
-                                        <span style={{ fontSize: 28, color: '#6B6B6B', marginLeft: 45 }}>{firstdata.f}</span>
+                                        <span style={{ fontSize: 28, color: '#6B6B6B', marginLeft: 45 }}>{firstdata.chargeCount}</span>
                                     </Col>
                                 </Row>
                             </Card>
@@ -287,7 +298,7 @@ export default class Today extends Component {
                                         <span style={{ fontSize: 14, float: 'left', marginLeft: 10 }}>今日新增工单（张）：</span>
                                     </Col>
                                     <Col xs={24} style={{paddingBottom:20,paddingTop:20}}>
-                                        <span style={{ fontSize: 28, color: '#6B6B6B', marginLeft: 45 }}>{firstdata.g}</span>
+                                        <span style={{ fontSize: 28, color: '#6B6B6B', marginLeft: 45 }}>{firstdata.newOrderCount}</span>
                                     </Col>
                                 </Row>
                             </Card>
@@ -301,7 +312,7 @@ export default class Today extends Component {
                                         <span style={{ fontSize: 14, float: 'left', marginLeft: 10 }}>今日巡检照片(张)：</span>
                                     </Col>
                                     <Col xs={24} style={{paddingBottom:20,paddingTop:20}}>
-                                        <span style={{ fontSize: 28, color: '#6B6B6B', marginLeft: 45 }}>{firstdata.h}</span>
+                                        <span style={{ fontSize: 28, color: '#6B6B6B', marginLeft: 45 }}>{firstdata.accessWarningCount}</span>
                                     </Col>
                                 </Row>
                             </Card>
@@ -314,7 +325,7 @@ export default class Today extends Component {
                                         <span style={{ fontSize: 14, float: 'left', marginLeft: 10 }}>今日巡查(人次)：</span>
                                     </Col>
                                     <Col xs={24} style={{paddingBottom:20,paddingTop:20}}>
-                                        <span style={{ fontSize: 28, color: '#6B6B6B', marginLeft: 45 }}>{firstdata.i}</span>
+                                        <span style={{ fontSize: 28, color: '#6B6B6B', marginLeft: 45 }}>{firstdata.inspectCount}</span>
                                     </Col>
                                 </Row>
                             </Card>
@@ -341,13 +352,13 @@ export default class Today extends Component {
                                     <Geom
                                         type="intervalStack"
                                         position="percent"
-                                        color="item"
+                                        color="payType"
                                         tooltip={[
-                                            'item*percent',
-                                            (item, percent) => {
-                                                percent = percent * 100 + '%';
+                                            'payType*percent',
+                                            (payType, percent) => {
+                                                percent = _.ceil((percent*100),2) + '%';
                                                 return {
-                                                    name: item,
+                                                    name: payType,
                                                     value: percent,
                                                 };
                                             },
@@ -356,8 +367,8 @@ export default class Today extends Component {
                                     >
                                         <Label
                                             content="percent"
-                                            formatter={(val, item) => {
-                                                return item.point.item + ': ' + val;
+                                            formatter={(val, payType) => {
+                                                return payType.point.payType + ': ' + val;
                                             }}/>
                                     </Geom>
                                 </Chart>
@@ -370,7 +381,7 @@ export default class Today extends Component {
                             <Card bordered={false}>
                                 <span style={{ fontSize: 16 }}>各区停车利用率分析</span>
                                 <Chart height={400} data={dv2} scale={cols2} padding={[80, 100, 80, 80]} forceFit>
-                                    <Axis name="month"/>
+                                    <Axis name="areaName"/>
                                     <Axis
                                         name="temperature"
                                         label={{
@@ -384,14 +395,25 @@ export default class Today extends Component {
                                     />
                                     <Geom
                                         type="line"
-                                        position="month*temperature"
+                                        position="areaName*temperature"
                                         size={2}
                                         color={"city"}
                                         shape={"smooth"}
+                                        tooltip={[
+                                            'areaName*temperature',
+                                            (areaName, temperature) => {
+                                                temperature = temperature * 100 + '%';
+                                                return {
+                                                    name: areaName,
+                                                    value: temperature,
+                                                };
+                                            },
+                                        ]}
+                                        style={{ lineWidth: 1, stroke: '#fff' }}
                                     />
                                     <Geom
                                         type="point"
-                                        position="month*temperature"
+                                        position="areaName*temperature"
                                         size={4}
                                         shape={"circle"}
                                         color={"city"}
@@ -422,18 +444,30 @@ export default class Today extends Component {
                             <Card bordered={false}>
                                 <span style={{ fontSize: 16 }}>近30天平台收入变化趋势</span>
                                 <Chart height={400} data={ddt} scale={ddtcols} forceFit>
-                                    <Legend/>
                                     <Axis name="date"/>
                                     <Axis name="temperature" label={{ formatter: val => `${val}` }}/>
                                     <Tooltip crosshairs={{ type: 'y' }}/>
-                                    <Geom type="line" position="month*temperature" size={2} color={'city'}/>
+                                    <Geom type="line" position="day*temperature" size={2} color={'city'}
+                                    style={{ stroke: '#fff', lineWidth: 1 }}
+                                    tooltip={[
+                                        'day*temperature',
+                                        (day, temperature) => {
+                                            temperature = temperature;
+                                            return {
+                                                name: "收入",
+                                                value: temperature,
+                                            };
+                                        },
+                                    ]}
+                                    />
                                     <Geom
                                         type="point"
-                                        position="month*temperature"
+                                        position="day*temperature"
                                         size={4}
                                         shape={'circle'}
                                         color={'city'}
-                                        style={{ stroke: '#fff', lineWidth: 1 }}/>
+
+                                        />
                                 </Chart>
                             </Card>
                         </Col>

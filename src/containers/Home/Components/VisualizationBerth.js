@@ -1,6 +1,7 @@
 import React, {Component, Fragment} from 'react';
-import {Button, Card, List, Row, Select} from "antd";
+import {Button, Card, List, Row, Select, Spin} from "antd";
 import ProTypes from 'prop-types';
+import {HttpClientImmidIot} from "../../../common/HttpClientImmidIot";
 
 class VisualizationBerth extends Component {
     constructor(props) {
@@ -10,22 +11,10 @@ class VisualizationBerth extends Component {
 
 
     state = {
-        panelData: [
-            { roadName: '工业九路', roadInfo: '泊位数量： 剩余31个，总共51个' },
-            { roadName: '工业九路', roadInfo: '泊位数量： 剩余31个，总共51个' },
-            { roadName: '工业九路', roadInfo: '泊位数量： 剩余31个，总共51个' },
-            { roadName: '工业九路', roadInfo: '泊位数量： 剩余31个，总共51个' },
-            { roadName: '工业九路', roadInfo: '泊位数量： 剩余31个，总共51个' },
-            { roadName: '工业九路', roadInfo: '泊位数量： 剩余31个，总共51个' },
-            { roadName: '工业九路', roadInfo: '泊位数量： 剩余31个，总共51个' },
-            { roadName: '工业九路', roadInfo: '泊位数量： 剩余31个，总共51个' },
-            { roadName: '工业九路', roadInfo: '泊位数量： 剩余31个，总共51个' },
-            { roadName: '工业九路', roadInfo: '泊位数量： 剩余31个，总共51个' },
-            { roadName: '工业九路', roadInfo: '泊位数量： 剩余31个，总共51个' },
-            { roadName: '工业九路', roadInfo: '泊位数量： 剩余31个，总共51个' },
-        ],
-        selectArea1: '',
-        selectArea2: '',
+        streetBerthData: [],
+        districtOptions: [],
+        areaOptions: [],
+        spinning: false,
     };
 
     componentWillMount() {
@@ -33,15 +22,38 @@ class VisualizationBerth extends Component {
     }
 
     componentDidMount() {
-
+        // 获取行政区
+        HttpClientImmidIot.query('/parking-resource/admin/city/areaInfo/', 'GET', { cityCode: 450400 }, (d, type) => {
+            this.setState({
+                districtOptions: d.data
+            })
+        });
+        // 获取片区
+        HttpClientImmidIot.query('/parking-info/admin/city/subAreaInfo', 'GET', { cityCode: 450400 }, (d, type) => {
+            this.setState({
+                areaOptions: d.data
+            })
+        });
     }
 
     componentWillUnmount() {
 
     }
 
+    searchBerth() {
+        this.setState({
+            spinning: true
+        });
+        HttpClientImmidIot.query('/parking-resource/admin/parking/road/space', 'GET', this.payLoad, (d, type) => {
+            this.setState({
+                spinning: false,
+                streetBerthData: d.data
+            })
+        });
+    }
+
     render() {
-        const { panelData } = this.state;
+        const { districtOptions, areaOptions, streetBerthData, spinning } = this.state;
         const Option = Select.Option;
         return (
             <Fragment>
@@ -51,11 +63,13 @@ class VisualizationBerth extends Component {
                         style={{ flexGrow: 1 }}
                         placeholder="请选择"
                         optionFilterProp="children"
-                        onChange={(value) => this.payLoad.district = value}
+                        onChange={(value) => this.payLoad.areaCode = value}
                     >
-                        <Option value="万秀区">万秀区</Option>
-                        <Option value="长洲区">长洲区</Option>
-                        <Option value="龙圩区">龙圩区</Option>
+                        {
+                            districtOptions.map(item => (
+                                <Option key={item.areaCode} value={item.areaCode}>{item.areaName}</Option>
+                            ))
+                        }
                     </Select>
                 </Row>
                 <Row type='flex' align='middle' style={{ marginBottom: 10 }}>
@@ -64,32 +78,36 @@ class VisualizationBerth extends Component {
                         style={{ flexGrow: 1 }}
                         placeholder="请选择"
                         optionFilterProp="children"
-                        onChange={(value) => this.payLoad.area = value}
+                        onChange={(value) => this.payLoad.subAreaName = value}
                     >
-                        <Option value="万秀区">万秀区</Option>
-                        <Option value="长洲区">长洲区</Option>
-                        <Option value="龙圩区">龙圩区</Option>
+                        {
+                            areaOptions.map(item => (
+                                <Option key={item.subAreaCode} value={item.subAreaCode}>{item.subAreaName}</Option>
+                            ))
+                        }
                     </Select>
                 </Row>
                 <Row style={{ marginBottom: 10 }}>
                     <Button type='primary' style={{ width: '100%' }}
-                            onClick={this.props.berthSearch(this.payLoad)}>查询</Button>
+                            onClick={this.searchBerth.bind(this)}>查询</Button>
                 </Row>
                 <Row>
-                    <Card style={{ height: 520, overflowY: 'auto' }}>
-                        <List
-                            itemLayout="horizontal"
-                            dataSource={panelData}
-                            renderItem={item => (
-                                <List.Item>
-                                    <List.Item.Meta
-                                        title={<a>{item.roadName}</a>}
-                                        description={item.roadInfo}
-                                    />
-                                </List.Item>
-                            )}
-                        />
-                    </Card>
+                    <Spin spinning={spinning} tip='加载中...'>
+                        <Card style={{ maxHeight: 500, overflowY: 'auto' }}>
+                            <List
+                                itemLayout="horizontal"
+                                dataSource={streetBerthData}
+                                renderItem={item => (
+                                    <List.Item>
+                                        <List.Item.Meta
+                                            title={<a>{item.roadName}</a>}
+                                            description={`泊位数量：剩余${item.freeSpaceCount}个，总共${item.spaceCount}个`}
+                                        />
+                                    </List.Item>
+                                )}
+                            />
+                        </Card>
+                    </Spin>
                 </Row>
             </Fragment>
         );

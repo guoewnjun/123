@@ -1,6 +1,8 @@
 import React, {Component, Fragment} from 'react';
-import {Button, Input, Row, Tree} from "antd";
+import {Button, Input, Row, Tree, Card} from "antd";
 import ProTypes from 'prop-types';
+import _ from "lodash";
+import {HttpClientImmidIot} from "../../../common/HttpClientImmidIot";
 
 class VisualizationUsers extends Component {
 
@@ -9,14 +11,22 @@ class VisualizationUsers extends Component {
         this.payLoad = {};
     }
 
-    state = {};
+    state = {
+        usersList: [],
+        treeData: [
+            {
+                title: '梧州市',
+                key: '0',
+            }
+        ]
+    };
 
     componentWillMount() {
 
     }
 
     componentDidMount() {
-
+        this.searchUsers(null)
     }
 
     componentWillUnmount() {
@@ -28,59 +38,61 @@ class VisualizationUsers extends Component {
         console.log('selected', selectedKeys, info);
     };
 
-    // 人员树形选择器的checked事件
-    onCheck(checkedKeys, info) {
-        console.log('onCheck', checkedKeys, info);
-    };
+    searchUsers(params) {
+        HttpClientImmidIot.query('/visualization/users', 'GET', params, (d, type) => {
+            const data = d.data;
+            this.setState({
+                usersList: data
+            })
+        })
+    }
+
+    checkUserDetail(id) {
+        location.hash = `/Home/Visualization/UserDetail?id=${id}`
+    }
+
+    filterParams(params) {
+        const newParams = {};
+        _.forIn(params, (value, key) => {
+            if (value || value === 0) {
+                newParams[key] = value
+            }
+        });
+        return newParams
+    }
+
+    onLoadData(treeNode) {
+        return new Promise(resolve => {
+            const isLeaf = treeNode.props.eventKey.split('-').length > 3;
+            if (treeNode.props.children || isLeaf) {
+                resolve();
+                return;
+            }
+            setTimeout(() => {
+                treeNode.props.dataRef.children = [
+                    { title: 'Child Node', key: `${treeNode.props.eventKey}-0` },
+                    { title: 'Child Node', key: `${treeNode.props.eventKey}-1` },
+                ];
+                this.setState({
+                    treeData: [...this.state.treeData],
+                });
+                resolve();
+            }, 500);
+        });
+    }
 
     render() {
+        const { treeData, usersList } = this.state;
         const { TreeNode } = Tree;
-        const treeData = [
-            {
-                title: '梧州市',
-                key: '0-0',
-                content: '',
-                children: [
-                    {
-                        title: '万秀区',
-                        key: '0-0-1',
-                        children: [
-                            {
-                                title: '人员1',
-                                key: '0-0-1-0',
-                                content: '',
-                            },
-                            { title: '人员2', key: '0-0-1-1' },
-                            { title: '人员3', key: '0-0-1-2' },
-                        ],
-                    }, {
-                        title: '长洲区',
-                        key: '0-0-2',
-                        children: [
-                            { title: '人员1', key: '0-0-2-0' },
-                            { title: '人员2', key: '0-0-2-1' },
-                            { title: '人员3', key: '0-0-2-2' },
-                        ],
-                    }, {
-                        title: '龙圩区',
-                        key: '0-0-3',
-                        children: [
-                            { title: '人员1', key: '0-0-3-0' },
-                            { title: '人员2', key: '0-0-3-1' },
-                            { title: '人员3', key: '0-0-3-2' },
-                        ],
-                    }
-                ],
-            }];
         const renderTreeNodes = data => data.map((item) => {
             if (item.children) {
                 return (
-                    <TreeNode title={item.title} key={item.key} dataRef={item}>
+                    <TreeNode title={item.title} key={item.key} dataRef={item} selectable={false}>
                         {renderTreeNodes(item.children)}
                     </TreeNode>
                 );
             }
-            return <TreeNode {...item} />;
+            return <TreeNode {...item} dataRef={item}/>;
         });
         return (
             <Fragment>
@@ -92,21 +104,47 @@ class VisualizationUsers extends Component {
                 <Row type='flex' align='middle' style={{ marginBottom: 10 }}>
                     <label>工号：</label>
                     <Input style={{ flexGrow: 1, width: 'unset' }} placeholder="请输入"
-                           onChange={(e  => this.payLoad.jobNumber = e.target.value)}/>
+                           onChange={(e => this.payLoad.jobNumber = e.target.value)}/>
                 </Row>
                 <Row style={{ marginBottom: 10 }}>
                     <Button style={{ width: '100%' }} type='primary'
-                            onClick={this.props.searchUsers(this.payLoad)}>查询</Button>
+                            onClick={() => this.searchUsers(this.payLoad)}>查询</Button>
                 </Row>
-                <Row style={{ height: 470, overflowY: 'auto' }}>
-                    <Tree
-                        defaultCheckedKeys={['0-0-2', '0-0-1']}
-                        onSelect={this.onSelect.bind(this)}
-                        onCheck={this.onCheck.bind(this)}
-                    >
-                        {renderTreeNodes(treeData)}
-                    </Tree>
-                </Row>
+                <div style={{ height: 490, overflowY: 'auto' }}>
+                    {
+                        usersList.length > 0 && (
+                            <Card bodyStyle={{padding: 0}}>
+                                {
+                                    usersList.map(item => (
+                                        <div key={item.userNumber} style={{
+                                            padding: 10,
+                                            display: 'flex',
+                                            width: '100%',
+                                            borderBottom: '1px solid #e8e8e8'
+                                        }}
+                                             onClick={this.checkUserDetail.bind(this, item.userId)}
+                                        >
+                                            <img src={item.imgUrl} alt='' style={{ width: 50, height: 50 }}/>
+                                            <div style={{ flexGrow: 1, marginLeft: 10 }}>
+                                                <div style={{marginBottom: 6}}>{item.userName}</div>
+                                                <div>{item.userNumber}</div>
+                                            </div>
+                                        </div>
+                                    ))
+                                }
+                            </Card>
+                        )
+                    }
+                    <Row>
+                        <Tree
+                            defaultCheckedKeys={['0-0-2', '0-0-1']}
+                            loadData={this.onLoadData.bind(this)}
+                            onSelect={this.onSelect.bind(this)}
+                        >
+                            {renderTreeNodes(treeData)}
+                        </Tree>
+                    </Row>
+                </div>
             </Fragment>
         );
     }

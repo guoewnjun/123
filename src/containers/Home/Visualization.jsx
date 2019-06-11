@@ -1,5 +1,5 @@
 import React, {Component, Suspense, lazy} from 'react';
-import {Icon, Tabs} from 'antd';
+import {Icon, Tabs, Spin} from 'antd';
 import './Visualization.css';
 import _ from 'lodash';
 import {HttpClientImmidIot} from "../../common/HttpClientImmidIot";
@@ -8,7 +8,6 @@ const Berth = lazy(() => import('./Components/VisualizationBerth'));
 const Users = lazy(() => import('./Components/VisualizationUsers'));
 const Devices = lazy(() => import('./Components/VisualizationDevices'));
 
-const defaultCheckBoxKey = ['A', 'B', 'C', 'D', 'E', 'F'];
 export default class Visualization extends Component {
     constructor(props) {
         super(props);
@@ -18,15 +17,20 @@ export default class Visualization extends Component {
             { lnglat: [111.274777, 23.485695], address: '长洲区', streets: 122, berths: 350 },
             { lnglat: [111.246035, 23.40996], address: '龙圩区', streets: 136, berths: 535 },
         ];
-        this.markerGroup = null;
-        this.masses = {};
-        this.currentTab = '1';
+        this.cityBerthMarker = new window.AMap.Marker({ topWhenClick: true });
+        this.districtMarkerGroup = new window.AMap.OverlayGroup();
+        this.areaMarkerGroup = new window.AMap.OverlayGroup();
+        this.streetMarkerGroup = new window.AMap.OverlayGroup();
+
+        this.deviceMarkerGroup = new window.AMap.OverlayGroup();
+        this.usersMarkerGroup = new window.AMap.OverlayGroup();
+        this.deviceParams = {};
         this.state = {
+            spinning: false,
+            currentTab: '1',
             isToggle: true,
             checkPointsInfo: '南山区：97个路段',
-            districtBerthData: [], // 行政区泊位数据
             areaBerthData: [], //片区泊位数据
-            streetBerthData: [], //街道泊位数据
         };
     }
 
@@ -39,83 +43,154 @@ export default class Visualization extends Component {
         this.mapInstance = new window.AMap.Map('mapContainer', {
             resizeEnable: true,
             center: new window.AMap.LngLat(111.297604, 23.474803),
-            // zoom: 13,
+            zoom: 11,
             showIndoorMap: true
         });
-        // this.addCluster();
-        HttpClientImmidIot.query('/visualization/berth', 'GET', null, (d, type) => {
-            // console.log(d.data);
-            this.districtSearch(d.data.name);
-            if (d.data.subdistrict) {
-                let areaBerthData = [], streetBerthData = [], districtBerthData = [];
-                d.data.subdistrict.forEach(district => { //行政区泊位数据
-                    // this.districtSearch(district.name);
-                    districtBerthData.push({ name: district.name, berthNum: district.berthNum });
-                    district.subdistrict.forEach(area => { // 片区泊位数据
-                        areaBerthData.push({ name: area.name, location: area.location, berthNum: area.berthNum });
-                        area.subdistrict.forEach(street => { // 街道泊位数据
-                            // console.log(street);
-                            streetBerthData.push(street)
-                        })
-                    });
-                });
-                this.setState({
-                    districtBerthData,
-                    areaBerthData,
-                    streetBerthData
-                })
+        this.getBerthOnMap({ areaType: 'area', cityCode: '440300' });
+        // 地图缩放事件
+        this.mapInstance.on('zoomend', () => {
+            if (this.state.currentTab === '1') {
+                const zoom = this.mapInstance.getZoom();
+                if (8 <= zoom && zoom <= 9) { //市级
+                    if (this.cityBerthMarker.getPosition()) {
+                        this.cityBerthMarker.show();
+                    } else {
+                        HttpClientImmidIot.querySimple('/parking-resource/admin/parking/road/space/count', 'GET', {
+                            areaType: 'area',
+                            cityCode: '440300'
+                        }, (d, type) => {
+                            if (type === HttpClientImmidIot.requestSuccess) {
+                                const data = d.data;
+                                let markerContent = `<div style="display: flex; justify-content: center; flex-direction: column; align-items: center">
+                                                        <div class='markerLngLat'></div>
+                                                        <span class='markerContent'>${data.areaName}：${data.count}个泊位</span>
+                                                     </div>`;
+                                this.cityBerthMarker.setPosition(new window.AMap.LngLat(data.longitude, data.latitude));
+                                this.cityBerthMarker.setContent(markerContent);
+                                this.cityBerthMarker.setMap(this.mapInstance);
+                                this.cityBerthMarker.show();
+                            }
+                        });
+                    }
+                    this.districtMarkerGroup.hide();
+                    this.areaMarkerGroup.hide();
+                    this.streetMarkerGroup.hide();
+                } else if (10 <= zoom && zoom <= 12) { //行政区
+                    this.cityBerthMarker.hide();
+                    this.areaMarkerGroup.hide();
+                    this.streetMarkerGroup.hide();
+                    if (this.districtMarkerGroup.getOverlays().length > 0) {
+                        this.districtMarkerGroup.show();
+                    } else {
+                        const params = { areaType: 'area', cityCode: '440300' };
+                        this.getBerthOnMap(params)
+                    }
+                } else if (13 <= zoom && zoom <= 16) { //片区
+                    this.cityBerthMarker.hide();
+                    this.districtMarkerGroup.hide();
+                    this.streetMarkerGroup.hide();
+                    if (this.areaMarkerGroup.getOverlays().length > 0) {
+                        this.areaMarkerGroup.show();
+                    } else {
+                        const params = { areaType: 'subArea', cityCode: '440300' };
+                        this.getBerthOnMap(params)
+                    }
+                } else if (zoom >= 17) { //街道
+                    this.cityBerthMarker.hide();
+                    this.districtMarkerGroup.hide();
+                    this.areaMarkerGroup.hide();
+                    if (this.streetMarkerGroup.getOverlays().length > 0) {
+                        this.streetMarkerGroup.show();
+                    } else {
+                        const params = { areaType: 'parking', cityCode: '440300' };
+                        this.getBerthOnMap(params)
+                    }
+                }
             }
         });
-    }
-
-    districtSearch(searchName) {
-        this.mapInstance.plugin(["AMap.DistrictSearch"], () => {
-            new window.AMap.DistrictSearch({
-                subdistrict: 0
-            }).search(searchName, (status, result) => {
-                // console.log(result);
-            })
+        // 比例尺插件
+        this.mapInstance.plugin(["AMap.Scale"], () => {
+            const scale = new window.AMap.Scale({
+                position: 'RB'
+            });
+            this.mapInstance.addControl(scale);
         });
     }
 
-    showBerthDataOnMap() {
-        const { districtBerthData, areaBerthData, streetBerthData } = this.state;
-        console.log(districtBerthData, areaBerthData, streetBerthData);
-        if (districtBerthData.length > 0) {
-            districtBerthData.forEach(district => {
-                this.districtSearch(district.name)
+    // 获取地图上的泊位数据
+    getBerthOnMap(params) {
+        this.setState({
+            spinning: true
+        });
+        HttpClientImmidIot.querySimple('/parking-resource/admin/parking/road/space/count', 'GET', params, (d, type) => {
+            if (type === HttpClientImmidIot.requestSuccess) {
+                const data = d.data.list;
+                const markers = [];
+                data.forEach(item => {
+                    let markerContent = `<div style="display: flex; justify-content: center; flex-direction: column; align-items: center">
+                            <div class='markerLngLat'></div>
+                            <span class='markerContent'>${item.areaName}：${item.count}个泊位</span>
+                        </div>`;
+                    const marker = new window.AMap.Marker({
+                        position: new window.AMap.LngLat(item.longitude, item.latitude),
+                        content: markerContent,
+                        topWhenClick: true,
+                        extData: item
+                    });
+                    if (params.areaType === 'parking') {
+                        marker.on('click', () => {
+                            location.hash = `Home/Visualization/BerthDetails?id=${item}`
+                        })
+                    }
+                    markers.push(marker)
+                });
+                if (params.areaType === 'area') {
+                    this.districtMarkerGroup.addOverlays(markers);
+                    this.districtMarkerGroup.setMap(this.mapInstance);
+                } else if (params.areaType === 'subArea') {
+                    this.areaMarkerGroup.addOverlays(markers);
+                    this.areaMarkerGroup.setMap(this.mapInstance)
+                } else {
+                    this.streetMarkerGroup.addOverlays(markers);
+                    this.streetMarkerGroup.setMap(this.mapInstance)
+                }
+            }
+            this.setState({
+                spinning: false
             });
-            if (areaBerthData.length > 0) {
-                this.addCluster(areaBerthData);
-                if (streetBerthData.length > 0) {
-                    this.addCluster(streetBerthData, true);
+        });
+    }
+
+    // 隐藏或显示地图上的泊位数据
+    showOrHideBerthOnMap(hide = true) {
+        if (hide) {
+            this.cityBerthMarker.hide();
+            this.districtMarkerGroup.hide();
+            this.areaMarkerGroup.hide();
+            this.streetMarkerGroup.hide();
+        } else {
+            // this.cityBerthMarker.show();
+            if (this.mapInstance) {
+                const zoom = this.mapInstance.getZoom();
+                if (8 <= zoom && zoom <= 9) { //市级
+                    this.districtMarkerGroup.hide();
+                    this.areaMarkerGroup.hide();
+                    this.streetMarkerGroup.hide();
+                } else if (10 <= zoom && zoom <= 12) { //行政区
+                    this.areaMarkerGroup.hide();
+                    this.streetMarkerGroup.hide();
+                    this.districtMarkerGroup.show();
+                } else if (13 <= zoom && zoom <= 16) { //片区
+                    this.districtMarkerGroup.hide();
+                    this.areaMarkerGroup.show();
+                    this.streetMarkerGroup.hide();
+                } else if (zoom >= 17) { //街道
+                    this.districtMarkerGroup.hide();
+                    this.areaMarkerGroup.hide();
+                    this.streetMarkerGroup.show();
                 }
             }
         }
-    }
-
-    addCluster(data, canClick = false) {
-        const markers = [];
-        data.forEach((item, index) => {
-            let markerContent = `<div style="display: flex; justify-content: center; flex-direction: column; align-items: center">
-                            <div class='markerLngLat'></div>
-                            <span class='markerContent'>${item.name}：${item.berthNum || item.berthTotalNum}个泊位</span>
-                        </div>`;
-            const marker = new window.AMap.Marker({
-                position: new window.AMap.LngLat(item.location[0], item.location[1]),
-                content: markerContent,
-                topWhenClick: true,
-                extData: item
-            });
-            if (canClick) {
-                marker.on('click', () => {
-                    location.hash = '/Home/Visualization/BerthDetails'
-                });
-            }
-            markers.push(marker);
-        });
-        const markerGroup = new window.AMap.OverlayGroup(markers);
-        markerGroup.setMap(this.mapInstance)
     }
 
     // 组件卸载之前
@@ -123,74 +198,26 @@ export default class Visualization extends Component {
         this.mapInstance.destroy()
     }
 
-    // 随机生成设备点
-    genPointData(otherInfo) {
-        const leng = _.random(20, 30);
-        const points = [];
-        for (let i = 0; i < leng; i++) {
-            let lng = _.random(111.097104, 111.426693); // 经度
-            let lat = _.random(23.340821, 23.5764); // 纬度
-            points.push({ lnglat: [lng, lat], status: _.random(1, 3), ...otherInfo })
-        }
-        return points
-    }
-
     // 控制面板tab标签变化事件
     panelTabChange(activeKey) {
-        this.currentTab = activeKey;
+        this.setState({
+            currentTab: activeKey
+        });
         this.mapInstance.clearInfoWindow();
         if (activeKey === '1') { // 泊位
-            this.markerGroup.show();
+            this.deviceMarkerGroup.hide();
+            this.usersMarkerGroup.hide();
         } else if (activeKey === '2') { // 人员
-            this.markerGroup.hide();
-        } else if (activeKey === '3') { // 设备
-            this.markerGroup.hide();
-            if (!_.isEmpty(this.masses)) {
-                for (let massesKey in this.masses) {
-                    this.masses[massesKey].show();
-                }
-            } else {
-                const typeMapInfo = {
-                    'A': ['zhongjiqi_green', '正常中继器'],
-                    'B': ['wifi_green', '正常网关'],
-                    'C': ['zhongjiqi_blue', '维修中继器'],
-                    'D': ['wifi_blue', '维修网关'],
-                    'E': ['zhongjiqi_red', '异常中继器'],
-                    'F': ['wifi_red', '异常网关'],
-                };
-                const genStyle = function (type) {
-                    return {
-                        url: `../../static/mapIcons/${typeMapInfo[type][0]}.png`,
-                        anchor: new window.AMap.Pixel(6, 6),
-                        size: new window.AMap.Size(30, 30)
-                    }
-                };
-                const infoWindow = new window.AMap.InfoWindow({
-                    autoMove: true,
-                    // isCustom: true,  //使用自定义窗体
-                    // offset: new window.AMap.Pixel(16, -45)
-                });
-                defaultCheckBoxKey.forEach(item => {
-                    const mass = new window.AMap.MassMarks(this.genPointData({ type: item }), {
-                        opacity: 1,
-                        zIndex: 111,
-                        cursor: 'pointer',
-                        style: genStyle(item)
-                    });
-                    mass.on('click', (e) => {
-                        //构建信息窗体中显示的内容
-                        const info = `<div style="max-width: 500px; padding: 10px">
-                            <h3>${typeMapInfo[e.data.type][1]}</h3>
-                            <p>坐标 : ${e.data.lnglat.lng}，${e.data.lnglat.lat}</p>
-                            <p>地址 :北京市朝阳区望京阜荣街10号首开广场4层</p>
-                        </div>`;
-                        infoWindow.setContent(info);
-                        infoWindow.open(this.mapInstance, new window.AMap.LngLat(e.data.lnglat.lng, e.data.lnglat.lat));
-                    });
-                    mass.setMap(this.mapInstance);
-                    this.masses[item] = mass;
-                });
+            this.deviceMarkerGroup.hide();
+            if (this.usersMarkerGroup.getOverlays().length > 0) {
+                this.usersMarkerGroup.show();
+                return
             }
+            this.getUsersOnMap();
+        } else if (activeKey === '3') { // 设备
+            this.deviceMarkerGroup.show();
+            this.usersMarkerGroup.hide();
+            this.getDevice(null);
         }
     }
 
@@ -201,44 +228,117 @@ export default class Visualization extends Component {
         })
     }
 
-    berthSearch(data) {
-        console.log(data)
-    }
+    // 获取设备
+    getDevice(data) {
+        this.deviceMarkerGroup.clearOverlays();
+        const deviceType = ['dici', 'wifi', 'zhongjiqi'];
+        const deviceStatus = ['blue', 'red', 'green'];
+        HttpClientImmidIot.query('/visualization/device', 'GET', data, (d, type) => {
+            console.log(d.data);
+            const data = d.data;
+            const markers = [];
+            data.forEach(item => {
+                const marker = new window.AMap.Marker({
+                    position: new window.AMap.LngLat(item.location[0], item.location[1]),
+                    topWhenClick: true,
+                    icon: new window.AMap.Icon({
+                        image: `./resources/mapIcons/${deviceType[item.device_type]}_${deviceStatus[item.statu]}.png`,
+                        imageSize: new window.AMap.Size(30, 30),
+                    }),
+                    extData: item
+                });
+                const infoWindow = new window.AMap.InfoWindow({
+                    autoMove: true,
+                    offset: new window.AMap.Pixel(8, -30)
+                });
 
-    usersSearch(data) {
-        console.log(data)
+                marker.on('click', (e) => {
+                    //构建信息窗体中显示的内容
+                    const extData = e.target.C.extData;
+                    const info = `<div style="max-width: 500px; padding: 10px">
+                                    <p>坐标 : ${extData.location[0]}，${extData.location[1]}</p>
+                                    <p>地址 :北京市朝阳区望京阜荣街10号首开广场4层</p>
+                                </div>`;
+                    infoWindow.setContent(info);
+                    infoWindow.open(this.mapInstance, e.target.C.position);
+                });
+                markers.push(marker)
+            });
+            this.deviceMarkerGroup.addOverlays(markers);
+            this.deviceMarkerGroup.setMap(this.mapInstance)
+        })
     }
 
     // 设备复选框change事件
     checkBoxChange(values) {
-        console.log(values);
-        const xorArr = _.xor(values, defaultCheckBoxKey);
-        for (let massesKey in this.masses) {
-            this.masses[massesKey].show()
-        }
-        xorArr.forEach(item => {
-            this.masses[item].hide()
-        })
+        this.deviceParams.status = values;
+        this.deviceParams = this.filterParams(this.deviceParams);
+        this.getDevice(this.deviceParams)
     }
 
     // 选择设备类型
     selectDeviceType(value) {
-        console.log(value)
+        this.deviceParams.type = value;
+        this.deviceParams = this.filterParams(this.deviceParams);
+        this.getDevice(this.deviceParams)
     }
 
+    // 选择设备片区
     selectArea(value) {
-        console.log(value)
+        this.deviceParams.area = value;
+        this.deviceParams = this.filterParams(this.deviceParams);
+        this.getDevice(this.deviceParams)
     }
 
+    // 选择设备行政区
     selectDistrict(value) {
-        console.log(value)
+        this.deviceParams.district = value;
+        this.deviceParams = this.filterParams(this.deviceParams);
+        this.getDevice(this.deviceParams)
+    }
+
+    // 获取在线地图人员
+    getUsersOnMap() {
+        HttpClientImmidIot.query('/visualization/usersonmap', 'GET', null, (d, type) => {
+            const data = d.data;
+            const markers = [];
+            data.forEach((item, index) => {
+                let markerContent = `<div style="display: flex; justify-content: center; flex-direction: column; align-items: center">
+                            <div class=''><img style="width: 30px; height: 30px;" src=${item.userImg} /></div>
+                        </div>`;
+                const marker = new window.AMap.Marker({
+                    position: new window.AMap.LngLat(item.location[0], item.location[1]),
+                    content: markerContent,
+                    topWhenClick: true,
+                    extData: item
+                });
+                marker.on('click', () => {
+                    location.hash = `/Home/Visualization/UserDetail?id=${123}`
+                });
+                markers.push(marker);
+            });
+            this.usersMarkerGroup.addOverlays(markers);
+            this.usersMarkerGroup.setMap(this.mapInstance)
+        })
+    }
+
+    filterParams(params) {
+        const newParams = {};
+        _.forIn(params, (value, key) => {
+            if (value || value === 0) {
+                newParams[key] = value
+            }
+        });
+        return newParams
     }
 
     render() {
-        const { isToggle } = this.state;
+        const { isToggle, currentTab, spinning } = this.state;
         const TabPane = Tabs.TabPane;
-        if (this.currentTab === '1') {
-            this.showBerthDataOnMap()
+        if (currentTab === '1') {
+            this.showOrHideBerthOnMap(false)
+        } else {
+            this.showOrHideBerthOnMap(true)
         }
         return (
             <div className='page'>
@@ -246,45 +346,49 @@ export default class Visualization extends Component {
                     <div>可视化</div>
                 </div>
                 <div className='page-content' style={{ padding: 0 }}>
-                    <div id='mapContainer'
-                         style={{ height: 'calc(100vh - 64px - 100px - 80px)', width: '100%', position: 'relative' }}>
-                        <div className='visualPanel' style={isToggle ? { left: 10 } : { left: -300 }}>
-                            <div style={{
-                                width: 300,
-                                height: 'calc(100vh - 64px - 100px - 80px - 20px)',
-                                float: 'left',
-                                background: 'white',
-                                marginRight: 10,
-                                padding: '0 15px'
-                            }}>
-                                <Tabs defaultActiveKey="1" onChange={this.panelTabChange.bind(this)}>
-                                    <TabPane tab="泊位" key="1">
-                                        <Suspense fallback={null}>
-                                            <Berth berthList={[]}
-                                                   berthSearch={(data) => this.berthSearch.bind(this, data)}/>
-                                        </Suspense>
-                                    </TabPane>
-                                    <TabPane tab="人员" key="2">
-                                        <Suspense fallback={null}>
-                                            <Users usersList={[]}
-                                                   searchUsers={data => this.usersSearch.bind(this, data)}/>
-                                        </Suspense>
-                                    </TabPane>
-                                    <TabPane tab="设备" key="3">
-                                        <Suspense fallback={null}>
-                                            <Devices
-                                                selectDeviceType={this.selectDeviceType.bind(this)}
-                                                selectArea={this.selectArea.bind(this)}
-                                                selectDistrict={this.selectDistrict.bind(this)}
-                                                checkBoxChange={this.checkBoxChange.bind(this)}/>
-                                        </Suspense>
-                                    </TabPane>
-                                </Tabs>
+                    <Spin spinning={spinning} tip='加载中...'>
+                        <div id='mapContainer'
+                             style={{
+                                 height: 'calc(100vh - 64px - 100px - 80px)',
+                                 width: '100%',
+                                 position: 'relative'
+                             }}>
+                            <div className='visualPanel' style={isToggle ? { left: 10 } : { left: -300 }}>
+                                <div style={{
+                                    width: 300,
+                                    height: 'calc(100vh - 64px - 100px - 80px - 20px)',
+                                    float: 'left',
+                                    background: 'white',
+                                    marginRight: 10,
+                                    padding: '0 15px'
+                                }}>
+                                    <Tabs defaultActiveKey="1" onChange={this.panelTabChange.bind(this)}>
+                                        <TabPane tab="泊位" key="1">
+                                            <Suspense fallback={null}>
+                                                <Berth/>
+                                            </Suspense>
+                                        </TabPane>
+                                        <TabPane tab="人员" key="2">
+                                            <Suspense fallback={null}>
+                                                <Users usersList={[]}/>
+                                            </Suspense>
+                                        </TabPane>
+                                        <TabPane tab="设备" key="3">
+                                            <Suspense fallback={null}>
+                                                <Devices
+                                                    selectDeviceType={this.selectDeviceType.bind(this)}
+                                                    selectArea={this.selectArea.bind(this)}
+                                                    selectDistrict={this.selectDistrict.bind(this)}
+                                                    checkBoxChange={this.checkBoxChange.bind(this)}/>
+                                            </Suspense>
+                                        </TabPane>
+                                    </Tabs>
+                                </div>
+                                <Icon type="bars" style={{ fontSize: '24px', color: 'rgb(0,140,255)' }}
+                                      onClick={this.panelToggle.bind(this)}/>
                             </div>
-                            <Icon type="bars" style={{ fontSize: '24px', color: 'rgb(0,140,255)' }}
-                                  onClick={this.panelToggle.bind(this)}/>
                         </div>
-                    </div>
+                    </Spin>
                 </div>
             </div>
         );

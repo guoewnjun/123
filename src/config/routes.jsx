@@ -123,6 +123,26 @@ export default (
                 <IndexRoute component={VipLog}/>
                 <Route path="VipLogDetails" component={VipLogDetails} breadcrumbName="会员详情"/>
             </Route>
+            <Route path="DealManage" breadcrumbName="交易管理">
+                <Route path="ParkingRecord" breadcrumbName="停车订单">
+                    <IndexRoute component={ParkingRecord} onEnter={requireAuth}/>
+                    <Route path='ParkingRecordDetail' breadcrumbName='订单详情'>
+                        <IndexRoute component={ParkingRecordDetail} onEnter={requireAuth}/>
+                        <Route path='AppealDetail' breadcrumbName='查看详情' component={AppealDetail}
+                               onEnter={requireAuth}/>
+                    </Route>
+                </Route>
+                <Route path="AppealManage" breadcrumbName="退款申诉处理">
+                    <IndexRoute component={AppealManage} onEnter={requireAuth}/>
+                    <Route path='AppealDetail' breadcrumbName='查看详情'>
+                        <IndexRoute component={AppealDetail} onEnter={requireAuth}/>
+                        <Route path='ParkingRecordDetail' breadcrumbName='订单详情' component={ParkingRecordDetail}
+                               onEnter={requireAuth}/>
+                    </Route>
+                    <Route path='ParkingRecordDetail' breadcrumbName='订单详情' component={ParkingRecordDetail}
+                           onEnter={requireAuth}/>
+                </Route>
+            </Route>
             <Route path="Complain" breadcrumbName="投诉建议">
                 <IndexRoute component={ComplainList}/>
                 <Route path="ComplainDetails" component={ComplainDetails} breadcrumbName="投诉详情"/>
