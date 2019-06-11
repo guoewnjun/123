@@ -1,14 +1,17 @@
 import React, {Component} from "react";
 import {
-    Button, Form, Select, Radio, Table, Row, Col, DatePicker, Input, Spin, Pagination, Switch, Badge, Modal,
+    Button, Form, Select, Radio, Table, Row, Col, DatePicker, Input, Spin, Pagination, Switch, Badge, Modal,Popconfirm
 } from "antd";
 import {HttpClientImmidIot} from "../../../common/HttpClientImmidIot";
 
 
 const FormItem = Form.Item;
 const RangePicker = DatePicker.RangePicker;
+
 const { Option } = Select;
 const { TextArea } = Input;
+
+const EditableContext = React.createContext();
 
 class OpinionTemplate extends Component {
     constructor(props) {
@@ -153,6 +156,19 @@ class OpinionTemplate extends Component {
     }
 
 
+     handleDelete = key => {
+       const dataSource = [...this.state.AlarmRecord];
+       this.setState({ AlarmRecord: dataSource.filter(item => item.key !== key) });
+     };
+
+
+    // deleteLine() {
+    // const tab2=document.getElementById('Table');//获取枚举table对象
+    // const activeObj = event.srcElement;//激活对象
+    // const rowIndex = activeObj.parentElement.rowIndex;//激活行号
+    // tab2.deleteRow(rowIndex);//删除当前行 }
+    // }
+
     // 组件挂载之前
     componentWillMount() {
     }
@@ -175,6 +191,7 @@ class OpinionTemplate extends Component {
 
     const { Option } = Select;
 
+    //意见分类点击事件
     function handleChange(value) {
       console.log(`selected ${value}`);
     }
@@ -195,7 +212,11 @@ class OpinionTemplate extends Component {
               }, ,{
                   title: "操作",
                   dataIndex: "Operation",
-                  render: (value) => value || "--",
+                  render:(text, record)  =>this.state.AlarmRecord.length >= 1 ? (
+                      <Popconfirm title="确定删除本行?" onConfirm={() => this.handleDelete(record.key)}>
+                        <a>Delete</a>
+                      </Popconfirm>
+                      ) : "--",
               },
           ];
 
@@ -290,6 +311,7 @@ class OpinionTemplate extends Component {
 
                         <Table
                             style={{marginTop: "20px"}}
+                            rowKey={data => data.id}
                             columns={columns}
                             dataSource={AlarmRecord}
                             pagination={false}
