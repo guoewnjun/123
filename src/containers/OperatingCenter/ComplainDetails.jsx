@@ -253,8 +253,7 @@ class ComplainDetails extends Component {
                                     </Col>
                                 </Row>
                                 <Row>
-                                    <Col span={8}>
-                                        <Col span={12} style={{marginRight:"-30%"}}>
+                                        <Col span={8}>
                                             <FormItem label="优先级" {...formItemLayout}>
                                                 {getFieldDecorator('Priority')(
                                                     <Select defaultValue="1"  onChange={handleChange}>
@@ -266,7 +265,9 @@ class ComplainDetails extends Component {
                                                 )}
                                             </FormItem>
                                         </Col>
-                                        <Col span={12} style={{float:"right"}}>
+                                </Row>
+                                <Row>
+                                        <Col span={8}>
                                             <FormItem label="指派" {...formItemLayout}>
                                                 {getFieldDecorator('Designate')(
                                                     <Select defaultValue="1"  onChange={handleChange}>
@@ -278,7 +279,6 @@ class ComplainDetails extends Component {
                                                 )}
                                             </FormItem>
                                         </Col>
-                                    </Col>
                                 </Row>
                                 <Row>
                                     <Col span={8} >
@@ -292,13 +292,15 @@ class ComplainDetails extends Component {
                                     </Col>
                                 </Row>
                                 <Row>
-                                    <Col span={4} style={{textAlign: "center"}}>
-                                        <Button onClick={(e)=>{this.quxiao(e)}}>
-                                        <span>取消</span>
-                                        </Button>
-                                        <Button type="primary" onClick={(e)=>{this.tijiao(e)}} style={{marginLeft:20,}}>
-                                        <span>提交</span>
-                                        </Button>
+                                    <Col span={8} style={{textAlign: "center",}}>
+                                          <Col style={{float:'right',}}>
+                                              <Button onClick={(e)=>{this.quxiao(e)}}>
+                                              <span>取消</span>
+                                              </Button>
+                                              <Button type="primary" onClick={(e)=>{this.tijiao(e)}} style={{marginLeft:20,}}>
+                                              <span>提交</span>
+                                              </Button>
+                                          </Col>
                                     </Col>
                                 </Row>
                             </Form>
