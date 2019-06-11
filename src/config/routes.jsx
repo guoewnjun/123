@@ -68,6 +68,9 @@ import ComplainWorkOrder from "../containers/OperationsAndCenter/WorkOrder/Compl
 import ComplainWorkOrderDetails from "../containers/OperationsAndCenter/WorkOrder/ComplainWorkOrderDetails.jsx";//投诉工单详情
 import FacilityMaintenance from "../containers/OperationsAndCenter/WorkOrder/FacilityMaintenance.jsx";//设备维保
 import FacilityMaintenanceDetails from "../containers/OperationsAndCenter/WorkOrder/FacilityMaintenanceDetails.jsx";//设备维保详情
+import OpinionTemplate from "../containers/OperationsAndCenter/WorkOrder/OpinionTemplate.jsx";//意见模板
+
+
 
 import Text from "../containers/Text/Text.jsx";//例子
 
@@ -114,6 +117,9 @@ export default (
                 <Route path="FacilityMaintenance" breadcrumbName="设备维保">
                     <IndexRoute component={FacilityMaintenance}/>
                     <Route path="FacilityMaintenanceDetails" component={FacilityMaintenanceDetails} breadcrumbName="设备维保详情"/>
+                </Route>
+                <Route path="OpinionTemplate" breadcrumbName="意见模板">
+                    <IndexRoute component={OpinionTemplate}/>
                 </Route>
             </Route>
         </Route>
