@@ -25,6 +25,7 @@ class VisualizationDevices extends Component {
                 <Row type='flex' align='middle' style={{ marginBottom: 20 }}>
                     <label>区域：</label>
                     <Select
+                        allowClear
                         onChange={(value) => this.props.selectDistrict(value)}
                         style={{ flexGrow: 1 }}
                         placeholder="请选择"
@@ -38,6 +39,7 @@ class VisualizationDevices extends Component {
                 <Row type='flex' align='middle' style={{ marginBottom: 20 }}>
                     <label>片区：</label>
                     <Select
+                        allowClear
                         onChange={(value) => this.props.selectArea(value)}
                         style={{ flexGrow: 1 }}
                         placeholder="请选择"
@@ -51,6 +53,7 @@ class VisualizationDevices extends Component {
                 <Row type='flex' align='middle' style={{ marginBottom: 20 }}>
                     <label>设备类型：</label>
                     <Select
+                        allowClear
                         onChange={(value) => this.props.selectDeviceType(value)}
                         style={{ flexGrow: 1 }}
                         placeholder="请选择"
