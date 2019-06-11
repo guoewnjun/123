@@ -86,11 +86,11 @@ export default class IndexContainer extends Component {
                 //失败----做除了报错之外的操作
             }
             // 获取权限点https:/parking-info/centerConsole/login/getUserPermission
-            HttpClientImmidIot.query('/parking-info/centerConsole/login/getUserPermission', 'GET', { consoleType: consoleType }, this.getUserPermission.bind(this));
+            HttpClient.query('/parking-info/centerConsole/login/getUserPermission', 'GET', { consoleType: consoleType }, this.getUserPermission.bind(this));
         });
     }
 
-    getFavicon (iconHref) {
+    getFavicon(iconHref) {
         let link = document.querySelector("link[rel*='icon']") || document.createElement('link');
         link.type = 'image/x-icon';
         link.rel = 'shortcut icon';
@@ -98,7 +98,7 @@ export default class IndexContainer extends Component {
         document.getElementsByTagName('head')[0].appendChild(link);
     }
 
-    getUserPermission(d, type){
+    getUserPermission(d, type) {
         this.setState({
             load: false
         });
@@ -198,7 +198,7 @@ export default class IndexContainer extends Component {
     getMenu(obj) {
         let imgURL = null;
         for (let j = 0; j < this.requireContext.keys().length; j++) {
-            if (obj.icon.indexOf(this.requireContext.keys()[j].split('/')[1]) > 0) {
+            if (obj.icon && obj.icon.indexOf(this.requireContext.keys()[j].split('/')[1]) > 0) {
                 imgURL = this.menuIcon[j];
             }
         }
@@ -398,7 +398,8 @@ export default class IndexContainer extends Component {
                                         {
                                             currentTabsData.map(tabMenu =>
                                                 <Menu.Item key={tabMenu.path}>
-                                                    <Link key={tabMenu.path} to={[pathArr[1], pathArr[2]].join('/') + tabMenu.path}>
+                                                    <Link key={tabMenu.path}
+                                                          to={[pathArr[1], pathArr[2]].join('/') + tabMenu.path}>
                                                         {tabMenu.name}
                                                     </Link>
                                                 </Menu.Item>
