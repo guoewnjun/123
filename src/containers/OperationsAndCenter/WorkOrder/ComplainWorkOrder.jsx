@@ -332,6 +332,7 @@ class ComplainWorkOrder extends Component {
                             style={{marginTop: "20px"}}
                             columns={columns}
                             dataSource={AlarmRecord}
+                            pagination={false}
                         />
                         {/*分页*/}
                         {AlarmRecord.length > 0 ? (
