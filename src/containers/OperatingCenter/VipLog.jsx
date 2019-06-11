@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {
-    Button, Form, Select, Radio, Table, Row, Col, DatePicker, Input, Spin, Pagination,
+    Button, Form, Select, Radio, Table, Row, Col, DatePicker, Input, Spin, Pagination, Badge
 } from 'antd';
 import {HttpClientImmidIot} from "../../common/HttpClientImmidIot";
 import Exception from "../../components/Exception";
@@ -72,7 +72,7 @@ class VipLog extends Component {
             ...otherParams
         };
         params = this.filterOtherParams(params);
-        HttpClientImmidIot.query('/Vip/VipLog', 'GET', params, this.handleQueryData.bind(this))
+        HttpClientImmidIot.query('/parking-person-info/business/member/list', 'GET', params, this.handleQueryData.bind(this))
     }
 
     // loadData回调函数
@@ -150,35 +150,47 @@ class VipLog extends Component {
             labelCol: {span: 5},
             wrapperCol: {span: 19},
         };
+       const  gettime=(str)=>{
+              const arr=str.split("T");
+              const d=arr[0];
+              const darr = d.split('-');
+              const t=arr[1];
+              const tarr = t.split('.000');
+              const marr = tarr[0].split(':');
+              const dd = parseInt(darr[0])+"/"+parseInt(darr[1])+"/"+parseInt(darr[2])+" "+parseInt(marr[0])+":"+parseInt(marr[1])+":"+parseInt(marr[2]);
+              //console.log(parseInt(marr[0])+"点");
+              return dd;
+            };
         const columns = [
             {
                 title: '会员ID',
-                dataIndex: 'uId',
-                render: (value) =>  (
-                    <a onClick={this.idClick.bind(this, value)} style={{ color: '#1890FF' }}>{value}</a>),
+                dataIndex: 'id',
+                //dataIndex: 'memberId',
+                render: (value,rouder) =>  (
+                    <a onClick={this.idClick.bind(this, rouder.id)} style={{ color: '#1890FF' }}>{value}</a>),
             }, {
                 title: '注册来源',
-                dataIndex: 'comfrom',
+                dataIndex: 'regSource',
                 render: (value) => value || '--',
             }, {
                 title: '手机号码',
-                dataIndex: 'phoneNum',
+                dataIndex: 'mobile',
                 render: (value) => value || '--',
             }, {
-                title: 'openid',
-                dataIndex: 'openid',
+                title: 'openId',
+                dataIndex: 'openId',
                 render: (value) => value || '--',
             }, {
                 title: '用户余额（元）',
-                dataIndex: 'money',
+                dataIndex: 'balance',
                 render: (value) => value || '--',
             }, {
                 title: '注册时间',
-                dataIndex: 'enrollTime',
-                render: (value) => value || '--',
+                dataIndex: 'regTime',
+                render: (value) => gettime(value) || '--',
             },{
                 title: '状态',
-                dataIndex: 'tate',
+                dataIndex: 'state',
                 render: (value) => value || '--',
             },
         ];
@@ -193,9 +205,9 @@ class VipLog extends Component {
                         <Row gutter={46}>
                             <Col span={8}>
                                 <FormItem label='手机号' {...formItemLayout}>
-                                    {getFieldDecorator('phoneNumber')(
+                                    {getFieldDecorator('mobile')(
                                         <Input placeholder='请输入' onChange={(e) => {
-                                            this.state.otherParams.phoneNumber = e.target.value;
+                                            this.state.otherParams.mobile = e.target.value;
                                         }}/>
                                     )}
                                 </FormItem>
@@ -205,8 +217,9 @@ class VipLog extends Component {
                                     {getFieldDecorator('enrollTime')(
                                         <RangePicker style={{width: '100%'}} format="YYYY-MM-DD"
                                                      onChange={(dates, dateString) => {
-                                                         this.state.otherParams.startTime = dateString[0];
-                                                         this.state.otherParams.endTime = dateString[1];
+                                                       console.log(dates);
+                                                         this.state.otherParams.beginRegDate = dates[0]._d;
+                                                         this.state.otherParams.endRegDate = dates[1]._d;
                                                      }}/>
                                     )}
                                 </FormItem>
