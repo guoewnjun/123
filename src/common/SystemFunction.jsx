@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import _ from 'lodash';
 
 //全局公用方法定义
 export var TimeUtils = (function () {
@@ -136,3 +137,10 @@ export var StringUtil = (function () {
         cutStrByFullLength: cutStrByFullLength,
     }
 }());
+
+export const getQueryString = (search, name) => {
+    const reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+    const r = search.match(reg);
+    if (r != null) return _.unescape(r[2]);
+    return null;
+};

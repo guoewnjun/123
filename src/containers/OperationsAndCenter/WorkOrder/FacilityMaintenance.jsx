@@ -2,7 +2,8 @@ import React, {Component} from 'react';
 import {
     Button, Form, Select, Radio, Table, Row, Col, DatePicker, Input, Spin, Pagination, Badge
 } from 'antd';
-import {HttpClientImmidIot} from "../../../common/HttpClientImmidIot";
+import {HttpClient} from "@/common/HttpClient";
+
 const FormItem = Form.Item;
 const RadioGroup = Radio.Group;
 const RadioButton = Radio.Button;
@@ -54,13 +55,13 @@ class FacilityMaintenance extends Component {
             pageSize: pageSize,
             ...otherParams
         };
-        HttpClientImmidIot.query('/OperationsAndCenter/WorkOrder/FacilityMaintenance', 'GET', params, this.handleQueryData.bind(this))
+        HttpClient.query('/OperationsAndCenter/WorkOrder/FacilityMaintenance', 'GET', params, this.handleQueryData.bind(this))
     }
 
     // loadData回调函数
     handleQueryData(d, type) {
         const data = d.data;
-        if (type === HttpClientImmidIot.requestSuccess) {
+        if (type === HttpClient.requestSuccess) {
             this.setState({
                 AlarmRecord: data.list,
                 total: data.total
@@ -119,7 +120,7 @@ class FacilityMaintenance extends Component {
     }
     // 点击跳转详情
     idClick (id) {
-        window.location.hash = `/OperationsAndCenter/WorkOrder/FacilityMaintenance/FacilityMaintenanceDetails?id=${id}`;
+        window.location.hash = `${location.hash}/FacilityMaintenanceDetails?id=${id}`;
     }
 
     render() {

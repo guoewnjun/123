@@ -6,6 +6,7 @@ window.MODULE_PARKING_RESOURCE = '/parking-resource'; //路段
 window.MODULE_PARKING_AUTHORITY = '/parking-authority'; //权限
 window.MODULE_PARKING_INSPECTION = '/parking-inspection'; //稽查
 
+window.cityCode = window.returnCitySN.cid.substring(0, 4).concat('00') || '440300';
 window.OPERATOR_ID = 1; //运营id
 window.UNIT_NAME = '小时';
 window.LOGO_SRC = null; // logo地址

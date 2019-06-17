@@ -1,13 +1,13 @@
 import React, {Component, Fragment} from 'react';
 import {Button, Icon} from 'antd';
-import shenzhenGeoJson from '@/static/450400.js';
+import {HttpClient} from "@/common/HttpClient";
 
 export default class MapofToday extends Component {
     constructor(props) {
         super(props);
         this.mapInstance = null;
         this.trafficLayer = null;
-        this.geoJson = null;
+        this.polygonOverlay = new window.AMap.OverlayGroup();
         this.state = {
             isGeoJsonMap: true,
         };
@@ -21,26 +21,29 @@ export default class MapofToday extends Component {
     componentDidMount() {
         this.mapInstance = new window.AMap.Map('mapContainer', {
             resizeEnable: true,
-            zoom: 8,
-            center: [111.297604, 23.474803],
-            // mapStyle: 'amap://styles/darkblue',
+            zoom: 10,
             showIndoorMap: true
         });
-        // 生成梧州市行政区
-        // this.getPolygon();
-        let districtArray = [
-            { adcode: '450405', berthinfo: 0.3 },
-            { adcode: '450406', berthinfo: 0.4 },
-            { adcode: '450403', berthinfo: 0.6 },
-            { adcode: '450423', berthinfo: 0.5 },
-            { adcode: '450481', berthinfo: 0.7 },
-            { adcode: '450421', berthinfo: 0.8 },
-            { adcode: '450422', berthinfo: 0.2 },
-        ];
-        districtArray.forEach(item => {
-            this.getDistrict(item);
+        window.AMap.plugin('AMap.Geolocation', () => {
+            const geolocation = new window.AMap.Geolocation({
+                // enableHighAccuracy: true,//是否使用高精度定位，默认:true
+                timeout: 10000,          //超过10秒后停止定位，默认：5s
+                showButton: false,
+                zoomToAccuracy: true,   //定位成功后是否自动调整地图视野到定位点
+
+            });
+            this.mapInstance.addControl(geolocation);
         });
-        // this.getDistrict();
+        // 生成市行政区
+        HttpClient.query('/parking-report/report/road/today/space/ratation', 'GET', { cityCode: window.cityCode }, (d, type) => {
+            if (type === HttpClient.requestSuccess) {
+                const data = d.data;
+                data.forEach(item => {
+                    this.getDistrict(item);
+                });
+            }
+            this.polygonOverlay.setMap(this.mapInstance);
+        });
         //实时路况图层
         this.trafficLayer = new window.AMap.TileLayer.Traffic({
             zIndex: 10
@@ -53,7 +56,7 @@ export default class MapofToday extends Component {
             new window.AMap.DistrictSearch({
                 extensions: 'all',
                 // subdistrict: 0
-            }).search(districtInfo.adcode, (status, result) => {
+            }).search(districtInfo.areaCode, (status, result) => {
                 // console.log(result);
                 let holes = result.districtList[0].boundaries;
                 let polygon = new window.AMap.Polygon({
@@ -61,36 +64,13 @@ export default class MapofToday extends Component {
                     strokeColor: 'white',
                     strokeWeight: 1,
                     fillColor: 'red',
-                    fillOpacity: districtInfo.berthinfo
+                    fillOpacity: districtInfo.saturation
                 });
-                this.mapInstance.add(polygon);
+                this.polygonOverlay.addOverlay(polygon);
+                // this.mapInstance.add(polygon);
                 this.mapInstance.setCenter(result.districtList[0].center)
             })
         });
-    }
-
-    getPolygon() {
-        this.geoJson = new window.AMap.GeoJSON({
-            geoJSON: shenzhenGeoJson,
-            // 还可以自定义getMarker和getPolyline
-            getPolygon: (geojson, lnglats) => {
-                console.log(geojson);
-                // 计算面积
-                let area = window.AMap.GeometryUtil.ringArea(lnglats[0]);
-                const polygon = new window.AMap.Polygon({
-                    path: lnglats,
-                    fillOpacity: 1 - Math.sqrt(area / 8000000000),// 面积越大透明度越高
-                    strokeColor: 'white',
-                    strokeWeight: 2,
-                    fillColor: 'red'
-                });
-                polygon.on('click', (e) => {
-                    console.log(e)
-                });
-                return polygon;
-            }
-        });
-        this.geoJson.setMap(this.mapInstance);
     }
 
     // 组件卸载之前
@@ -100,8 +80,8 @@ export default class MapofToday extends Component {
 
     mapToggle(code) {
         if (code) { // 路况
-            if (this.geoJson) {
-                this.geoJson.setMap(null)
+            if (this.polygonOverlay.getOverlays().length > 0) {
+                this.polygonOverlay.hide();
             }
             this.setState({
                 isGeoJsonMap: false
@@ -114,7 +94,7 @@ export default class MapofToday extends Component {
             this.setState({
                 isGeoJsonMap: true
             });
-            this.geoJson.setMap(this.mapInstance);
+            this.polygonOverlay.show();
         }
     }
 

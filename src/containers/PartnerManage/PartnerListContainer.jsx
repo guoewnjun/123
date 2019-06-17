@@ -3,9 +3,9 @@ import {Form, Button, Input, Icon, Radio, Table, Pagination, Popconfirm, message
 import './Style/PartnerListContainer.css';
 import Exception from "../../components/Exception";
 //请求
-import {HttpClient} from '../../common/HttpClient.jsx';
+import {HttpClient} from '@/common/HttpClient.jsx';
 //省市区
-import ChinaRegion from '../../components/ChinaRegion.jsx';
+import ChinaRegion from '@/components/ChinaRegion.jsx';
 
 const FormItem = Form.Item;
 const RadioButton = Radio.Button;
@@ -47,7 +47,7 @@ export default class PartnerListContainer extends Component {
     }
 
     componentDidMount() {
-        if (window.checkPageEnable('/PartnerList')) {
+        if (window.checkPageEnable('/PartnerManage')) {
             this.loadData();
         }
     }
@@ -70,7 +70,7 @@ export default class PartnerListContainer extends Component {
      * @param type
      */
     configData(d, type) {
-        if (type == HttpClient.requestSuccess) {
+        if (type === HttpClient.requestSuccess) {
             //成功-------在这里做你的数据处理，需要提示的自己加
             this.setState({
                 loading: false,
@@ -117,7 +117,7 @@ export default class PartnerListContainer extends Component {
 
     // 新建
     handleAdd() {
-        window.location.hash = `/PartnerManage/PartnerList/NewPartner`
+        window.location.hash = `${location.hash}/NewPartner`
     }
 
     // 筛选状态选择---->审核
@@ -152,7 +152,7 @@ export default class PartnerListContainer extends Component {
         };
         data = JSON.stringify(data);
         HttpClient.query(window.window.MODULE_PARKING_INFO + '/admin/company/' + id, 'PUT', data, (d, type) => {
-            if (type == HttpClient.requestSuccess) {
+            if (type === HttpClient.requestSuccess) {
                 //成功-------在这里做你的数据处理
                 message.success("操作成功");
                 this.loadData();
@@ -165,7 +165,7 @@ export default class PartnerListContainer extends Component {
 
     //跳转详情
     DetailClick(id) {
-        window.location.hash = `/PartnerManage/PartnerList/PartnerDetail?id=${id}`
+        window.location.hash = `${location.hash}/PartnerDetail?id=${id}`
     }
 
     // 分页
@@ -187,7 +187,7 @@ export default class PartnerListContainer extends Component {
     }
 
     render() {
-        if (!window.checkPageEnable('/PartnerList')) {
+        if (!window.checkPageEnable('/PartnerManage')) {
             return <Exception type='403'/>;
         }
         const {searchParams} = this.state;
@@ -246,7 +246,7 @@ export default class PartnerListContainer extends Component {
         }
         return (
             <div className="page">
-                <div className="page-header">合作方列表</div>
+                <div className="page-header">合作方管理</div>
                 <div className="page-content">
                     <Form>
                         <Row gutter={46}>

@@ -1,13 +1,13 @@
-import React, {Component} from 'react';
-import {Card, Checkbox, Button, Input, Icon, Form, message} from 'antd';
-import {HttpClient} from "../../common/HttpClient";
+import React, { Component } from 'react';
+import { Card, Checkbox, Button, Input, Icon, Form, message } from 'antd';
+import { HttpClient } from "../../common/HttpClient";
 import _ from 'lodash';
 import './Style/LoginContainer.css';
 
 const FormItem = Form.Item;
 
 class LoginContainer extends Component {
-    constructor (props) {
+    constructor(props) {
         super(props);
         this.state = {
             autoLogin: false,
@@ -17,10 +17,10 @@ class LoginContainer extends Component {
         };
     }
 
-    componentWillMount () {
+    componentWillMount() {
     }
 
-    componentDidMount () {
+    componentDidMount() {
         if (window.isInvalidToLogin) { // 防止出现多个提示信息
             message.warning('认证失效，请重新登录');
             window.isInvalidToLogin = false;
@@ -28,7 +28,7 @@ class LoginContainer extends Component {
         this.clearUserInfo();
     }
 
-    clearUserInfo () {
+    clearUserInfo() {
         sessionStorage.clear();
         localStorage.clear();
         window.customCookie.remove('access_token');
@@ -39,14 +39,14 @@ class LoginContainer extends Component {
         window.currentIsSystemAdmin = false;
     }
 
-    changeAutoLogin () {
+    changeAutoLogin() {
         this.setState({
             autoLogin: !this.state.autoLogin
         });
     };
 
     // 点击登录
-    handleSubmit (e) {
+    handleSubmit(e) {
         e.preventDefault();
         this.props.form.validateFields((err, values) => {
             if (!err) {
@@ -65,7 +65,7 @@ class LoginContainer extends Component {
     };
 
     // 处理登录回调
-    handleLogin (d, type) {
+    handleLogin(d, type) {
         this.setState({
             loadLogin: false,
         });
@@ -79,7 +79,8 @@ class LoginContainer extends Component {
                 }
                 localStorage.setItem('autoLogin', this.state.autoLogin);
                 message.success('登录成功！');
-                window.location.hash = '/';
+                location.hash = '/';
+                location.pathname = '/plateform'; //跳转到一体化平台页
             } else {
                 message.error(d.error.message);
             }
@@ -88,7 +89,7 @@ class LoginContainer extends Component {
         }
     }
 
-    render () {
+    render() {
         const { getFieldDecorator } = this.props.form;
         const { autoLogin, loadLogin, username, password } = this.state;
         return (
@@ -96,13 +97,16 @@ class LoginContainer extends Component {
                 <div className='content'>
                     <div className='top'>
                         <div className='header'>
-                            <img style={{ width: 60, height: 50 }} src={window.LOGO_SRC}/>
+                            <img style={{ width: 50, height: 50 }} src={window.LOGO_SRC} />
                             <span style={{
                                 color: "white",
                                 fontSize: "33px",
                                 lineHeight: "52px",
                                 margin: "0 20px"
-                            }}>{window.OPERATOR_NAME}中台</span>
+                            }}>
+                                {/* {OPERATOR_NAME} */}
+                                大树停车运营平台
+                            </span>
                         </div>
                     </div>
                     {/*用户登录输入表单*/}
@@ -118,7 +122,7 @@ class LoginContainer extends Component {
                                         rules: [{ required: true, message: '请输入用户名!' }],
                                     })(
                                         <Input className='login-form-input'
-                                               prefix={<Icon type="user" style={{ fontSize: 13 }}/>} placeholder="账户"/>
+                                            prefix={<Icon type="user" style={{ fontSize: 13 }} />} placeholder="账户" />
                                     )}
                                 </FormItem>
                                 <FormItem>
@@ -127,13 +131,13 @@ class LoginContainer extends Component {
                                         rules: [{ required: true, message: '请输入密码!' }],
                                     })(
                                         <Input className='login-form-input'
-                                               prefix={<Icon type="lock" style={{ fontSize: 13 }}/>} type="password"
-                                               placeholder="密码" onPressEnter={this.handleSubmit.bind(this)}/>
+                                            prefix={<Icon type="lock" style={{ fontSize: 13 }} />} type="password"
+                                            placeholder="密码" onPressEnter={this.handleSubmit.bind(this)} />
                                     )}
                                 </FormItem>
                                 <FormItem>
                                     <Button type="primary" htmlType="submit" loading={loadLogin}
-                                            className="login-form-button">
+                                        className="login-form-button">
                                         登录
                                     </Button>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -146,7 +150,7 @@ class LoginContainer extends Component {
                                             </Checkbox>
                                         )}
                                         <a style={{ fontSize: '14px', lineHeight: '22px' }} onClick={(e) => {
-                                            window.location.hash = '/ResetPassword';
+                                            location.hash = '/ResetPassword';
                                         }}>忘记密码</a>
                                     </div>
                                 </FormItem>

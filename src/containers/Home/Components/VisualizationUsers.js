@@ -2,7 +2,7 @@ import React, {Component, Fragment} from 'react';
 import {Button, Input, Row, Tree, Card} from "antd";
 import ProTypes from 'prop-types';
 import _ from "lodash";
-import {HttpClientImmidIot} from "../../../common/HttpClientImmidIot";
+import {HttpClient} from "@/common/HttpClient";
 
 class VisualizationUsers extends Component {
 
@@ -13,12 +13,7 @@ class VisualizationUsers extends Component {
 
     state = {
         usersList: [],
-        treeData: [
-            {
-                title: '梧州市',
-                key: '0',
-            }
-        ]
+        treeData: []
     };
 
     componentWillMount() {
@@ -26,7 +21,13 @@ class VisualizationUsers extends Component {
     }
 
     componentDidMount() {
-        this.searchUsers(null)
+        HttpClient.query(`${window.MODULE_PARKING_INSPECTION}/monitoringCenter/${window.cityId}/getPersonAttendance`, 'GET', null, (d, type) => {
+            if (type === HttpClient.requestSuccess) {
+                this.setState({
+                    treeData: d.data,
+                })
+            }
+        })
     }
 
     componentWillUnmount() {
@@ -39,11 +40,13 @@ class VisualizationUsers extends Component {
     };
 
     searchUsers(params) {
-        HttpClientImmidIot.query('/visualization/users', 'GET', params, (d, type) => {
-            const data = d.data;
-            this.setState({
-                usersList: data
-            })
+        HttpClient.query(`${window.MODULE_PARKING_INFO}/centerConsole/searchInspectionMember`, 'GET', params, (d, type) => {
+            if (type === HttpClient.requestSuccess) {
+                const data = d.data;
+                this.setState({
+                    usersList: data
+                })
+            }
         })
     }
 
@@ -61,50 +64,36 @@ class VisualizationUsers extends Component {
         return newParams
     }
 
-    onLoadData(treeNode) {
-        return new Promise(resolve => {
-            const isLeaf = treeNode.props.eventKey.split('-').length > 3;
-            if (treeNode.props.children || isLeaf) {
-                resolve();
-                return;
-            }
-            setTimeout(() => {
-                treeNode.props.dataRef.children = [
-                    { title: 'Child Node', key: `${treeNode.props.eventKey}-0` },
-                    { title: 'Child Node', key: `${treeNode.props.eventKey}-1` },
-                ];
-                this.setState({
-                    treeData: [...this.state.treeData],
-                });
-                resolve();
-            }, 500);
-        });
-    }
-
     render() {
         const { treeData, usersList } = this.state;
         const { TreeNode } = Tree;
         const renderTreeNodes = data => data.map((item) => {
+            let title = '';
+            if (item.planAttendance >= 0) {
+                title = `${item.name}(应到${item.planAttendance}，实到${item.actualAttendance})`
+            }else {
+                title = item.name
+            }
             if (item.children) {
                 return (
-                    <TreeNode title={item.title} key={item.key} dataRef={item} selectable={false}>
+                    <TreeNode title={title} key={item.id} dataRef={item} selectable={false}>
                         {renderTreeNodes(item.children)}
                     </TreeNode>
                 );
             }
-            return <TreeNode {...item} dataRef={item}/>;
+            return <TreeNode title={title} key={item.id}/>;
         });
         return (
             <Fragment>
                 <Row type='flex' align='middle' style={{ marginBottom: 10 }}>
                     <label>姓名：</label>
                     <Input style={{ flexGrow: 1, width: 'unset' }} placeholder="请输入"
-                           onChange={(e => this.payLoad.name = e.target.value)}/>
+                           onChange={(e => this.payLoad.userName = e.target.value)}/>
                 </Row>
                 <Row type='flex' align='middle' style={{ marginBottom: 10 }}>
                     <label>工号：</label>
                     <Input style={{ flexGrow: 1, width: 'unset' }} placeholder="请输入"
-                           onChange={(e => this.payLoad.jobNumber = e.target.value)}/>
+                           onChange={(e => this.payLoad.workNum = e.target.value)}/>
                 </Row>
                 <Row style={{ marginBottom: 10 }}>
                     <Button style={{ width: '100%' }} type='primary'
@@ -113,21 +102,24 @@ class VisualizationUsers extends Component {
                 <div style={{ height: 490, overflowY: 'auto' }}>
                     {
                         usersList.length > 0 && (
-                            <Card bodyStyle={{padding: 0}}>
+                            <Card bodyStyle={{ padding: 0 }}>
                                 {
                                     usersList.map(item => (
-                                        <div key={item.userNumber} style={{
+                                        <div key={item.id} style={{
                                             padding: 10,
                                             display: 'flex',
                                             width: '100%',
                                             borderBottom: '1px solid #e8e8e8'
                                         }}
-                                             onClick={this.checkUserDetail.bind(this, item.userId)}
+                                             onClick={this.checkUserDetail.bind(this, item.id)}
                                         >
-                                            <img src={item.imgUrl} alt='' style={{ width: 50, height: 50 }}/>
+                                            {
+                                                item.imageUrl &&
+                                                <img src={item.imageUrl} alt='' style={{ width: 50, height: 50 }}/>
+                                            }
                                             <div style={{ flexGrow: 1, marginLeft: 10 }}>
-                                                <div style={{marginBottom: 6}}>{item.userName}</div>
-                                                <div>{item.userNumber}</div>
+                                                <div style={{ marginBottom: 6 }}>{item.userName}</div>
+                                                <div>{item.mobile}</div>
                                             </div>
                                         </div>
                                     ))
@@ -137,8 +129,6 @@ class VisualizationUsers extends Component {
                     }
                     <Row>
                         <Tree
-                            defaultCheckedKeys={['0-0-2', '0-0-1']}
-                            loadData={this.onLoadData.bind(this)}
                             onSelect={this.onSelect.bind(this)}
                         >
                             {renderTreeNodes(treeData)}

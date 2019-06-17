@@ -1,7 +1,7 @@
 import React, {Component, Fragment} from 'react';
 import {Button, Card, List, Row, Select, Spin} from "antd";
 import ProTypes from 'prop-types';
-import {HttpClientImmidIot} from "../../../common/HttpClientImmidIot";
+import {HttpClient} from "@/common/HttpClient.jsx";
 
 class VisualizationBerth extends Component {
     constructor(props) {
@@ -23,16 +23,20 @@ class VisualizationBerth extends Component {
 
     componentDidMount() {
         // 获取行政区
-        HttpClientImmidIot.query('/parking-resource/admin/city/areaInfo/', 'GET', { cityCode: 450400 }, (d, type) => {
-            this.setState({
-                districtOptions: d.data
-            })
+        HttpClient.query(`/parking-resource/admin/city/areaInfo/450400`, 'GET', null, (d, type) => {
+            if (type === HttpClient.requestSuccess) {
+                this.setState({
+                    districtOptions: d.data
+                })
+            }
         });
         // 获取片区
-        HttpClientImmidIot.query('/parking-info/admin/city/subAreaInfo', 'GET', { cityCode: 450400 }, (d, type) => {
-            this.setState({
-                areaOptions: d.data
-            })
+        HttpClient.query('/parking-info/admin/city/subAreaInfo', 'GET', { cityCode: 450400 }, (d, type) => {
+            if (type === HttpClient.requestSuccess) {
+                this.setState({
+                    areaOptions: d.data
+                })
+            }
         });
     }
 
@@ -44,11 +48,13 @@ class VisualizationBerth extends Component {
         this.setState({
             spinning: true
         });
-        HttpClientImmidIot.query('/parking-resource/admin/parking/road/space', 'GET', this.payLoad, (d, type) => {
-            this.setState({
-                spinning: false,
-                streetBerthData: d.data
-            })
+        HttpClient.query('/parking-resource/admin/parking/road/space', 'GET', this.payLoad, (d, type) => {
+            if (type === HttpClient.requestSuccess) {
+                this.setState({
+                    spinning: false,
+                    streetBerthData: d.data
+                })
+            }
         });
     }
 

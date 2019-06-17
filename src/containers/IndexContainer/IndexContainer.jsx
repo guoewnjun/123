@@ -4,10 +4,9 @@ import {Layout, Menu, Dropdown, Icon, Avatar, message, Modal, Select, Spin} from
 import {Link} from 'react-router';
 import './Style/IndexContainer.css';
 //请求
-import {HttpClient} from '../../common/HttpClient.jsx';
-import {HttpClientImmidIot} from "../../common/HttpClientImmidIot";
+import {HttpClient} from '@/common/HttpClient.jsx';
 import Exception from "../../components/Exception";
-// import GreyBreadcrumb from "../../components/GreyBreadcrumb";
+import GreyBreadcrumb from "../../components/GreyBreadcrumb";
 import ResetPasswordCard from "../LoginContainer/ResetPasswordCard/ResetPasswordCard.jsx";
 import _ from 'lodash';
 
@@ -203,35 +202,56 @@ export default class IndexContainer extends Component {
             }
         }
         if (_.toArray(obj.childs).length > 0) {
+            const secondMenu = obj.childs.map((secondMenu, index) => {
+                if (_.toArray(secondMenu.childs).length > 0) {
+                    return (
+                        <Menu.ItemGroup key={secondMenu.path}
+                                        title={secondMenu.name}
+                        >
+                            {_.toArray(secondMenu.childs).map((thirdMenu, index) => {
+                                    return (
+                                        <Menu.Item key={obj.path + secondMenu.path + thirdMenu.path}>
+                                            <Link key={obj.path + secondMenu.path + thirdMenu.path}
+                                                  to={obj.path + secondMenu.path + thirdMenu.path}
+                                                  onClick={this.menuItemClick.bind(this, thirdMenu)}>
+                                                {thirdMenu.name}
+                                            </Link>
+                                        </Menu.Item>
+                                    )
+                                }
+                            )}
+                        </Menu.ItemGroup>
+                    )
+                }else {
+                    return (
+                        <Menu.Item key={obj.path + secondMenu.path}>
+                            <Link key={obj.path + secondMenu.path}
+                                  to={obj.path + secondMenu.path}
+                                  onClick={this.menuItemClick.bind(this, secondMenu)}>
+                                {secondMenu.name}
+                            </Link>
+                        </Menu.Item>
+                    )
+                }
+            });
             return (
                 <SubMenu key={obj.path}
                          title={
-                             <div>
-                                 <img className={this.state.collapsed ? 'index-menu-icon-collapsed' : 'index-menu-icon'}
-                                      src={imgURL}/>
+                             <span>
+                                 <img
+                                     className={this.state.collapsed ? 'index-menu-icon-collapsed' : 'index-menu-icon'}
+                                     src={imgURL} alt=''/>
                                  <span
                                      className={this.state.collapsed ? 'index-menu-span-collapsed' : 'index-menu-span'}>{obj.name}</span>
-                             </div>
-                         }
-                >
-                    {_.toArray(obj.childs).map((data, index) => {
-                            return (
-                                <Menu.Item key={obj.path + data.path}>
-                                    <Link key={obj.path + data.path}
-                                          to={obj.path + data.path + `${data.childs ? data.childs[0].path : ''}`}
-                                          onClick={this.menuItemClick.bind(this, data)}>
-                                        {data.name}
-                                    </Link>
-                                </Menu.Item>
-                            )
-                        }
-                    )}
+                             </span>
+                         }>
+                    {secondMenu}
                 </SubMenu>
             )
         } else {
             return <Menu.Item key={obj.path}>
                 <Link key={obj.path} to={obj.path}>
-                    <img className='index-menu-icon' src={imgURL}/>
+                    <img className='index-menu-icon' alt='' src={imgURL}/>
                     <span>{obj.name}</span>
                 </Link>
             </Menu.Item>
@@ -346,10 +366,10 @@ export default class IndexContainer extends Component {
         let pathHash = window.location.hash;
         let pathArr = _.split(pathHash, '/');
         //左侧菜单选中栏
-        let leftMenuSelectedKeys = pathArr[2] ? `/${pathArr[1]}/${pathArr[2]}` : `/${pathArr[1]}`;
+        let leftMenuSelectedKeys = pathArr[3] ? `/${pathArr[1]}/${pathArr[2]}/${pathArr[3]}` : `/${pathArr[1]}/${pathArr[2]}`;
         //tab菜单选中key
-        let tabMenuSelectedKes = pathArr[3] ? `/${pathArr[3]}` : '';
-        let isExceptionPage = pathHash.indexOf('403') > -1;
+        // let tabMenuSelectedKes = pathArr[3] ? `/${pathArr[3]}` : '';
+        // let isExceptionPage = pathHash.indexOf('403') > -1;
         // console.log(leftMenuSelectedKeys);
         // 合作方管理公司列表
         const manageListOptions = window.getManagePartnerList().map(item => (
@@ -388,27 +408,27 @@ export default class IndexContainer extends Component {
             } else if (window.pageMenu.length > 0) { // 菜单数据获取完成，且有权限
                 return <Fragment>
                     <div style={{ margin: 0, minWidth: (this.state.collapsed ? 1360 : 1184) }}>
-                        {/*<GreyBreadcrumb pathHash={pathHash}/>*/}
-                        {/*tab菜单栏*/}
-                        {
-                            (isExceptionPage || currentTabsData.length === 0) ? '' : (
-                                <div>
-                                    <Menu selectedKeys={[tabMenuSelectedKes]} mode="horizontal"
-                                          style={{ padding: '0 32px', minHeight: 48 }}>
-                                        {
-                                            currentTabsData.map(tabMenu =>
-                                                <Menu.Item key={tabMenu.path}>
-                                                    <Link key={tabMenu.path}
-                                                          to={[pathArr[1], pathArr[2]].join('/') + tabMenu.path}>
-                                                        {tabMenu.name}
-                                                    </Link>
-                                                </Menu.Item>
-                                            )
-                                        }
-                                    </Menu>
-                                </div>
-                            )
-                        }
+                        <GreyBreadcrumb pathHash={pathHash}/>
+                        {/*tab菜单栏--第三级菜单*/}
+                        {/*{*/}
+                        {/*(isExceptionPage || currentTabsData.length === 0) ? '' : (*/}
+                        {/*<div>*/}
+                        {/*<Menu selectedKeys={[tabMenuSelectedKes]} mode="horizontal"*/}
+                        {/*style={{ padding: '0 32px', minHeight: 48 }}>*/}
+                        {/*{*/}
+                        {/*currentTabsData.map(tabMenu =>*/}
+                        {/*<Menu.Item key={tabMenu.path}>*/}
+                        {/*<Link key={tabMenu.path}*/}
+                        {/*to={[pathArr[1], pathArr[2]].join('/') + tabMenu.path}>*/}
+                        {/*{tabMenu.name}*/}
+                        {/*</Link>*/}
+                        {/*</Menu.Item>*/}
+                        {/*)*/}
+                        {/*}*/}
+                        {/*</Menu>*/}
+                        {/*</div>*/}
+                        {/*)*/}
+                        {/*}*/}
                     </div>
                     <Content style={{ margin: 0, minWidth: (this.state.collapsed ? 1360 : 1184) }}>
                         {/*{React.cloneElement(this.props.children, {collapsed: this.state.collapsed})}*/}
@@ -454,7 +474,10 @@ export default class IndexContainer extends Component {
                                }}
                                collapsible
                                collapsed={this.state.collapsed}>
-                            <div className="logo">
+                            <div className="logo" title='一体化平台首页' onClick={() => {
+                                location.hash = '/';
+                                location.pathname = '/plateform';
+                            }}>
                                 <img src={window.LOGO_SRC} style={{ width: 40, height: 30 }}
                                      className={this.state.collapsed ? 'logo-img-collapsed' : 'logo-img'}/>
                                 <span

@@ -1,6 +1,14 @@
-.visualPanel{
+.visualPanel {
     position: absolute;
     top: 10px;
     z-index: 999;
     transition: left 0.4s;
+}
+
+.inspectorIsLogin {
+    padding: 1px 5px;
+    width: 80px;
+    font-size: 12px;
+    margin-left: 20px;
+    color: white;
 }

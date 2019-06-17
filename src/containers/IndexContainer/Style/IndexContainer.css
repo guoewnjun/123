@@ -33,6 +33,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     margin-bottom: 20px;
+    cursor: pointer;
 }
 
 .logo-img {
@@ -159,4 +160,11 @@
     height: 1px;
     background: rgba(255, 255, 255, 0.25);
     margin: auto;
+}
+.ant-menu-sub.ant-menu-inline .ant-menu-item-group-title{
+    /*padding-top: 15px;*/
+    padding-left: 48px;
+}
+.ant-menu-item-group-list .ant-menu-item a{
+    padding-left: 20px;
 }

@@ -2,7 +2,7 @@ import React, {Component, Suspense, lazy} from 'react';
 import {Icon, Tabs, Spin} from 'antd';
 import './Visualization.css';
 import _ from 'lodash';
-import {HttpClientImmidIot} from "../../common/HttpClientImmidIot";
+import {HttpClient} from "@/common/HttpClient";
 
 const Berth = lazy(() => import('./Components/VisualizationBerth'));
 const Users = lazy(() => import('./Components/VisualizationUsers'));
@@ -42,11 +42,21 @@ export default class Visualization extends Component {
     componentDidMount() {
         this.mapInstance = new window.AMap.Map('mapContainer', {
             resizeEnable: true,
-            center: new window.AMap.LngLat(111.297604, 23.474803),
+            // center: new window.AMap.LngLat(111.297604, 23.474803),
             zoom: 11,
             showIndoorMap: true
         });
-        this.getBerthOnMap({ areaType: 'area', cityCode: '440300' });
+        window.AMap.plugin('AMap.Geolocation', () => {
+            const geolocation = new window.AMap.Geolocation({
+                // enableHighAccuracy: true,//是否使用高精度定位，默认:true
+                timeout: 10000,          //超过10秒后停止定位，默认：5s
+                showButton: false,
+                zoomToAccuracy: true,   //定位成功后是否自动调整地图视野到定位点
+
+            });
+            this.mapInstance.addControl(geolocation);
+        });
+        this.getBerthOnMap({ areaType: 'area', cityCode: window.cityCode });
         // 地图缩放事件
         this.mapInstance.on('zoomend', () => {
             if (this.state.currentTab === '1') {
@@ -55,11 +65,11 @@ export default class Visualization extends Component {
                     if (this.cityBerthMarker.getPosition()) {
                         this.cityBerthMarker.show();
                     } else {
-                        HttpClientImmidIot.querySimple('/parking-resource/admin/parking/road/space/count', 'GET', {
+                        HttpClient.query('/parking-resource/admin/parking/road/space/count', 'GET', {
                             areaType: 'area',
-                            cityCode: '440300'
+                            cityCode: window.cityCode
                         }, (d, type) => {
-                            if (type === HttpClientImmidIot.requestSuccess) {
+                            if (type === HttpClient.requestSuccess) {
                                 const data = d.data;
                                 let markerContent = `<div style="display: flex; justify-content: center; flex-direction: column; align-items: center">
                                                         <div class='markerLngLat'></div>
@@ -82,7 +92,7 @@ export default class Visualization extends Component {
                     if (this.districtMarkerGroup.getOverlays().length > 0) {
                         this.districtMarkerGroup.show();
                     } else {
-                        const params = { areaType: 'area', cityCode: '440300' };
+                        const params = { areaType: 'area', cityCode: window.cityCode };
                         this.getBerthOnMap(params)
                     }
                 } else if (13 <= zoom && zoom <= 16) { //片区
@@ -92,7 +102,7 @@ export default class Visualization extends Component {
                     if (this.areaMarkerGroup.getOverlays().length > 0) {
                         this.areaMarkerGroup.show();
                     } else {
-                        const params = { areaType: 'subArea', cityCode: '440300' };
+                        const params = { areaType: 'subArea', cityCode: window.cityCode };
                         this.getBerthOnMap(params)
                     }
                 } else if (zoom >= 17) { //街道
@@ -102,7 +112,7 @@ export default class Visualization extends Component {
                     if (this.streetMarkerGroup.getOverlays().length > 0) {
                         this.streetMarkerGroup.show();
                     } else {
-                        const params = { areaType: 'parking', cityCode: '440300' };
+                        const params = { areaType: 'parking', cityCode: window.cityCode };
                         this.getBerthOnMap(params)
                     }
                 }
@@ -122,8 +132,8 @@ export default class Visualization extends Component {
         this.setState({
             spinning: true
         });
-        HttpClientImmidIot.querySimple('/parking-resource/admin/parking/road/space/count', 'GET', params, (d, type) => {
-            if (type === HttpClientImmidIot.requestSuccess) {
+        HttpClient.query('/parking-resource/admin/parking/road/space/count', 'GET', params, (d, type) => {
+            if (type === HttpClient.requestSuccess) {
                 const data = d.data.list;
                 const markers = [];
                 data.forEach(item => {
@@ -139,7 +149,7 @@ export default class Visualization extends Component {
                     });
                     if (params.areaType === 'parking') {
                         marker.on('click', () => {
-                            location.hash = `Home/Visualization/BerthDetails?id=${item}`
+                            location.hash = `Home/Visualization/BerthDetails?id=${item.areaCode}`
                         })
                     }
                     markers.push(marker)
@@ -215,9 +225,12 @@ export default class Visualization extends Component {
             }
             this.getUsersOnMap();
         } else if (activeKey === '3') { // 设备
-            this.deviceMarkerGroup.show();
             this.usersMarkerGroup.hide();
-            this.getDevice(null);
+            if (this.deviceMarkerGroup.getOverlays().length > 0) {
+                this.deviceMarkerGroup.show();
+            }else {
+                this.getDevice(null);
+            }
         }
     }
 
@@ -229,43 +242,44 @@ export default class Visualization extends Component {
     }
 
     // 获取设备
-    getDevice(data) {
+    getDevice(params) {
         this.deviceMarkerGroup.clearOverlays();
         const deviceType = ['dici', 'wifi', 'zhongjiqi'];
         const deviceStatus = ['blue', 'red', 'green'];
-        HttpClientImmidIot.query('/visualization/device', 'GET', data, (d, type) => {
-            console.log(d.data);
-            const data = d.data;
-            const markers = [];
-            data.forEach(item => {
-                const marker = new window.AMap.Marker({
-                    position: new window.AMap.LngLat(item.location[0], item.location[1]),
-                    topWhenClick: true,
-                    icon: new window.AMap.Icon({
-                        image: `./resources/mapIcons/${deviceType[item.device_type]}_${deviceStatus[item.statu]}.png`,
-                        imageSize: new window.AMap.Size(30, 30),
-                    }),
-                    extData: item
-                });
-                const infoWindow = new window.AMap.InfoWindow({
-                    autoMove: true,
-                    offset: new window.AMap.Pixel(8, -30)
-                });
+        HttpClient.query('/visualization/device', 'GET', params, (d, type) => {
+            if (type === HttpClient.requestSuccess) {
+                const data = d.data;
+                const markers = [];
+                data.forEach(item => {
+                    const marker = new window.AMap.Marker({
+                        position: new window.AMap.LngLat(item.location[0], item.location[1]),
+                        topWhenClick: true,
+                        icon: new window.AMap.Icon({
+                            image: `./resources/mapIcons/${deviceType[item.device_type]}_${deviceStatus[item.statu]}.png`,
+                            imageSize: new window.AMap.Size(30, 30),
+                        }),
+                        extData: item
+                    });
+                    const infoWindow = new window.AMap.InfoWindow({
+                        autoMove: true,
+                        offset: new window.AMap.Pixel(8, -30)
+                    });
 
-                marker.on('click', (e) => {
-                    //构建信息窗体中显示的内容
-                    const extData = e.target.C.extData;
-                    const info = `<div style="max-width: 500px; padding: 10px">
+                    marker.on('click', (e) => {
+                        //构建信息窗体中显示的内容
+                        const extData = e.target.C.extData;
+                        const info = `<div style="max-width: 500px; padding: 10px">
                                     <p>坐标 : ${extData.location[0]}，${extData.location[1]}</p>
                                     <p>地址 :北京市朝阳区望京阜荣街10号首开广场4层</p>
                                 </div>`;
-                    infoWindow.setContent(info);
-                    infoWindow.open(this.mapInstance, e.target.C.position);
+                        infoWindow.setContent(info);
+                        infoWindow.open(this.mapInstance, e.target.C.position);
+                    });
+                    markers.push(marker)
                 });
-                markers.push(marker)
-            });
-            this.deviceMarkerGroup.addOverlays(markers);
-            this.deviceMarkerGroup.setMap(this.mapInstance)
+                this.deviceMarkerGroup.addOverlays(markers);
+                this.deviceMarkerGroup.setMap(this.mapInstance)
+            }
         })
     }
 
@@ -299,26 +313,28 @@ export default class Visualization extends Component {
 
     // 获取在线地图人员
     getUsersOnMap() {
-        HttpClientImmidIot.query('/visualization/usersonmap', 'GET', null, (d, type) => {
-            const data = d.data;
-            const markers = [];
-            data.forEach((item, index) => {
-                let markerContent = `<div style="display: flex; justify-content: center; flex-direction: column; align-items: center">
-                            <div class=''><img style="width: 30px; height: 30px;" src=${item.userImg} /></div>
+        HttpClient.query(`${window.MODULE_PARKING_INSPECTION}/monitoringCenter/${window.cityCode}/getInspectionMembersByAreaId`, 'GET', null, (d, type) => {
+            if (type === HttpClient.requestSuccess) {
+                const data = d.data;
+                const markers = [];
+                data.forEach((item, index) => {
+                    let markerContent = `<div style="display: flex; justify-content: center; flex-direction: column; align-items: center">
+                            <div class=''><img style="width: 30px; height: 30px;" src=${item.imageUrl} /></div>
                         </div>`;
-                const marker = new window.AMap.Marker({
-                    position: new window.AMap.LngLat(item.location[0], item.location[1]),
-                    content: markerContent,
-                    topWhenClick: true,
-                    extData: item
+                    const marker = new window.AMap.Marker({
+                        position: new window.AMap.LngLat(item.signLongitude, item.signLatitude),
+                        content: markerContent,
+                        topWhenClick: true,
+                        extData: item
+                    });
+                    marker.on('click', () => {
+                        location.hash = `/Home/Visualization/UserDetail?id=${item.userId}`
+                    });
+                    markers.push(marker);
                 });
-                marker.on('click', () => {
-                    location.hash = `/Home/Visualization/UserDetail?id=${123}`
-                });
-                markers.push(marker);
-            });
-            this.usersMarkerGroup.addOverlays(markers);
-            this.usersMarkerGroup.setMap(this.mapInstance)
+                this.usersMarkerGroup.addOverlays(markers);
+                this.usersMarkerGroup.setMap(this.mapInstance)
+            }
         })
     }
 
@@ -343,7 +359,7 @@ export default class Visualization extends Component {
         return (
             <div className='page'>
                 <div className='page-header'>
-                    <div>可视化</div>
+                    <div>可视化监控</div>
                 </div>
                 <div className='page-content' style={{ padding: 0 }}>
                     <Spin spinning={spinning} tip='加载中...'>

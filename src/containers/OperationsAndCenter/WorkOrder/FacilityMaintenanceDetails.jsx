@@ -1,12 +1,12 @@
 import React, {Component} from 'react';
 import {Button, Form,Table, Row, Col, Input, Spin,Card,Select,Radio,Timeline} from 'antd';
-import {HttpClientImmidIot} from "../../../common/HttpClientImmidIot";
+import {HttpClient} from "@/common/HttpClient";
 
 const { Option } = Select;
 const FormItem=Form.Item;
 const { TextArea } = Input;
 
-export default class ComplainWorkOrderDetails extends Component {
+export default class FacilityMaintenanceDetails extends Component {
   constructor (props) {
       super(props);
       this.state = {
@@ -32,12 +32,12 @@ export default class ComplainWorkOrderDetails extends Component {
       } else {
           uId = this.state.uId
       }
-      HttpClientImmidIot.query(`/OperationsAndCenter/WorkOrder/FacilityMaintenance/FacilityMaintenanceDetails?id=${uId}`,'GET', null, this.handleQueryData.bind(this))
+      HttpClient.query(`/OperationsAndCenter/WorkOrder/FacilityMaintenance/FacilityMaintenanceDetails?id=${uId}`,'GET', null, this.handleQueryData.bind(this))
   }
 
   handleQueryData(d, type) {
       const data = d.data;
-      if (type === HttpClientImmidIot.requestSuccess) {
+      if (type === HttpClient.requestSuccess) {
           this.setState({
               datum: data.datum,
           })
