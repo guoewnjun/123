@@ -1,7 +1,7 @@
-import React, {Component} from 'react';
+import React, {Component} from "react";
 import {
     Button, Form, Select, Table, Row, Col, DatePicker, Input, Spin, Pagination, Badge, Switch, Card, List, Timeline, Radio,
-} from 'antd';
+} from "antd";
 import {HttpClientImmidIot} from "../../../common/HttpClientImmidIot";
 
 
@@ -12,7 +12,7 @@ const { TextArea } = Input;
 
 const FormItem = Form.Item;
 
-export default class ComplainWorkOrderDetails extends Component {
+class ComplainWorkOrderDetails extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -30,8 +30,8 @@ export default class ComplainWorkOrderDetails extends Component {
     loadData() {
         let uId = null;
         if (!this.state.uId) {
-            uId = sessionStorage.getItem('uId_AppealDetail');
-            sessionStorage.removeItem('uId_AppealDetail');
+            uId = sessionStorage.getItem("uId_AppealDetail");
+            sessionStorage.removeItem("uId_AppealDetail");
             this.setState({
                 uId
             })
@@ -39,7 +39,7 @@ export default class ComplainWorkOrderDetails extends Component {
             uId = this.state.uId
         };
         // params = this.filterOtherParams(params);
-        HttpClientImmidIot.query(`/OperationsAndCenter/WorkOrder/ComplainWorkOrder/ComplainWorkOrderDetails?id=${uId}`, 'GET', null, this.handleQueryData.bind(this))
+        HttpClientImmidIot.query(`/OperationsAndCenter/WorkOrder/ComplainWorkOrder/ComplainWorkOrderDetails?id=${uId}`, "GET", null, this.handleQueryData.bind(this))
     }
 
     // 处理工单
@@ -92,8 +92,12 @@ export default class ComplainWorkOrderDetails extends Component {
     // 组件卸载之前
     componentWillUnmount() {
     }
+
+
     render() {
         const {switchover,show, uId,shuju,tousu,}= this.state;
+
+        const {getFieldDecorator} = this.props.form;
 
         const formItemLayout = {
             labelCol: {span: 5},
@@ -105,12 +109,12 @@ export default class ComplainWorkOrderDetails extends Component {
         }
 
         const lista = [
-            {shijian:'12点',neirong:'Create a servicessashdkjashdsd servicessashdkjashdsd'},
-            {shijian:'12点',neirong:'Cre servicessashdkjashdsd'},
-            {shijian:'12点',neirong:'Create servicessashdkjashdsd'},
-            {shijian:'12点',neirong:'Create a servicessashdkj'},
+            {shijian:"12点",neirong:"Create a servicessashdkjashdsd servicessashdkjashdsd"},
+            {shijian:"12点",neirong:"Cre servicessashdkjashdsd"},
+            {shijian:"12点",neirong:"Create servicessashdkjashdsd"},
+            {shijian:"12点",neirong:"Create a servicessashdkj"},
         ];
-        // {moment().format('YYYY-MM-DD HH:mm:ss')} Create a servicessashdkjashdsd servicessashdkjashdsd
+        // {moment().format("YYYY-MM-DD HH:mm:ss")} Create a servicessashdkjashdsd servicessashdkjashdsd
         const listItems = lista.map((liststr) =>
                 <Timeline.Item>
                     {liststr.shijian}{liststr.neirong}
@@ -127,11 +131,13 @@ export default class ComplainWorkOrderDetails extends Component {
                             <Form>
                                 <Row>
                                     <Col span={8}>
-                                        <FormItem label='工单状态' {...formItemLayout}>
-                                            <Select defaultValue="1" onChange={this.switchover.bind(this)}>
-                                                <Option value="1">结案</Option>
-                                                <Option value="2">处理中</Option>
-                                            </Select>
+                                        <FormItem label="工单状态" {...formItemLayout}>
+                                            {getFieldDecorator("workorderState")(
+                                                <Select defaultValue="1" onChange={this.switchover.bind(this)}>
+                                                    <Option value="1">结案</Option>
+                                                    <Option value="2">处理中</Option>
+                                                </Select>
+                                            )}
                                         </FormItem>
                                     </Col>
                                 </Row>
@@ -145,38 +151,48 @@ export default class ComplainWorkOrderDetails extends Component {
                                 <Row style={{marginTop:"25px"}}>
                                     <Col span={8}>
                                         <FormItem label="常用意见" {...formItemLayout}>
-                                            <Select defaultValue="1"  onChange={handleChange}>
-                                                <Option value="1">请选择意见分类</Option>
-                                            </Select>
+                                            {getFieldDecorator("OpinionClassify")(
+                                                <Select defaultValue="1"  onChange={handleChange}>
+                                                    <Option value="1">请选择意见分类</Option>
+                                                </Select>
+                                            )}
                                         </FormItem>
                                     </Col>
                                     <Col span={6} style={{marginLeft:"10px"}}>
                                         <FormItem>
-                                            <Select defaultValue="1"  onChange={handleChange}>
-                                                <Option value="1">请选择意见分类</Option>
-                                            </Select>
+                                            {getFieldDecorator("OpinionTitle")(
+                                                <Select defaultValue="1"  onChange={handleChange}>
+                                                    <Option value="1">请选择意见标题</Option>
+                                                </Select>
+                                            )}
                                         </FormItem>
                                     </Col>
                                     <Col span={6} style={{marginLeft:"10px"}}>
-                                        <Button>添加意见</Button>
+                                        {getFieldDecorator("AddOpinions")(
+                                            <Button>添加意见</Button>
+                                        )}
                                     </Col>
                                 </Row>
                                 <Row>
                                     <Col span={8} >
                                         <FormItem label="结案内容" {...formItemLayout}>
-                                            <TextArea rows={5}
-                                                placeholder=""
-                                            />
+                                            {getFieldDecorator("CaseContent")(
+                                                <TextArea rows={5}
+                                                    placeholder=""
+                                                />
+                                            )}
                                         </FormItem>
                                     </Col>
                                 </Row>
                                 <Row>
                                     <Col span={8} >
                                         <FormItem label="给用户发短信" {...formItemLayout}>
-                                            <Radio.Group defaultValue={1}>
-                                                <Radio value={1}>否</Radio>
-                                                <Radio value={2}>是</Radio>
-                                            </Radio.Group>
+                                            {getFieldDecorator("SendMessage")(
+                                                <Radio.Group defaultValue={1}>
+                                                    <Radio value={1}>否</Radio>
+                                                    <Radio value={2}>是</Radio>
+                                                </Radio.Group>
+                                            )}
                                         </FormItem>
                                     </Col>
                                 </Row>
@@ -199,32 +215,38 @@ export default class ComplainWorkOrderDetails extends Component {
                             <Form>
                                 <Row>
                                     <Col span={8}>
-                                        <FormItem label='工单状态' {...formItemLayout}>
-                                            <Select defaultValue="2" onChange={this.switchover.bind(this)}>
-                                                <Option value="1">结案</Option>
-                                                <Option value="2">处理中</Option>
-                                            </Select>
+                                        <FormItem label="工单状态" {...formItemLayout}>
+                                            {getFieldDecorator("workorderState")(
+                                                <Select defaultValue="2" onChange={this.switchover.bind(this)}>
+                                                    <Option value="1">结案</Option>
+                                                    <Option value="2">处理中</Option>
+                                                </Select>
+                                            )}
                                         </FormItem>
                                     </Col>
                                 </Row>
                                 <Row>
                                     <Col span={8}>
                                         <FormItem label="指派" {...formItemLayout}>
-                                            <Select defaultValue="1"  onChange={handleChange}>
-                                                <Option value="1">请选择</Option>
-                                                <Option value="2">XX小姐</Option>
-                                                <Option value="3">张三</Option>
-                                                <Option value="4">李四</Option>
-                                            </Select>
+                                            {getFieldDecorator("Designate")(
+                                                <Select defaultValue="1"  onChange={handleChange}>
+                                                    <Option value="1">请选择</Option>
+                                                    <Option value="2">XX小姐</Option>
+                                                    <Option value="3">张三</Option>
+                                                    <Option value="4">李四</Option>
+                                                </Select>
+                                            )}
                                         </FormItem>
                                     </Col>
                                 </Row>
                                 <Row>
                                     <Col span={8} >
                                         <FormItem label="处理说明" {...formItemLayout}>
-                                            <TextArea rows={5}
-                                                placeholder=""
-                                            />
+                                            {getFieldDecorator("ProcessingSpecification")(
+                                                <TextArea rows={5}
+                                                    placeholder=""
+                                                />
+                                            )}
                                         </FormItem>
                                     </Col>
                                 </Row>
@@ -240,11 +262,11 @@ export default class ComplainWorkOrderDetails extends Component {
                     )
                 }
             }else{
-                return '';
+                return "";
             }
         }
     	return (
-			<div className='page'>
+			<div className="page">
                 <div className="page-header">
                     <Row>
                         <Col span={8} style={{fontSize:"20px"}}>
@@ -258,7 +280,7 @@ export default class ComplainWorkOrderDetails extends Component {
                         </Col>
                     </Row>
                 </div>
-                <div className='page-content page-content-transparent'>
+                <div className="page-content page-content-transparent">
                     <Card
                         title="工单基本信息"
                         className="baseInfo"
@@ -356,7 +378,7 @@ export default class ComplainWorkOrderDetails extends Component {
                                 </Timeline>
                             </Col>
                             <Col span={4} style={{textAlign: "center"}}>
-                                <Button style={{Color:'white',marginTop:"80px",}} type="primary" onClick={(e)=>{this.chuli(e)}}>
+                                <Button style={{Color:"white",marginTop:"80px",}} type="primary" onClick={(e)=>{this.chuli(e)}}>
                                 <span>处理</span>
                                 </Button>
                             </Col>
@@ -368,3 +390,7 @@ export default class ComplainWorkOrderDetails extends Component {
     		);
     }
 }
+
+
+const WrapperAbnormalParkingAlarm = Form.create()(ComplainWorkOrderDetails);
+export default WrapperAbnormalParkingAlarm;

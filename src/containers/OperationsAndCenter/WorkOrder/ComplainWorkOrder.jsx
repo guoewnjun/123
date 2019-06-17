@@ -280,32 +280,38 @@ class ComplainWorkOrder extends Component {
                         <Row gutter={48}>
                             <Col span={8}>
                                 <FormItem label="投诉来源" {...formItemLayout}>
-                                    <Select defaultValue="all"  onChange={handleChange}>
-                                        <Option value="all">全部</Option>
-                                        <Option value="WeChatOfficialAccount ">微信公众号</Option>
-                                        <Option value="PayTreasureServiceNumber">支付宝服务号</Option>
-                                        <Option value="APP">APP</Option>
-                                    </Select>
+                                    {getFieldDecorator("comfrom")(
+                                        <Select defaultValue="all"  onChange={handleChange}>
+                                            <Option value="all">全部</Option>
+                                            <Option value="WeChatOfficialAccount ">微信公众号</Option>
+                                            <Option value="PayTreasureServiceNumber">支付宝服务号</Option>
+                                            <Option value="APP">APP</Option>
+                                        </Select>
+                                    )}
                                 </FormItem>
                             </Col>
                             <Col span={8}>
                                 <FormItem label="工单级别" {...formItemLayout}>
-                                    <Select defaultValue="all"  onChange={handleChange}>
-                                        <Option value="all">全部</Option>
-                                        <Option value="general">一般</Option>
-                                        <Option value="urgency">紧急</Option>
-                                        <Option value="atOnce">立即处理</Option>
-                                    </Select>
+                                    {getFieldDecorator("workorderPriority")(
+                                        <Select defaultValue="all"  onChange={handleChange}>
+                                            <Option value="all">全部</Option>
+                                            <Option value="general">一般</Option>
+                                            <Option value="urgency">紧急</Option>
+                                            <Option value="atOnce">立即处理</Option>
+                                        </Select>
+                                    )}
                                 </FormItem>
                             </Col>
                             <Col span={8}>
                                 <FormItem label="工单状态" {...formItemLayout}>
-                                    <Select defaultValue="all"  onChange={handleChange}>
-                                        <Option value="all">全部</Option>
-                                        <Option value="Pending">待处理</Option>
-                                        <Option value="InHand ">处理中</Option>
-                                        <Option value="ClosedOrders">已结案</Option>
-                                    </Select>
+                                    {getFieldDecorator("workorderState")(
+                                        <Select defaultValue="all"  onChange={handleChange}>
+                                            <Option value="all">全部</Option>
+                                            <Option value="Pending">待处理</Option>
+                                            <Option value="InHand ">处理中</Option>
+                                            <Option value="ClosedOrders">已结案</Option>
+                                        </Select>
+                                    )}
                                 </FormItem>
                             </Col>
                         </Row>
@@ -326,6 +332,7 @@ class ComplainWorkOrder extends Component {
                             style={{marginTop: "20px"}}
                             columns={columns}
                             dataSource={AlarmRecord}
+                            pagination={false}
                         />
                         {/*分页*/}
                         {AlarmRecord.length > 0 ? (
