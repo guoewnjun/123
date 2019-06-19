@@ -180,11 +180,11 @@ class OperationalDaily extends Component {
                             title='一、用户概况'
                         >
                             <Row gutter={50}>
-                                <Col span={24} className='detail-card-col'>
+                                <Col span={24}>
                                     <label>本日注册人数合计<nobr style={{color:'red'}} >2,839</nobr>人。其中，手机APP注册<nobr style={{color:'red'}} >580</nobr>人，微信注册<nobr style={{color:'red'}} >1280</nobr>人，支付宝注册<nobr style={{color:'red'}} >680</nobr>人</label>
                                 </Col>
-                                <Col span={7} className='detail-card-col'></Col>
-                                <Col span={8} className='detail-card-col'>
+                                <Col span={7}></Col>
+                                <Col span={8}>
                                           <div style={{textAlign:'center'}}>
                                                 <Huan data={data1}/>
                                                 <div style={{fontSize:17}}>注册来源</div>
@@ -196,10 +196,10 @@ class OperationalDaily extends Component {
                             title='二、泊位概况'
                         >
                             <Row gutter={50}>
-                                <Col span={24} className='detail-card-col'>
+                                <Col span={24}>
                                     <label>本日泊位平均占用率为<nobr style={{color:'red'}} >56.8%</nobr>，泊位日周转率数为<nobr style={{color:'red'}} >367</nobr>次。</label>
                                 </Col>
-                                <Col span={24} className='detail-card-col'>
+                                <Col span={24}>
                                           <div style={{textAlign:'center'}}>
                                                 <ZheXianTu data={data2}/>
                                                 <div style={{fontSize:17}}>每小时泊位占用率</div>
@@ -211,11 +211,11 @@ class OperationalDaily extends Component {
                             title='三、停车概况'
                         >
                             <Row gutter={50}>
-                                <Col span={24} className='detail-card-col'>
+                                <Col span={24}>
                                     <label>本日停车<nobr style={{color:'red'}} >12,089</nobr>次。其中，0-1小时<nobr style={{color:'red'}} >3,820</nobr>次，0.5-2小时<nobr style={{color:'red'}} >2,820</nobr>次，2-4小时<nobr style={{color:'red'}} >2,820</nobr>次，4-8小时<nobr style={{color:'red'}} >2,820</nobr>次，大于8小时<nobr style={{color:'red'}} >2,820</nobr>次，平均停车时长<nobr style={{color:'red'}} >80</nobr>分钟</label>
                                 </Col>
-                                <Col span={7} className='detail-card-col'></Col>
-                                <Col span={8} className='detail-card-col'>
+                                <Col span={7}></Col>
+                                <Col span={8}>
                                           <div style={{textAlign:'center'}}>
                                                 <Huan data={data3}/>
                                                 <div style={{fontSize:17}}>停车时长</div>
@@ -227,20 +227,20 @@ class OperationalDaily extends Component {
                             title='四、消费概况'
                         >
                             <Row gutter={50}>
-                                <Col span={24} className='detail-card-col'>
+                                <Col span={24}>
                                     <label>本日缴费笔数<nobr style={{color:'red'}} >12,089</nobr>笔。其中，手机APP缴费<nobr style={{color:'red'}} >5,820</nobr>笔，微信缴费<nobr style={{color:'red'}} >5,620</nobr>笔，支付宝缴费<nobr style={{color:'red'}} >890</nobr>笔。</label>
                                 </Col>
-                                <Col span={24} className='detail-card-col'>
+                                <Col span={24}>
                                     <label>本日缴费笔数<nobr style={{color:'red'}} >12,089</nobr>笔。其中，手机APP缴费<nobr style={{color:'red'}} >5,820</nobr>笔，微信缴费<nobr style={{color:'red'}} >5,620</nobr>笔，支付宝缴费<nobr style={{color:'red'}} >890</nobr>元，平均缴费金额<nobr style={{color:'red'}} >28</nobr>元。</label>
                                 </Col>
-                                <Col span={2} className='detail-card-col'></Col>
-                                <Col span={9} className='detail-card-col'>
+                                <Col span={2}></Col>
+                                <Col span={9}>
                                           <div style={{textAlign:'center'}}>
                                                 <Huan data={data1}/>
                                                 <div style={{fontSize:17}}>缴费笔数</div>
                                           </div>
                                 </Col>
-                                <Col span={8} className='detail-card-col'>
+                                <Col span={8}>
                                           <div style={{textAlign:'center'}}>
                                                 <Huan data={data1}/>
                                                 <div style={{fontSize:17}}>缴费笔数</div>
@@ -252,17 +252,17 @@ class OperationalDaily extends Component {
                             title='五、投诉概况'
                         >
                             <Row gutter={50}>
-                                <Col span={24} className='detail-card-col'>
+                                <Col span={24}>
                                     <label>本日新增投诉工单<nobr style={{color:'red'}} >23</nobr>个。其中，泊位异常<nobr style={{color:'red'}} >10</nobr>个，充值异常<nobr style={{color:'red'}} >8</nobr>个，订单异常<nobr style={{color:'red'}} >5</nobr>个，其他问题<nobr style={{color:'red'}} >0</nobr>个。</label>
                                 </Col>
-                                <Col span={2} className='detail-card-col'></Col>
-                                <Col span={9} className='detail-card-col'>
+                                <Col span={2}></Col>
+                                <Col span={9}>
                                           <div style={{textAlign:'center'}}>
                                                 <Zhu data={data4}/>
                                                 <div style={{fontSize:17}}>各投诉类型数</div>
                                           </div>
                                 </Col>
-                                <Col span={8} className='detail-card-col'>
+                                <Col span={8}>
                                           <div style={{textAlign:'center'}}>
                                                 <Huan data={data1}/>
                                                 <div style={{fontSize:17}}>投诉来源</div>
@@ -274,11 +274,11 @@ class OperationalDaily extends Component {
                             title='六、设备维保概况'
                         >
                             <Row gutter={50}>
-                                <Col span={24} className='detail-card-col'>
+                                <Col span={24}>
                                     <label>本日新增维保工单<nobr style={{color:'red'}} >23</nobr>个。其中，车检器<nobr style={{color:'red'}} >10</nobr>个，中继器<nobr style={{color:'red'}} >8</nobr>个，集中器<nobr style={{color:'red'}} >5</nobr>个，车位锁<nobr style={{color:'red'}} >0</nobr>个，巡检PDA<nobr style={{color:'red'}} >0</nobr>个。</label>
                                 </Col>
-                                <Col span={7} className='detail-card-col'></Col>
-                                <Col span={9} className='detail-card-col'>
+                                <Col span={7}></Col>
+                                <Col span={9}>
                                           <div style={{textAlign:'center'}}>
                                                 <Zhu data={data4}/>
                                                 <div style={{fontSize:17}}>各设备类型数</div>
@@ -290,18 +290,18 @@ class OperationalDaily extends Component {
                             title='七、违停概况'
                         >
                             <Row gutter={50}>
-                                <Col span={24} className='detail-card-col'>
+                                <Col span={24}>
                                     <label>本日违停<nobr style={{color:'red'}} >283</nobr>次。其中，南山区违停<nobr style={{color:'red'}} >70</nobr>次，福田区违停<nobr style={{color:'red'}} >70</nobr>次，罗湖区违停<nobr style={{color:'red'}} >70</nobr>次，龙岗区违停<nobr style={{color:'red'}} >23</nobr>次，宝安区违停<nobr style={{color:'red'}} >23</nobr>次。</label>
                                 </Col>
-                                <Col span={2} className='detail-card-col'></Col>
-                                <Col span={9} className='detail-card-col'>
+                                <Col span={2}></Col>
+                                <Col span={9}>
                                           <div style={{textAlign:'center'}}>
                                                 <Zhu data={data4}/>
                                                 <div style={{fontSize:17}}>各设备类型数</div>
                                           </div>
                                 </Col>
-                                <Col span={2} className='detail-card-col'></Col>
-                                <Col span={9} className='detail-card-col'>
+                                <Col span={2}></Col>
+                                <Col span={9}>
                                           <div style={{textAlign:'center'}}>
                                                 <Zhu data={data4}/>
                                                 <div style={{fontSize:17}}>各违停类型数</div>
@@ -313,20 +313,20 @@ class OperationalDaily extends Component {
                             title='八、巡检员管理概况'
                         >
                             <Row gutter={50}>
-                                <Col span={24} className='detail-card-col'>
+                                <Col span={24}>
                                   <label>本日上岗<nobr style={{color:'red'}} >283</nobr>人次。其中，南山区<nobr style={{color:'red'}} >70</nobr>人次，福田区<nobr style={{color:'red'}} >70</nobr>人次，罗湖区<nobr style={{color:'red'}} >70</nobr>人次，龙岗区<nobr style={{color:'red'}} >23</nobr>人次，宝安区<nobr style={{color:'red'}} >23</nobr>人次。</label>
                                 </Col>
-                                <Col span={24} className='detail-card-col'>
+                                <Col span={24}>
                                     <label>正常上班<nobr style={{color:'red'}} >280</nobr>人次，迟到上班<nobr style={{color:'red'}} >40</nobr>人次，缺卡<nobr style={{color:'red'}} >0</nobr>人次。正常下班<nobr style={{color:'red'}} >290</nobr>人次，早退<nobr style={{color:'red'}} >10</nobr>人次，缺卡<nobr style={{color:'red'}} >10</nobr>人次。</label>
                                 </Col>
-                                <Col span={2} className='detail-card-col'></Col>
-                                <Col span={9} className='detail-card-col'>
+                                <Col span={2}></Col>
+                                <Col span={9}>
                                           <div style={{textAlign:'center'}}>
                                                 <Huan data={data5}/>
                                                 <div style={{fontSize:17}}>上班情况</div>
                                           </div>
                                 </Col>
-                                <Col span={8} className='detail-card-col'>
+                                <Col span={8}>
                                           <div style={{textAlign:'center'}}>
                                                 <Huan data={data6}/>
                                                 <div style={{fontSize:17}}>上班情况</div>
