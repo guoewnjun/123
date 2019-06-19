@@ -1,10 +1,13 @@
 import React, {Component} from 'react';
-import {Row,Col,Select,Button,Table } from "antd";
+import {Row,Col,Select,Button,Table,Radio} from "antd";
 import {HttpClientImmidIot} from "../../../common/HttpClientImmidIot";
 import {Chart,Geom,Axis,Tooltip,} from "bizcharts";
 import _ from 'lodash';
 
+const RadioButton = Radio.Button;
+const RadioGroup = Radio.Group;
 const Option = Select.Option;
+
 class UerReport extends Component {
   constructor(props) {
       super(props);
@@ -22,9 +25,6 @@ class UerReport extends Component {
           list3:[],
           list4:[],
           list:[],
-          bool1:true,
-          bool2:false,
-          bool3:false,
       }
   }
 
@@ -97,29 +97,20 @@ class UerReport extends Component {
         })
     }
 
-    build=(a)=>{
-      if(a==1){
+    handleSelect=(a)=>{
+      if(a.target.value==1){
         this.setState({
-        bool1:true,
-        bool2:false,
-        bool3:false,
           list: _.cloneDeep(this.state.list1),
         })
-      }else if(a==2){
+      }else if(a.target.value==2){
         this.setState({
-        bool1:false,
-        bool2:true,
-        bool3:false,
           list: _.cloneDeep(this.state.list2),
         })
-      }else if(a==3){
+      }else if(a.target.value==3){
         this.setState({
-        bool1:false,
-        bool2:false,
-        bool3:true,
           list: _.cloneDeep(this.state.list3),
         })
-      }else if(a==4){
+      }else if(a.target.value==4){
         this.setState({
           bool:false,
           list: _.cloneDeep(this.state.list4),
@@ -146,12 +137,6 @@ class UerReport extends Component {
       }
 
       const {lists,list1,list2,list3,list4,list,loading, deadline, userTotal, newUsers, recharge, parkingUsers, activeUsers} = this.state;
-      // list1:list1,
-      // list2:list2,
-      // list3:list3,
-      // list4:list4,
-      // list:list1,
-
       const columns = [
           {
               title: "日期",
@@ -272,10 +257,12 @@ class UerReport extends Component {
                       <Row gutter={48}>
                            <Col span={24}>
                                <div style={{marginTop:20}}>
-                                    <Button type="primary" onClick={()=>this.build(1)}>新增用户</Button>
-                                    <Button  onClick={()=>this.build(2)}>充值用户</Button>
-                                    <Button  onClick={()=>this.build(3)}>停车用户</Button>
-                                    <Button  onClick={()=>this.build(4)}>活跃用户</Button>
+                                    <Radio.Group defaultValue="1" buttonStyle="solid" onChange={this.handleSelect.bind(this)}>
+                                        <Radio.Button value="1">新增用户</Radio.Button>
+                                        <Radio.Button value="2">充值用户</Radio.Button>
+                                        <Radio.Button value="3">停车用户</Radio.Button>
+                                        <Radio.Button value="4">活跃用户</Radio.Button>
+                                    </Radio.Group>
                                </div>
                            </Col>
                       </Row>
