@@ -146,6 +146,137 @@ class OperationalDaily extends Component {
           count: 213
         },
       ];
+      const data7 = [
+        {
+          item: "手机",
+          count: 120
+        },
+        {
+          item: "微信",
+          count: 120
+        },
+        {
+          item: "支付宝",
+          count: 49
+        },
+      ];
+      const data8 = [
+        {
+          item: "手机",
+          count: 5820
+        },
+        {
+          item: "微信",
+          count: 5620
+        },
+        {
+          item: "支付宝",
+          count: 890
+        },
+      ];
+      const sourceComplaints = [
+        {
+          item: "手机",
+          count: 520
+        },
+        {
+          item: "微信",
+          count: 1620
+        },
+        {
+          item: "支付宝",
+          count: 290
+        },
+      ];
+      const deviceType = [
+        {
+          item: "车检器",
+          count: 10
+        },
+        {
+          item: "中继器",
+          count: 8
+        },
+        {
+          item: "集中器",
+          count: 5
+        },
+        {
+          item: "车位锁",
+          count: 0
+        },
+        {
+          item: "巡检PDA",
+          count: 0
+        },
+      ];
+      const areaStop = [
+        {
+          item: "南山区",
+          count: 35
+        },
+        {
+          item: "福田区",
+          count: 70
+        },
+        {
+          item: "罗湖区",
+          count: 70
+        },
+        {
+          item: "龙岗区",
+          count: 23
+        },
+        {
+          item: "宝安区",
+          count: 23
+        },
+      ];
+      const stopType = [
+        {
+          item: "一般道路违停",
+          count: 63
+        },
+        {
+          item: "特殊道路违停",
+          count: 24
+        },
+        {
+          item: "高速违停罚",
+          count: 12
+        },
+      ];
+      const dataOffice = [
+        {
+          item: "缺卡",
+          count: 3
+        },
+        {
+          item: "正常上班",
+          count: 280
+        },
+        {
+          item: "迟到上班",
+          count: 40
+        },
+      ];
+      const dataOff = [
+        {
+          item: "缺卡",
+          count: 3
+        },
+        {
+          item: "正常打卡",
+          count: 280
+        },
+        {
+          item: "早退",
+          count: 10
+        },
+      ];
+
+
+
         return (
             <div className='page'>
                 <div className='page-header'>
@@ -229,22 +360,22 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                    <label>本日缴费笔数<nobr style={{color:'red'}} >12,089</nobr>笔。其中，手机APP缴费<nobr style={{color:'red'}} >5,820</nobr>笔，微信缴费<nobr style={{color:'red'}} >5,620</nobr>笔，支付宝缴费<nobr style={{color:'red'}} >890</nobr>笔。</label>
+                                    <label>本日缴费笔数<nobr style={{color:'red'}} >289</nobr>笔。其中，手机APP缴费<nobr style={{color:'red'}} >120</nobr>笔，微信缴费<nobr style={{color:'red'}} >120</nobr>笔，支付宝缴费<nobr style={{color:'red'}} >49</nobr>笔。</label>
                                 </Col>
                                 <Col span={24}>
-                                    <label>本日缴费笔数<nobr style={{color:'red'}} >12,089</nobr>笔。其中，手机APP缴费<nobr style={{color:'red'}} >5,820</nobr>笔，微信缴费<nobr style={{color:'red'}} >5,620</nobr>笔，支付宝缴费<nobr style={{color:'red'}} >890</nobr>元，平均缴费金额<nobr style={{color:'red'}} >28</nobr>元。</label>
+                                    <label>本日缴费金额<nobr style={{color:'red'}} >12,089</nobr>元。其中，手机APP缴费<nobr style={{color:'red'}} >5,820</nobr>元，微信缴费<nobr style={{color:'red'}} >5,620</nobr>元，支付宝缴费<nobr style={{color:'red'}} >890</nobr>元，平均缴费金额<nobr style={{color:'red'}} >28</nobr>元。</label>
                                 </Col>
                                 <Col span={2}></Col>
                                 <Col span={9}>
                                           <div style={{textAlign:'center'}}>
-                                                <Huan data={data1}/>
+                                                <Huan data={data7}/>
                                                 <div style={{fontSize:17}}>缴费笔数</div>
                                           </div>
                                 </Col>
                                 <Col span={8}>
                                           <div style={{textAlign:'center'}}>
-                                                <Huan data={data1}/>
-                                                <div style={{fontSize:17}}>缴费笔数</div>
+                                                <Huan data={data8}/>
+                                                <div style={{fontSize:17}}>缴费金额</div>
                                           </div>
                                 </Col>
                             </Row>
@@ -265,7 +396,7 @@ class OperationalDaily extends Component {
                                 </Col>
                                 <Col span={8}>
                                           <div style={{textAlign:'center'}}>
-                                                <Huan data={data1}/>
+                                                <Huan data={sourceComplaints}/>
                                                 <div style={{fontSize:17}}>投诉来源</div>
                                           </div>
                                 </Col>
@@ -281,7 +412,7 @@ class OperationalDaily extends Component {
                                 <Col span={7}></Col>
                                 <Col span={9}>
                                           <div style={{textAlign:'center'}}>
-                                                <Zhu data={data4}/>
+                                                <Zhu data={deviceType}/>
                                                 <div style={{fontSize:17}}>各设备类型数</div>
                                           </div>
                                 </Col>
@@ -292,19 +423,19 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                    <label>本日违停<nobr style={{color:'red'}} >283</nobr>次。其中，南山区违停<nobr style={{color:'red'}} >70</nobr>次，福田区违停<nobr style={{color:'red'}} >70</nobr>次，罗湖区违停<nobr style={{color:'red'}} >70</nobr>次，龙岗区违停<nobr style={{color:'red'}} >23</nobr>次，宝安区违停<nobr style={{color:'red'}} >23</nobr>次。</label>
+                                    <label>本日违停<nobr style={{color:'red'}} >283</nobr>次。其中，南山区违停<nobr style={{color:'red'}} >35</nobr>次，福田区违停<nobr style={{color:'red'}} >70</nobr>次，罗湖区违停<nobr style={{color:'red'}} >70</nobr>次，龙岗区违停<nobr style={{color:'red'}} >23</nobr>次，宝安区违停<nobr style={{color:'red'}} >23</nobr>次。</label>
                                 </Col>
                                 <Col span={2}></Col>
                                 <Col span={9}>
                                           <div style={{textAlign:'center'}}>
-                                                <Zhu data={data4}/>
-                                                <div style={{fontSize:17}}>各设备类型数</div>
+                                                <Zhu data={areaStop}/>
+                                                <div style={{fontSize:17}}>各区违停数</div>
                                           </div>
                                 </Col>
                                 <Col span={2}></Col>
                                 <Col span={9}>
                                           <div style={{textAlign:'center'}}>
-                                                <Zhu data={data4}/>
+                                                <Zhu data={stopType}/>
                                                 <div style={{fontSize:17}}>各违停类型数</div>
                                           </div>
                                 </Col>
@@ -315,22 +446,22 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                  <label>本日上岗<nobr style={{color:'red'}} >283</nobr>人次。其中，南山区<nobr style={{color:'red'}} >70</nobr>人次，福田区<nobr style={{color:'red'}} >70</nobr>人次，罗湖区<nobr style={{color:'red'}} >70</nobr>人次，龙岗区<nobr style={{color:'red'}} >23</nobr>人次，宝安区<nobr style={{color:'red'}} >23</nobr>人次。</label>
+                                  <label>本日上岗<nobr style={{color:'red'}} >283</nobr>人次。其中，南山区<nobr style={{color:'red'}} >70</nobr>人次，福田区<nobr style={{color:'red'}} >70</nobr>人次，罗湖区<nobr style={{color:'red'}} >70</nobr>人次，龙岗区<nobr style={{color:'red'}} >23</nobr>人次，宝安区<nobr style={{color:'red'}} >50</nobr>人次。</label>
                                 </Col>
                                 <Col span={24}>
-                                    <label>正常上班<nobr style={{color:'red'}} >280</nobr>人次，迟到上班<nobr style={{color:'red'}} >40</nobr>人次，缺卡<nobr style={{color:'red'}} >0</nobr>人次。正常下班<nobr style={{color:'red'}} >290</nobr>人次，早退<nobr style={{color:'red'}} >10</nobr>人次，缺卡<nobr style={{color:'red'}} >10</nobr>人次。</label>
+                                    <label>正常上班<nobr style={{color:'red'}} >280</nobr>人次，迟到上班<nobr style={{color:'red'}} >40</nobr>人次，缺卡<nobr style={{color:'red'}} >3</nobr>人次。正常下班<nobr style={{color:'red'}} >270</nobr>人次，早退<nobr style={{color:'red'}} >10</nobr>人次，缺卡<nobr style={{color:'red'}} >3</nobr>人次。</label>
                                 </Col>
                                 <Col span={2}></Col>
                                 <Col span={9}>
                                           <div style={{textAlign:'center'}}>
-                                                <Huan data={data5}/>
+                                                <Huan data={dataOffice}/>
                                                 <div style={{fontSize:17}}>上班情况</div>
                                           </div>
                                 </Col>
                                 <Col span={8}>
                                           <div style={{textAlign:'center'}}>
-                                                <Huan data={data6}/>
-                                                <div style={{fontSize:17}}>上班情况</div>
+                                                <Huan data={dataOff}/>
+                                                <div style={{fontSize:17}}>下班情况</div>
                                           </div>
                                 </Col>
                             </Row>
