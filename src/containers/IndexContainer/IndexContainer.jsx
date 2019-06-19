@@ -5,8 +5,8 @@ import {Link} from 'react-router';
 import './Style/IndexContainer.css';
 //请求
 import {HttpClient} from '@/common/HttpClient.jsx';
-import Exception from "../../components/Exception";
-import GreyBreadcrumb from "../../components/GreyBreadcrumb";
+import Exception from "@/components/Exception";
+import GreyBreadcrumb from "@/components/GreyBreadcrumb";
 import ResetPasswordCard from "../LoginContainer/ResetPasswordCard/ResetPasswordCard.jsx";
 import _ from 'lodash';
 

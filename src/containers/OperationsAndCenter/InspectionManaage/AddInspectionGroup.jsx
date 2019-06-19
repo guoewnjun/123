@@ -321,7 +321,7 @@ class AddInspectionGroup extends Component {
                     if (type === HttpClient.requestSuccess) {
                         //成功-------在这里做你的数据处理
                         message.success('新增成功');
-                        location.hash = '/InspectionManage/InspectionGroup';
+                        history.back(-1);
                         // 清空这几个数组，防止数据累计
                         inspectionGroupMembers = [];//稽查人员id
                         inspectionGroupParkings = [];//路段和停车点id

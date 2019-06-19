@@ -1,13 +1,18 @@
 import React, {Component} from "react";
 import {
-    Button, Form, Select, Radio, Table, Row, Col, DatePicker, Input, Spin, Pagination, Switch, Badge,Popconfirm
+    Button, Form, Select, Radio, Table, Row, Col, DatePicker, Input, Spin, Pagination, Switch, Badge, Modal,Popconfirm
 } from "antd";
 import {HttpClientImmidIot} from "../../../common/HttpClientImmidIot";
 
 
 const FormItem = Form.Item;
 const RangePicker = DatePicker.RangePicker;
+
+const { Option } = Select;
+const { TextArea } = Input;
+
 const EditableContext = React.createContext();
+
 class OpinionTemplate extends Component {
     constructor(props) {
         super(props);
@@ -23,8 +28,44 @@ class OpinionTemplate extends Component {
                 warningType: null,//报警类型
                 parkingSpaceNo: null,//泊位编号
             },
+            ModalText: "Content of the modal",
+            visible: false,
+            confirmLoading: false,
         };
     }
+
+        //
+        showModal = () => {
+            this.setState({
+              visible: true,
+            });
+        };
+
+        //
+        handleOk = () => {
+            this.setState({
+              ModalText: "点击确定提交成功后将会自动关闭",
+              confirmLoading: true,
+            });
+            setTimeout(() => {
+              this.setState({
+                visible: false,
+                confirmLoading: false,
+              });
+            }, 1000);
+         };
+
+         //
+         handleCancel = () => {
+            console.log("Clicked cancel button");
+            this.setState({
+              visible: false,
+            });
+          };
+
+          //
+
+
 
     // 分页变化
     onPageChange(pageNum) {
@@ -114,22 +155,10 @@ class OpinionTemplate extends Component {
         });
     }
 
-        //添加按钮
-     AddButton() {
-         const pageSize = this.state.pageSize;
-         this.setState({
-             pageNum: 1
-         });
-         this.loadData(1, pageSize, this.state.otherParams)
-     }
 
-     handleDelete(){
-       const pageNum = this.state.pageNum;
-       const pageSize = this.state.pageSize;
-       this.setState({
-
-       });
-       this.loadData(pageNum, pageSize, this.state.otherParams)
+     handleDelete = key => {
+       const dataSource = [...this.state.AlarmRecord];
+       this.setState({ AlarmRecord: dataSource.filter(item => item.key !== key) });
      };
 
 
@@ -139,7 +168,6 @@ class OpinionTemplate extends Component {
     // const rowIndex = activeObj.parentElement.rowIndex;//激活行号
     // tab2.deleteRow(rowIndex);//删除当前行 }
     // }
-
 
     // 组件挂载之前
     componentWillMount() {
@@ -155,10 +183,11 @@ class OpinionTemplate extends Component {
 
     }
 
-
     render() {
 
-    const {loading, pageNum, pageSize, AlarmRecord, total, otherParams: {warningDisposeStatus}} = this.state;
+    const {
+        loading, pageNum, pageSize, AlarmRecord, total, otherParams: {warningDisposeStatus}, visible, confirmLoading, ModalText
+    } = this.state;
 
     const { Option } = Select;
 
@@ -183,8 +212,8 @@ class OpinionTemplate extends Component {
               }, ,{
                   title: "操作",
                   dataIndex: "Operation",
-                  render:(value)  =>this.state.AlarmRecord.length >= 1 ? (
-                      <Popconfirm title="确定删除本行?" onConfirm={() => this.handleDelete()}>
+                  render:(text, record)  =>this.state.AlarmRecord.length >= 1 ? (
+                      <Popconfirm title="确定删除本行?" onConfirm={() => this.handleDelete(record.key)}>
                         <a>Delete</a>
                       </Popconfirm>
                       ) : "--",
@@ -210,7 +239,7 @@ class OpinionTemplate extends Component {
                         <Row gutter={48}>
                             <Col span={8}>
                                 <FormItem label="意见标题" {...formItemLayout}>
-                                    {getFieldDecorator("workorderHeadline")(
+                                    {getFieldDecorator("OpinionTitle")(
                                         <Input placeholder="请输入" onChange={(e) => {
                                             this.state.otherParams.workorderHeadline = e.target.value;
                                         }}/>
@@ -219,7 +248,7 @@ class OpinionTemplate extends Component {
                             </Col>
                             <Col span={8}>
                                 <FormItem label="意见分类" {...formItemLayout}>
-                                    {getFieldDecorator("comfrom")(
+                                    {getFieldDecorator("OpinionClassify")(
                                         <Select defaultValue="all"  onChange={handleChange}>
                                             <Option value="all">全部</Option>
                                             <Option value="classify1">分类1</Option>
@@ -232,7 +261,49 @@ class OpinionTemplate extends Component {
                                 <Button type="primary" onClick={this.handleQuery.bind(this)}>查询</Button>
                                 <Button style={{marginLeft: "20px"}}
                                         onClick={this.handleReset.bind(this)}>重置</Button>
-                                <Button style={{marginLeft: "20px"}} type="primary" onClick={this.AddButton.bind(this)}>添加</Button>
+                                <Button style={{marginLeft: "20px"}} type="primary" onClick={this.showModal}>添加</Button>
+                                <Modal
+                                    title="添加意见"
+                                    visible={visible}
+                                    onOk={this.handleOk}
+                                    confirmLoading={confirmLoading}
+                                    onCancel={this.handleCancel}
+                                >
+                                    <Form className="queryForm">
+                                        <Row>
+                                            <Col span={20} style={{marginTop:20,}}>
+                                                <FormItem label="意见类型" {...formItemLayout}>
+                                                    {getFieldDecorator("OpinionType")(
+                                                        <Select defaultValue="select"  onChange={handleChange}>
+                                                            <Option value="select">请选择</Option>
+                                                            <Option value="classify1">分类1</Option>
+                                                            <Option value="classify2">分类2</Option>
+                                                            <Option value="AddOpinionType">添加意见类型</Option>
+                                                        </Select>
+                                                    )}
+                                                </FormItem>
+                                            </Col>
+                                            <Col span={20}>
+                                                <FormItem label="意见标题" {...formItemLayout}>
+                                                    {getFieldDecorator("OpinionTitle")(
+                                                        <Input placeholder="" onChange={(e) => {
+                                                            this.state.otherParams.workorderHeadline = e.target.value;
+                                                        }}/>
+                                                    )}
+                                                </FormItem>
+                                            </Col>
+                                            <Col span={20}>
+                                                <FormItem label="意见内容" {...formItemLayout}>
+                                                    {getFieldDecorator("OpinionContent")(
+                                                        <TextArea rows={5}
+                                                            placeholder=""
+                                                        />
+                                                    )}
+                                                </FormItem>
+                                            </Col>
+                                        </Row>
+                                    </Form>
+                                </Modal>
                             </Col>
                         </Row>
                     </Form>
@@ -265,8 +336,6 @@ class OpinionTemplate extends Component {
                     </Spin>
                 </div>
              </div>
-
-
             );
     }
 }

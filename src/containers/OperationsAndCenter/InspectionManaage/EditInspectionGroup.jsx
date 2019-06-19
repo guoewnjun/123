@@ -514,7 +514,7 @@ class EditInspectionGroup extends Component {
                         workingDaySelect = {};
                         restDaySelect = {};
                         message.success('编辑成功');
-                        location.hash = 'InspectionManage/InspectionGroup/InspectionGroupDetail?id=' + this.state.inspectionGroupId;
+                        location.hash = `${location.hash}/InspectionGroupDetail?id=${this.state.inspectionGroupId}`;
                     } else {
                         //失败----做除了报错之外的操作
                     }

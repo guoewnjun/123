@@ -1,11 +1,23 @@
-import React, {Component, Fragment} from 'react';
-import {Col, DatePicker, Select, Input, Row, Button, Table, Pagination} from "antd";
+import React, {Component} from 'react';
+import {Col, DatePicker, Select, Input, Row, Button, Table, Pagination, Cascader, Form} from "antd";
 import {HttpClient} from "@/common/HttpClient";
+import _ from "lodash";
 
 class CheckInInformation extends Component {
 
+    constructor(props) {
+        super(props);
+        this.payLoad = {
+            inspectionSignInfoDTO: {}
+        };
+    }
+
     state = {
-        dataSource: []
+        dataSource: [],
+        CascaderOptions: [],
+        total: 0,
+        pageNum: 1,
+        pageSize: 10
     };
 
     componentWillMount() {
@@ -13,7 +25,15 @@ class CheckInInformation extends Component {
     }
 
     componentDidMount() {
-
+        HttpClient.query(`${window.MODULE_PARKING_INSPECTION}/monitoringCenter/${window.cityCode}/getPersonAttendance`, 'GET', null, (d, type) => {
+            if (type === HttpClient.requestSuccess) {
+                const data = d.data ? [d.data] : [];
+                this.setState({
+                    CascaderOptions: data
+                })
+            }
+        });
+        this.loadData(this.payLoad)
     }
 
     componentWillUnmount() {
@@ -21,14 +41,14 @@ class CheckInInformation extends Component {
     }
 
     // 筛选参数
-    filterOtherParams(otherParams) {
-        let params = {};
-        for (let item in otherParams) {
-            if (otherParams[item]) {
-                params[item] = otherParams[item]
+    filterParams(params) {
+        const newParams = {};
+        _.forIn(params, (value, key) => {
+            if (value || value === 0) {
+                newParams[key] = value
             }
-        }
-        return params
+        });
+        return newParams
     }
 
     //加载数据
@@ -41,8 +61,8 @@ class CheckInInformation extends Component {
             pageSize: pageSize,
             ...otherParams
         };
-        params = this.filterOtherParams(params);
-        HttpClient.query(this.globalUrl, 'GET', params, this.handleQueryData.bind(this))
+        params = this.filterParams(params);
+        HttpClient.query(`${window.MODULE_PARKING_INSPECTION}/inspection/group/member/signInfo`, 'GET', params, this.handleQueryData.bind(this))
     }
 
     // loadData回调函数
@@ -51,20 +71,24 @@ class CheckInInformation extends Component {
         const data = d.data;
         if (type === HttpClient.requestSuccess) {
             this.setState({
-                FinancialDetailRecord: data.list
+                dataSource: data.list,
+                total: data.total,
             })
         } else {
             //失败----做除了报错之外的操作
         }
         this.setState({
             loading: false,
-            total: data.total,
         });
     }
 
     // 查询
     search() {
-
+        const pageSize = this.state.pageSize;
+        this.setState({
+            pageNum: 1
+        });
+        this.loadData(this.payLoad, 1, pageSize)
     }
 
     // 分页变化
@@ -77,10 +101,27 @@ class CheckInInformation extends Component {
 
     }
 
+    //重置
+    handleReset() {
+        this.props.form.resetFields();
+        this.setState({
+            pageNum: 1, //当前页
+            pageSize: 10, //一页多少数据
+        }, () => {
+            this.loadData(this.payLoad, this.state.pageNum, this.state.pageSize)
+        });
+    }
+
     render() {
-        const { dataSource, total, pageNum, pageSize } = this.state;
+        const { dataSource, total, pageNum, pageSize, CascaderOptions } = this.state;
         const Option = Select.Option;
         const RangePicker = DatePicker.RangePicker;
+        const { getFieldDecorator } = this.props.form;
+        const FormItem = Form.Item;
+        const formItemLayout = {
+            labelCol: { span: 5 },
+            wrapperCol: { span: 19 },
+        };
         const columns = [
             {
                 title: '行政区域',
@@ -114,69 +155,83 @@ class CheckInInformation extends Component {
                     签到信息
                 </div>
                 <div className='page-content'>
-                    <Row gutter={50} style={{ marginBottom: 24 }}>
-                        <Col span={8} style={{ display: 'flex', alignItems: 'center' }}>
-                            <div>工号：</div>
-                            <Input style={{ flexGrow: 1, width: 'auto' }} placeholder='请输入' onChange={(e) => {
-                                this.roadName = e.target.value
-                            }}/>
-                        </Col>
-                        <Col span={8} style={{ display: 'flex', alignItems: 'center' }}>
-                            <div>行政区域：</div>
-                            <Select style={{ flexGrow: 1, width: 'auto' }} placeholder='需要请求接口' allowClear
-                                    onChange={(value) => {
-                                        this.alarmStatus = value
-                                    }}>
-                                <Option value={0}>待处理</Option>
-                                <Option value={1}>无需处理</Option>
-                                <Option value={2}>已生成工单</Option>
-                            </Select>
-                        </Col>
-                        <Col span={8} style={{ display: 'flex', alignItems: 'center' }}>
-                            <div>日期：</div>
-                            <RangePicker style={{ flexGrow: 1, width: 'auto' }} allowClear format="YYYY-MM-DD"
-                                         onChange={(dates, dateString) => {
-                                             this.alarmTime = dateString;
-                                         }}/>
-                        </Col>
-                    </Row>
-                    <Row gutter={50} style={{ marginBottom: 24 }}>
-                        <Col span={8} style={{ display: 'flex', alignItems: 'center' }}>
-                            <div>巡检组：</div>
-                            <Select style={{ flexGrow: 1, width: 'auto' }} placeholder='请输入' allowClear
-                                    onChange={(value) => {
-                                        this.alarmStatus = value
-                                    }}>
-                                <Option value={0}>待处理</Option>
-                                <Option value={1}>无需处理</Option>
-                                <Option value={2}>已生成工单</Option>
-                            </Select>
-                        </Col>
-                        <Col span={8} style={{ display: 'flex', alignItems: 'center' }}>
-                            <div>签到类型：</div>
-                            <Select style={{ flexGrow: 1, width: 'auto' }} placeholder='请输入' allowClear
-                                    onChange={(value) => {
-                                        this.alarmStatus = value
-                                    }}>
-                                <Option value={0}>待处理</Option>
-                                <Option value={1}>无需处理</Option>
-                                <Option value={2}>已生成工单</Option>
-                            </Select>
-                        </Col>
-                        <Col span={8} style={{ display: 'flex', alignItems: 'center' }}>
-                            <div>工号：</div>
-                            <Input style={{ flexGrow: 1, width: 'auto' }} placeholder='请输入' onChange={(e) => {
-                                this.roadName = e.target.value
-                            }}/>
-                        </Col>
-                    </Row>
-                    <Row>
-                        <Col style={{ textAlign: 'right' }}>
-                            <Button type='primary' style={{ marginRight: 10 }}
-                                    onClick={this.search.bind(this)}>查询</Button>
-                            <Button>重置</Button>
-                        </Col>
-                    </Row>
+                    <Form>
+                        <Row gutter={50}>
+                            <Col span={8}>
+                                <FormItem label='工号' {...formItemLayout}>
+                                    {getFieldDecorator('workNum')(
+                                        <Input placeholder='请输入' onChange={(e) => {
+                                            this.payLoad.inspectionSignInfoDTO.workNum = e.target.value
+                                        }}/>
+                                    )}
+                                </FormItem>
+                            </Col>
+                            <Col span={8}>
+                                <FormItem label='行政区域' {...formItemLayout}>
+                                    {getFieldDecorator('district')(
+                                        <Cascader changeOnSelect options={CascaderOptions}
+                                                  placeholder='请选择'
+                                                  fieldNames={{ label: 'name', value: 'id', children: 'children' }}
+                                                  onChange={(values) => this.payLoad.inspectionSignInfoDTO.areaId = values[values.length - 1]}/>
+                                    )}
+                                </FormItem>
+                            </Col>
+                            <Col span={8}>
+                                <FormItem label='日期' {...formItemLayout}>
+                                    {getFieldDecorator('date')(
+                                        <RangePicker allowClear format="YYYY-MM-DD"
+                                                     style={{ width: '100%' }}
+                                                     onChange={(dates, dateString) => {
+                                                         console.log(dateString);
+                                                         this.payLoad.inspectionSignInfoDTO.startTime = dateString[0];
+                                                         this.payLoad.inspectionSignInfoDTO.endTime = dateString[1];
+                                                     }}/>
+                                    )}
+                                </FormItem>
+                            </Col>
+                        </Row>
+                        <Row gutter={50}>
+                            <Col span={8}>
+                                <FormItem label='巡检组' {...formItemLayout}>
+                                    {getFieldDecorator('inspectionMemName')(
+                                        <Input placeholder='请输入' onChange={(e) => {
+                                            this.payLoad.inspectionSignInfoDTO.inspectionGroupName = e.target.value
+                                        }}/>
+                                    )}
+                                </FormItem>
+                            </Col>
+                            <Col span={8}>
+                                <FormItem label='签到类型' {...formItemLayout}>
+                                    {getFieldDecorator('inspectionMemName')(
+                                        <Select placeholder='请输入' allowClear
+                                                onChange={(value) => {
+                                                    this.payLoad.inspectionSignInfoDTO.signType = value
+                                                }}>
+                                            <Option value={0}>签到</Option>
+                                            <Option value={1}>签出</Option>
+                                        </Select>
+                                    )}
+                                </FormItem>
+
+                            </Col>
+                            <Col span={8}>
+                                <FormItem label='姓名' {...formItemLayout}>
+                                    {getFieldDecorator('inspectionMemName')(
+                                        <Input placeholder='请输入' onChange={(e) => {
+                                            this.payLoad.inspectionSignInfoDTO.inspectionMemName = e.target.value
+                                        }}/>
+                                    )}
+                                </FormItem>
+                            </Col>
+                        </Row>
+                        <Row>
+                            <Col style={{ textAlign: 'right' }}>
+                                <Button type='primary' style={{ marginRight: 10 }}
+                                        onClick={this.search.bind(this)}>查询</Button>
+                                <Button onClick={this.handleReset.bind(this)}>重置</Button>
+                            </Col>
+                        </Row>
+                    </Form>
                     <Row>
                         <Table
                             style={{ marginTop: '20px' }}
@@ -209,4 +264,4 @@ class CheckInInformation extends Component {
     }
 }
 
-export default CheckInInformation;
+export default Form.create()(CheckInInformation);

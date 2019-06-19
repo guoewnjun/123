@@ -1,5 +1,5 @@
 import React, {Component, Fragment} from 'react';
-import {Button, Input, Row, Tree, Card} from "antd";
+import {Button, Input, Row, Tree, Card, message} from "antd";
 import ProTypes from 'prop-types';
 import _ from "lodash";
 import {HttpClient} from "@/common/HttpClient";
@@ -21,13 +21,15 @@ class VisualizationUsers extends Component {
     }
 
     componentDidMount() {
-        HttpClient.query(`${window.MODULE_PARKING_INSPECTION}/monitoringCenter/${window.cityId}/getPersonAttendance`, 'GET', null, (d, type) => {
+        HttpClient.query(`${window.MODULE_PARKING_INSPECTION}/monitoringCenter/${window.cityCode}/getPersonAttendance`, 'GET', null, (d, type) => {
             if (type === HttpClient.requestSuccess) {
-                this.setState({
-                    treeData: d.data,
-                })
+                if (d.data) {
+                    this.setState({
+                        treeData: [d.data],
+                    })
+                }
             }
-        })
+        });
     }
 
     componentWillUnmount() {
@@ -40,7 +42,12 @@ class VisualizationUsers extends Component {
     };
 
     searchUsers(params) {
-        HttpClient.query(`${window.MODULE_PARKING_INFO}/centerConsole/searchInspectionMember`, 'GET', params, (d, type) => {
+        const filterParams = this.filterParams(params);
+        if (!Object.keys(filterParams).length) {
+            message.info('请输入查询条件');
+            return;
+        }
+        HttpClient.query(`${window.MODULE_PARKING_INFO}/centerConsole/searchInspectionMember`, 'GET', filterParams, (d, type) => {
             if (type === HttpClient.requestSuccess) {
                 const data = d.data;
                 this.setState({
@@ -51,7 +58,7 @@ class VisualizationUsers extends Component {
     }
 
     checkUserDetail(id) {
-        location.hash = `/Home/Visualization/UserDetail?id=${id}`
+        location.hash = `${location.hash}/UserDetail?id=${id}`
     }
 
     filterParams(params) {
@@ -70,8 +77,8 @@ class VisualizationUsers extends Component {
         const renderTreeNodes = data => data.map((item) => {
             let title = '';
             if (item.planAttendance >= 0) {
-                title = `${item.name}(应到${item.planAttendance}，实到${item.actualAttendance})`
-            }else {
+                title = `${item.name}(应到${item.planAttendance || 0}，实到${item.actualAttendance || 0})`
+            } else {
                 title = item.name
             }
             if (item.children) {

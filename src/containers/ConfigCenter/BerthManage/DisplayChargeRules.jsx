@@ -42,7 +42,7 @@ export default class DisplayChargeRules extends Component {
             isLoading: true
         });
         let id = 1001;
-        if (HttpClient.REQUEST == "truth") {
+        if (HttpClient.REQUEST === "truth") {
             id = this.props.location.query.id;
         }
         HttpClient.query('/parking-resource/parkingPriceRules/' + id, HttpClient.GET, null, this.fetchRuleDetail.bind(this));
@@ -52,7 +52,7 @@ export default class DisplayChargeRules extends Component {
         this.setState({
             isLoading: false
         });
-        if (type == HttpClient.requestSuccess) {
+        if (type === HttpClient.requestSuccess) {
             this.setState({
                 rule: e.data
             })

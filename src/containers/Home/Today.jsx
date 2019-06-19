@@ -177,6 +177,28 @@ export default class Today extends Component {
                                     <Card hoverable={true}>
                                         <Row gutter={24}>
                                             <Col xs={24}>
+                                                <Icon type="pound"
+                                                      style={{ fontSize: '35px', color: '#08c', float: 'left' }}/>
+                                                <span style={{
+                                                    fontSize: 14,
+                                                    float: 'left',
+                                                    marginLeft: 10
+                                                }}>今日停车次数：</span>
+                                            </Col>
+                                            <Col xs={24} style={{ paddingBottom: 20, paddingTop: 20 }}>
+                                                <span style={{
+                                                    fontSize: 28,
+                                                    color: '#6B6B6B',
+                                                    marginLeft: 45
+                                                }}>{firstdata.paidCount||'--'}</span>
+                                            </Col>
+                                        </Row>
+                                    </Card>
+                                </Col>
+                                <Col xs={24}>
+                                    <Card hoverable={true}>
+                                        <Row gutter={24}>
+                                            <Col xs={24}>
                                                 <Icon type="dollar"
                                                       style={{ fontSize: '35px', color: '#08c', float: 'left' }}/>
                                                 <span style={{
@@ -190,33 +212,12 @@ export default class Today extends Component {
                                                     fontSize: 28,
                                                     color: 'red',
                                                     marginLeft: 45
-                                                }}>{firstdata.paidMoney}</span>
+                                                }}>{firstdata.paidMoney||'--'}</span>
                                             </Col>
                                         </Row>
                                     </Card>
                                 </Col>
-                                <Col xs={24}>
-                                    <Card hoverable={true}>
-                                        <Row gutter={24}>
-                                            <Col xs={24}>
-                                                <Icon type="pound"
-                                                      style={{ fontSize: '35px', color: '#08c', float: 'left' }}/>
-                                                <span style={{
-                                                    fontSize: 14,
-                                                    float: 'left',
-                                                    marginLeft: 10
-                                                }}>今日交易次数(笔)：</span>
-                                            </Col>
-                                            <Col xs={24} style={{ paddingBottom: 20, paddingTop: 20 }}>
-                                                <span style={{
-                                                    fontSize: 28,
-                                                    color: '#6B6B6B',
-                                                    marginLeft: 45
-                                                }}>{firstdata.paidCount}</span>
-                                            </Col>
-                                        </Row>
-                                    </Card>
-                                </Col>
+
                             </Row>
                         </Col>
                         <Col xs={14}>
@@ -235,21 +236,13 @@ export default class Today extends Component {
                                                     float: 'left',
                                                     marginLeft: 10
                                                 }}>用户总数：</span>
-                                            </Col>
-                                            <Col xs={24} style={{ paddingBottom: 20, paddingTop: 20 }}>
                                                 <span style={{
                                                     fontSize: 28,
                                                     color: 'red',
                                                     marginLeft: 45
-                                                }}>{firstdata.customerCount}</span>
+                                                }}>{firstdata.customerCount||'--'}</span>
                                             </Col>
-                                        </Row>
-                                    </Card>
-                                </Col>
-                                <Col xs={24}>
-                                    <Card hoverable={true}>
-                                        <Row gutter={24}>
-                                            <Col xs={24}>
+                                            <Col xs={24} style={{marginTop:20}}>
                                                 <Icon type="user-add"
                                                       style={{ fontSize: '35px', color: '#08c', float: 'left' }}/>
                                                 <span style={{
@@ -257,15 +250,34 @@ export default class Today extends Component {
                                                     float: 'left',
                                                     marginLeft: 10
                                                 }}>新增用户：</span>
-                                            </Col>
-                                            <Col xs={24} style={{ paddingBottom: 20, paddingTop: 20 }}>
                                                 <span
                                                     style={{
                                                         fontSize: 28,
                                                         color: '#6B6B6B',
                                                         marginLeft: 45
-                                                    }}>{firstdata.customerNewCount}</span>
+                                                    }}>{firstdata.customerNewCount||'--'}</span>
                                             </Col>
+                                            <Col xs={24} style={{ paddingBottom: 20, paddingTop: 20 }}>
+
+                                            </Col>
+                                        </Row>
+                                    </Card>
+                                </Col>
+                                <Col xs={24}>
+                                    <Card hoverable={true}>
+                                        <Row gutter={24}>
+                                          <Col xs={24}>
+                                              <Icon type="profile"
+                                                    style={{ fontSize: '35px', color: '#08c', float: 'left' }}/>
+                                              <span style={{ fontSize: 14, float: 'left', marginLeft: 10 }}>今日投诉工单（张）：</span>
+                                          </Col>
+                                          <Col xs={24} style={{ paddingBottom: 20, paddingTop: 20 }}>
+                                              <span style={{
+                                                  fontSize: 28,
+                                                  color: 'red',
+                                                  marginLeft: 45
+                                              }}>{firstdata.complaintsCount||'--'}</span>
+                                          </Col>
                                         </Row>
                                     </Card>
                                 </Col>
@@ -278,16 +290,16 @@ export default class Today extends Component {
                             <Card hoverable={true}>
                                 <Row gutter={24}>
                                     <Col xs={24}>
-                                        <Icon type="profile"
+                                        <Icon type="dollar"
                                               style={{ fontSize: '35px', color: '#08c', float: 'left' }}/>
-                                        <span style={{ fontSize: 14, float: 'left', marginLeft: 10 }}>今日充值金额(元)：</span>
+                                        <span style={{ fontSize: 14, float: 'left', marginLeft: 10 }}>今日退费金额（元）：</span>
                                     </Col>
                                     <Col xs={24} style={{ paddingBottom: 20, paddingTop: 20 }}>
                                         <span style={{
                                             fontSize: 28,
                                             color: 'red',
                                             marginLeft: 45
-                                        }}>{firstdata.chargeMoney}</span>
+                                        }}>{firstdata.refundMoney||'--'}</span>
                                     </Col>
                                 </Row>
                             </Card>
@@ -298,14 +310,14 @@ export default class Today extends Component {
                                     <Col xs={24}>
                                         <Icon type="file-search"
                                               style={{ fontSize: '35px', color: '#08c', float: 'left' }}/>
-                                        <span style={{ fontSize: 14, float: 'left', marginLeft: 10 }}>今日充值次数(笔)：</span>
+                                        <span style={{ fontSize: 14, float: 'left', marginLeft: 10 }}>今日设备告警（次）：</span>
                                     </Col>
                                     <Col xs={24} style={{ paddingBottom: 20, paddingTop: 20 }}>
                                         <span style={{
                                             fontSize: 28,
                                             color: '#6B6B6B',
                                             marginLeft: 45
-                                        }}>{firstdata.chargeCount}</span>
+                                        }}>{firstdata.deviceFaultCount||'--'}</span>
                                     </Col>
                                 </Row>
                             </Card>
@@ -314,15 +326,15 @@ export default class Today extends Component {
                             <Card hoverable={true}>
                                 <Row gutter={10}>
                                     <Col xs={24}>
-                                        <Icon type="dollar" style={{ fontSize: '35px', color: '#08c', float: 'left' }}/>
-                                        <span style={{ fontSize: 14, float: 'left', marginLeft: 10 }}>今日新增工单（张）：</span>
+                                        <Icon type="profile" style={{ fontSize: '35px', color: '#08c', float: 'left' }}/>
+                                        <span style={{ fontSize: 14, float: 'left', marginLeft: 10 }}>今日维保工单（张）：</span>
                                     </Col>
                                     <Col xs={24} style={{ paddingBottom: 20, paddingTop: 20 }}>
                                         <span style={{
                                             fontSize: 28,
                                             color: '#6B6B6B',
                                             marginLeft: 45
-                                        }}>{firstdata.newOrderCount}</span>
+                                        }}>{firstdata.deviceDisposeCount||'--'}</span>
                                     </Col>
                                 </Row>
                             </Card>
@@ -333,14 +345,14 @@ export default class Today extends Component {
                                     <Col xs={24}>
                                         <Icon type="picture"
                                               style={{ fontSize: '35px', color: '#08c', float: 'left' }}/>
-                                        <span style={{ fontSize: 14, float: 'left', marginLeft: 10 }}>今日巡检照片(张)：</span>
+                                        <span style={{ fontSize: 14, float: 'left', marginLeft: 10 }}>今日违停告警（次）：</span>
                                     </Col>
                                     <Col xs={24} style={{ paddingBottom: 20, paddingTop: 20 }}>
                                         <span style={{
                                             fontSize: 28,
                                             color: '#6B6B6B',
                                             marginLeft: 45
-                                        }}>{firstdata.accessWarningCount}</span>
+                                        }}>{firstdata.parkWarningCount||'--'}</span>
                                     </Col>
                                 </Row>
                             </Card>
@@ -350,14 +362,14 @@ export default class Today extends Component {
                                 <Row gutter={24}>
                                     <Col xs={24}>
                                         <Icon type="eye" style={{ fontSize: '35px', color: '#08c', float: 'left' }}/>
-                                        <span style={{ fontSize: 14, float: 'left', marginLeft: 10 }}>今日巡查(人次)：</span>
+                                        <span style={{ fontSize: 14, float: 'left', marginLeft: 10 }}>今日告警处理（次）：</span>
                                     </Col>
                                     <Col xs={24} style={{ paddingBottom: 20, paddingTop: 20 }}>
                                         <span style={{
                                             fontSize: 28,
                                             color: '#6B6B6B',
                                             marginLeft: 45
-                                        }}>{firstdata.inspectCount}</span>
+                                        }}>{firstdata.accessWarningCount||'--'}</span>
                                     </Col>
                                 </Row>
                             </Card>

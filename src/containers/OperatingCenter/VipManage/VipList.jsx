@@ -214,7 +214,6 @@ class VipList extends Component {
                                     {getFieldDecorator('enrollTime')(
                                         <RangePicker style={{width: '100%'}} format="YYYY-MM-DD"
                                                      onChange={(dates, dateString) => {
-                                                       console.log(dates);
                                                          this.state.otherParams.beginRegDate = dates[0]._d;
                                                          this.state.otherParams.endRegDate = dates[1]._d;
                                                      }}/>

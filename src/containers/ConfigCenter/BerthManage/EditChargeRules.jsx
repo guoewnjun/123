@@ -43,8 +43,8 @@ export default class EditChargeRules extends Component {
             isLoading: true
         });
         let id = 1001;
-        if (HttpClient.REQUEST == "truth") {
-            id = this.props.window.location.query.id;
+        if (HttpClient.REQUEST === "truth") {
+            id = this.props.location.query.id;
         }
         HttpClient.query('/parking-resource/parkingPriceRules/' + id, HttpClient.GET, null, this.fetchRuleDetail.bind(this));
     }

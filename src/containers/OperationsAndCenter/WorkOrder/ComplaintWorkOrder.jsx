@@ -2,7 +2,7 @@ import React, {Component} from "react";
 import {
     Button, Form, Select, Radio, Table, Row, Col, DatePicker, Input, Spin, Pagination, Switch, Badge,
 } from "antd";
-import {HttpClient} from "@/common/HttpClient";
+import {HttpClientImmidIot} from "@/common/HttpClientImmidIot";
 
 
 const FormItem = Form.Item;
@@ -74,7 +74,7 @@ class ComplaintWorkOrder extends Component {
             ...otherParams
         };
         params = this.filterOtherParams(params);
-        HttpClient.query("/OperationsAndCenter/WorkOrder/ComplaintWorkOrder", "GET", params, this.handleQueryData.bind(this))
+        HttpClientImmidIot.query("/OperationsAndCenter/WorkOrder/ComplaintWorkOrder", "GET", params, this.handleQueryData.bind(this))
     }
 
 
@@ -83,7 +83,7 @@ class ComplaintWorkOrder extends Component {
     // loadData回调函数
     handleQueryData(d, type) {
         const data = d.data;
-        if (type === HttpClient.requestSuccess) {
+        if (type === HttpClientImmidIot.requestSuccess) {
             this.setState({
                 AlarmRecord: data.list,
                 total: data.total

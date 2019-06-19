@@ -15,7 +15,7 @@ import PartnerDetail from '../containers/PartnerManage/PartnerDetail.jsx';//合�
 import PartnerAccounts from '../containers/PartnerManage/PartnerAccounts.jsx';//合作方主账号
 // import PartnerOrganization from '../containers/PartnerManage/PartnerOrganization.jsx';//合作方组织结构
 
-// -----------------------------------------------------------------------------------------------------------------------------
+// -----------------------------------------------计费规则------------------------------------------------------------------------------
 
 // 监控中心
 import Today from "../containers/Home/Today.jsx";//今日数据
@@ -54,6 +54,8 @@ import ScheduleManage from '../containers/OperationsAndCenter/InspectionManaage/
 import InspectionGroupDetail from '../containers/OperationsAndCenter/InspectionManaage/InspectionGroupDetail.jsx';//稽查组详情
 import EditSchedule from '../containers/OperationsAndCenter/InspectionManaage/EditSchedule.jsx';//编辑排班
 import CheckInInformation from '../containers/OperationsAndCenter/InspectionManaage/CheckInInformation.jsx';//签到信息
+import PatrolManage1 from '../containers/OperationsAndCenter/DeviceManage/PatrolManage1.jsx';
+import PatrolManage2 from '../containers/OperationsAndCenter/DeviceManage/PatrolManage2.jsx';
 
 // 配置中心
 import BerthSearch from '../containers/ConfigCenter/BerthManage/BerthSearch.jsx'; // 泊位查询
@@ -91,6 +93,8 @@ import OperationsReport from '../containers/DataCenter/OperationsReport/'; //运
 import OperationalDaily from '../containers/DataCenter/OperationalDaily/'; //运营日报
 import OperationalWeekly from '../containers/DataCenter/OperationalWeekly/'; //运营周报
 import OperationalMonthly from '../containers/DataCenter/OperationalMonthly/'; //运营月报
+import FinancialReport from '../containers/DataCenter/FinancialReport/'; //财务报表
+import AreaPaymentDetail from '../containers/DataCenter/FinancialReport/AreaPaymentDetail'; //财务报表-区域缴费金额详情
 
 //财务管理
 import InvoicesManage from '../containers/FinancialManage/InvoicesManage.jsx'; //财务管理
@@ -212,6 +216,10 @@ export default (
                 <Route path="CheckInInformation" component={CheckInInformation} breadcrumbName="签到信息" onEnter={requireAuth}/>
                 <Route path="ScheduleManage" component={ScheduleManage} breadcrumbName="班次管理" onEnter={requireAuth}/>
             </Route>
+            <Route path="DeviceManage" breadcrumbName="设备管理">
+                <Route path="PatrolManage1" component={PatrolManage1} breadcrumbName="设备列表" />
+                <Route path="PatrolManage2" component={PatrolManage2} breadcrumbName="设备厂商" />
+            </Route>
         </Route>
 
         <Route path="ConfigCenter" breadcrumbName="配置中心">
@@ -294,6 +302,10 @@ export default (
             <Route path='OperationalDaily' breadcrumbName='运营综合日报' components={OperationalDaily} />
             <Route path='OperationalWeekly' breadcrumbName='运营综合周报' components={OperationalWeekly} />
             <Route path='OperationalMonthly' breadcrumbName='运营综合月报' components={OperationalMonthly} />
+            <Route path="FinancialReport" breadcrumbName="财务报表" isLink={true}>
+                <IndexRoute component={FinancialReport} onEnter={requireAuth}/>
+                <Route path='AreaPaymentDetail' breadcrumbName='区域缴费金额详情' component={AreaPaymentDetail} onEnter={requireAuth}/>
+            </Route>
         </Route>
 
         <Route path="FinancialManage" breadcrumbName="财务管理">

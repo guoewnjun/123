@@ -1,12 +1,18 @@
 import React, {Component, Fragment} from 'react';
-import {Card, Col, Row, Button, Modal, Form, Input, Select} from "antd";
+import {Card, Col, Row, Button, Modal, Form, Input, Select, Spin} from "antd";
+import {HttpClient} from "@/common/HttpClient";
+import _ from "lodash";
 
 class AbnormalDeviceDetail extends Component {
 
     state = {
+        spinning: true,
+        id: this.props.location.query.id || '',
         modalVisible: false,
         confirmLoading: false,
         dealWay: 0,
+        detailInfo: null,
+        userList: [],
     };
 
     componentWillMount() {
@@ -14,17 +20,53 @@ class AbnormalDeviceDetail extends Component {
     }
 
     componentDidMount() {
-
+        HttpClient.query(`${window.MODULE_PARKING_RESOURCE}/road/maintenance/warning/device/detail`, 'GET', { id: this.state.id }, (d, type) => {
+            if (type === HttpClient.requestSuccess) {
+                this.setState({
+                    detailInfo: d.data || null
+                })
+            }
+            this.setState({
+                spinning: false
+            })
+        });
     }
 
     componentWillUnmount() {
 
     }
 
+    filterParams(params) {
+        const newParams = {};
+        _.forIn(params, (value, key) => {
+            if (value || value === 0) {
+                newParams[key] = value
+            }
+        });
+        return newParams
+    }
+
     onSubmit() {
         this.setState({
-            modalVisible: false
-        })
+            confirmLoading: true
+        });
+        this.props.form.validateFields((err, fieldsValue) => {
+            if (err) return;
+            const params = {
+                id: this.state.id,
+                ...this.filterParams(fieldsValue)
+            };
+            HttpClient.query(`${window.MODULE_PARKING_RESOURCE}/road/maintenance/warning/device/dispose`, 'POST', params, (d, type) => {
+                if (type === HttpClient.requestSuccess) {
+                    this.setState({
+                        modalVisible: false
+                    });
+                }
+                this.setState({
+                    confirmLoading: false
+                })
+            })
+        });
     }
 
     onCancel() {
@@ -33,8 +75,36 @@ class AbnormalDeviceDetail extends Component {
         })
     }
 
+    handleAlarm() {
+        // 获取指派人员列表
+        HttpClient.query(`${window.MODULE_PARKING_INFO}/admin/user/simple/maintenance`, 'GET', null, (d, type) => {
+            if (type === HttpClient.requestSuccess) {
+                this.setState({
+                    userList: d.data || []
+                })
+            }
+        });
+        this.setState({
+            modalVisible: true
+        });
+    }
+
     render() {
-        const { modalVisible, confirmLoading, dealWay } = this.state;
+        const { modalVisible, confirmLoading, dealWay, spinning, detailInfo, userList } = this.state;
+        if (!detailInfo) {
+            return (
+                <div className='page'>
+                    <div className='page-header'>
+                        设备告警详情
+                        <Button type='primary' onClick={() => window.history.back()}
+                                style={{ float: 'right' }}>返回</Button>
+                    </div>
+                    <Spin spinning={spinning} tip='加载中...'>
+                        <div className='page-content' style={{ padding: 0, background: 'transparent' }}/>
+                    </Spin>
+                </div>
+            )
+        }
         const FormItem = Form.Item;
         const Option = Select.Option;
         const TextArea = Input.TextArea;
@@ -50,83 +120,75 @@ class AbnormalDeviceDetail extends Component {
                     <Button type='primary' onClick={() => window.history.back()} style={{ float: 'right' }}>返回</Button>
                 </div>
                 <div className='page-content' style={{ padding: 0, background: 'transparent' }}>
-                    <Card title='设备信息' className='detail-card'>
-                        <Row gutter={30}>
-                            <Col span={8} className='detail-card-col'>
-                                <label>报警泊位编号：</label>
-                                <span></span>
-                            </Col>
-                            <Col span={8} className='detail-card-col'>
-                                <label>报警泊位编号：</label>
-                                <span></span>
-                            </Col>
-                            <Col span={8} className='detail-card-col'>
-                                <label>报警泊位编号：</label>
-                                <span></span>
-                            </Col>
-                        </Row>
-                        <Row gutter={30}>
-                            <Col span={8} className='detail-card-col'>
-                                <label>报警泊位编号：</label>
-                                <span></span>
-                            </Col>
-                            <Col span={8} className='detail-card-col'>
-                                <label>报警泊位编号：</label>
-                                <span></span>
-                            </Col>
-                            <Col span={8} className='detail-card-col'>
-                                <label>报警泊位编号：</label>
-                                <span></span>
-                            </Col>
-                        </Row>
-                        <Row gutter={30}>
-                            <Col span={8} className='detail-card-col'>
-                                <label>报警泊位编号：</label>
-                                <span></span>
-                            </Col>
-                            <Col span={8} className='detail-card-col'>
-                                <label>报警泊位编号：</label>
-                                <span></span>
-                            </Col>
-                            <Col span={8} className='detail-card-col'>
-                                <label>报警泊位编号：</label>
-                                <span></span>
-                            </Col>
-                        </Row>
-                        <Row gutter={30}>
-                            <Col span={8} className='detail-card-col'>
-                                <label>报警泊位编号：</label>
-                                <span></span>
-                            </Col>
-                        </Row>
-                    </Card>
-                    <Card title='告警信息' className='detail-card'
-                          extra={<Button type='primary' onClick={() => {
-                              this.setState({
-                                  modalVisible: true
-                              })
-                          }}>处理</Button>}>
-                        <Row gutter={30}>
-                            <Col span={8} className='detail-card-col'>
-                                <label>告警事件：</label>
-                                <span></span>
-                            </Col>
-                            <Col span={8} className='detail-card-col'>
-                                <label>告警等级：</label>
-                                <span></span>
-                            </Col>
-                            <Col span={8} className='detail-card-col'>
-                                <label>告警时间：</label>
-                                <span></span>
-                            </Col>
-                        </Row>
-                        <Row gutter={30}>
-                            <Col span={8} className='detail-card-col'>
-                                <label>告警状态：</label>
-                                <span></span>
-                            </Col>
-                        </Row>
-                    </Card>
+                    <Spin spinning={spinning} tip='加载中...'>
+                        <Card title='设备信息' className='detail-card'>
+                            <Row gutter={30}>
+                                <Col span={8} className='detail-card-col'>
+                                    <label>路段名称：</label>
+                                    <span>{detailInfo.parkingName}</span>
+                                </Col>
+                                <Col span={8} className='detail-card-col'>
+                                    <label>关联车位：</label>
+                                    <span>{detailInfo.parkingSpaces}</span>
+                                </Col>
+                                <Col span={8} className='detail-card-col'>
+                                    <label>设备类型：</label>
+                                    <span>{detailInfo.deviceType}</span>
+                                </Col>
+                            </Row>
+                            <Row gutter={30}>
+                                <Col span={8} className='detail-card-col'>
+                                    <label>设备型号：</label>
+                                    <span>{detailInfo.deviceModel}</span>
+                                </Col>
+                                <Col span={8} className='detail-card-col'>
+                                    <label>设备ID：</label>
+                                    <span>{detailInfo.deviceId}</span>
+                                </Col>
+                                <Col span={8} className='detail-card-col'>
+                                    <label>硬件ID：</label>
+                                    <span>{detailInfo.hardwareId}</span>
+                                </Col>
+                            </Row>
+                            <Row gutter={30}>
+                                <Col span={8} className='detail-card-col'>
+                                    <label>设备厂家：</label>
+                                    <span>{detailInfo.factory}</span>
+                                </Col>
+                                <Col span={8} className='detail-card-col'>
+                                    <label>设备地址：</label>
+                                    <span>{detailInfo.address}</span>
+                                </Col>
+                                <Col span={8} className='detail-card-col'>
+                                    <label>设备状态：</label>
+                                    <span>{detailInfo.online}</span>
+                                </Col>
+                            </Row>
+                        </Card>
+                        <Card title='告警信息' className='detail-card'
+                              extra={<Button type='primary' onClick={() => this.handleAlarm()}>处理</Button>}>
+                            <Row gutter={30}>
+                                <Col span={8} className='detail-card-col'>
+                                    <label>告警事件：</label>
+                                    <span>{detailInfo.type}</span>
+                                </Col>
+                                <Col span={8} className='detail-card-col'>
+                                    <label>告警等级：</label>
+                                    <span>{detailInfo.priority}</span>
+                                </Col>
+                                <Col span={8} className='detail-card-col'>
+                                    <label>告警时间：</label>
+                                    <span>{detailInfo.faultTime}</span>
+                                </Col>
+                            </Row>
+                            <Row gutter={30}>
+                                <Col span={8} className='detail-card-col'>
+                                    <label>告警状态：</label>
+                                    <span>{detailInfo.state}</span>
+                                </Col>
+                            </Row>
+                        </Card>
+                    </Spin>
                     <Modal
                         visible={modalVisible}
                         title='设备告警处理'
@@ -139,13 +201,13 @@ class AbnormalDeviceDetail extends Component {
                     >
                         <Form>
                             <FormItem label='设备类型' {...formItemLayout}>
-                                车检器
+                                {detailInfo.deviceType}
                             </FormItem>
                             <FormItem label='告警等级' {...formItemLayout}>
-                                车检器
+                                {detailInfo.priority}
                             </FormItem>
-                            <FormItem label='告警描述' {...formItemLayout}>
-                                车检器
+                            <FormItem label='告警事件' {...formItemLayout}>
+                                {detailInfo.type}
                             </FormItem>
                             <FormItem label='处理方式' {...formItemLayout}>
                                 {getFieldDecorator('dealWay', {
@@ -162,14 +224,14 @@ class AbnormalDeviceDetail extends Component {
                             {
                                 dealWay === 0 ? (
                                     <FormItem label='处理说明' {...formItemLayout}>
-                                        {getFieldDecorator('dealExplain')(
+                                        {getFieldDecorator('content')(
                                             <TextArea row={4} placeholder='请填写处理说明, 字数不超过200字'/>
                                         )}
                                     </FormItem>
                                 ) : (
                                     <Fragment>
                                         <FormItem label='工单标题' {...formItemLayout}>
-                                            {getFieldDecorator('workOrderTitle', {
+                                            {getFieldDecorator('caption', {
                                                 rules: [{ required: true, message: '请填写工单标题' }],
                                             })(
                                                 <Input suffix='0/20' placeholder='请填写'/>
@@ -187,19 +249,21 @@ class AbnormalDeviceDetail extends Component {
                                             )}
                                         </FormItem>
                                         <FormItem label='指派' {...formItemLayout}>
-                                            {getFieldDecorator('assign')(
+                                            {getFieldDecorator('disposer')(
                                                 <Select placeholder='请选择'>
-                                                    <Option value={0}>xx小组</Option>
-                                                    <Option value={1}>张三</Option>
-                                                    <Option value={2}>李四</Option>
+                                                    {
+                                                        userList.map(item => (
+                                                            <Option key={item.id} value={item.id}>{item.name}</Option>
+                                                        ))
+                                                    }
                                                 </Select>
                                             )}
                                         </FormItem>
                                         <FormItem label='工单内容' {...formItemLayout}>
-                                            {getFieldDecorator('workOrderContent', {
+                                            {getFieldDecorator('content', {
                                                 rules: [{ required: true, message: '请填写工单内容' }],
                                             })(
-                                                <Input suffix='0/30' placeholder='此处默认填写设备名称+告警描述'/>
+                                                <Input suffix='0/30' placeholder='请输入'/>
                                             )}
                                         </FormItem>
                                     </Fragment>

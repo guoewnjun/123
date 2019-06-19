@@ -1,8 +1,8 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
     Button, Form, Select, Radio, Table, Row, Col, DatePicker, Input, Spin, Pagination, Badge
 } from 'antd';
-import {HttpClient} from "@/common/HttpClient";
+import { HttpClient } from "@/common/HttpClient";
 import Exception from "../../components/Exception";
 import moment from 'moment'
 
@@ -23,13 +23,12 @@ class ComplaintsList extends Component {
             pageNum: 1, //当前页
             pageSize: 10, //一页多少数据
             total: 1, //数据总条数
-            otherParams: {
-                warningDisposeStatus: -1, //处理状态按钮组当前值
-                startTime: null, //开始时间
-                endTime: null,//结束时间
-                warningType: null,//报警类型
-                parkingSpaceNo: null,//泊位编号
-            },
+            otherParams: {},//查询参数
+            queryCondition: {
+                sources: [],
+                types: [],
+                states: []
+            },//查询条件
         };
     }
 
@@ -39,10 +38,10 @@ class ComplaintsList extends Component {
 
     // 组件挂载后
     componentDidMount() {
-      this.loadData();
-         // if (window.checkPageEnable('/AbnormalParkingAlarm')) {
-         //     this.loadData();
-         // }
+        this.loadData();
+        // if (window.checkPageEnable('/AbnormalParkingAlarm')) {
+        //     this.loadData();
+        // }
     }
 
     // 组件卸载之前
@@ -54,7 +53,7 @@ class ComplaintsList extends Component {
     filterOtherParams(otherParams) {
         let params = {};
         for (let item in otherParams) {
-            if (otherParams[item] || item === 'warningDisposeStatus') {
+            if (otherParams[item]) {
                 params[item] = otherParams[item]
             }
         }
@@ -72,7 +71,8 @@ class ComplaintsList extends Component {
             ...otherParams
         };
         params = this.filterOtherParams(params);
-        HttpClient.query('/Vip/VipLog', 'GET', params, this.handleQueryData.bind(this))
+        HttpClient.query('/parking-person-info/business/complaints/list', 'GET', params, this.handleQueryData.bind(this))
+        HttpClient.query('/parking-person-info/business/complaints/conditions', 'GET', null, this.handleGetQueryCondition.bind(this))
     }
 
     // loadData回调函数
@@ -91,6 +91,13 @@ class ComplaintsList extends Component {
         })
     }
 
+    //获取查询条件
+    handleGetQueryCondition(d, type) {
+        this.setState({
+            queryCondition: d.data
+        })
+    }
+
     //查询按钮
     handleQuery() {
         const pageSize = this.state.pageSize;
@@ -106,13 +113,8 @@ class ComplaintsList extends Component {
         this.setState({
             pageNum: 1, //当前页
             pageSize: 10, //一页多少数据
-            otherParams: {
-                warningDisposeStatus: -1, //处理状态按钮组当前值
-                startTime: null,
-                endTime: null,
-                warningType: null,
-                parkingSpaceNo: null,
-            }
+            otherParams: {}
+
         }, () => {
             this.loadData()
         });
@@ -137,59 +139,59 @@ class ComplaintsList extends Component {
         });
     }
     // 点击跳转详情
-    idClick (id) {
+    idClick(id) {
         window.location.hash = `${location.hash}/ComplaintDetails?id=${id}`;
     }
     render() {
         if (!window.checkPageEnable('/AbnormalParkingAlarm')) {
-            return <Exception type='403'/>
+            return <Exception type='403' />
         }
-        const {loading, pageNum, pageSize, AlarmRecord, total, otherParams: {warningDisposeStatus}} = this.state;
-        const {getFieldDecorator} = this.props.form;
+        const { loading, pageNum, pageSize, AlarmRecord, total } = this.state;
+        const { getFieldDecorator } = this.props.form;
         const formItemLayout = {
-            labelCol: {span: 5},
-            wrapperCol: {span: 19},
+            labelCol: { span: 5 },
+            wrapperCol: { span: 19 },
         };
         const columns = [
             {
                 title: '投诉编号',
-                dataIndex: 'uId',
-                render: (value) =>  (
+                dataIndex: 'id',
+                render: (value) => (
                     <a onClick={this.idClick.bind(this, value)} style={{ color: '#1890FF' }}>{value}</a>),
             },
             {
                 title: '投诉类型',
-                dataIndex: 'comfrom',
+                dataIndex: 'type',
                 render: (value) => value || '--',
             },
             {
                 title: '投诉内容',
-                dataIndex: 'openid',
+                dataIndex: 'content',
                 render: (value) => value || '--',
             },
             {
                 title: '手机号',
-                dataIndex: 'phoneNum',
+                dataIndex: 'mobile',
                 render: (value) => value || '--',
             },
             {
                 title: '投诉时间',
-                dataIndex: 'enrollTime',
+                dataIndex: 'time',
                 render: (value) => value || '--',
             },
             {
                 title: '处理人',
-                dataIndex: 'tate',
+                dataIndex: 'operator',
                 render: (value) => value || '--',
             },
             {
                 title: '投诉来源',
-                dataIndex: 'tate',
+                dataIndex: 'source',
                 render: (value) => value || '--',
             },
             {
                 title: '投诉状态',
-                dataIndex: 'tate',
+                dataIndex: 'state',
                 render: (value) => value || '--',
             },
         ];
@@ -206,8 +208,8 @@ class ComplaintsList extends Component {
                                 <FormItem label='投诉内容' {...formItemLayout}>
                                     {getFieldDecorator('tousuneirong')(
                                         <Input placeholder='请输入' onChange={(e) => {
-                                            this.state.otherParams.phoneNumber = e.target.value;
-                                        }}/>
+                                            this.state.otherParams.content = e.target.value;
+                                        }} />
                                     )}
                                 </FormItem>
                             </Col>
@@ -215,19 +217,19 @@ class ComplaintsList extends Component {
                                 <FormItem label='手机号' {...formItemLayout}>
                                     {getFieldDecorator('phoneNumber')(
                                         <Input placeholder='请输入' onChange={(e) => {
-                                            this.state.otherParams.phoneNumber = e.target.value;
-                                        }}/>
+                                            this.state.otherParams.mobile = e.target.value;
+                                        }} />
                                     )}
                                 </FormItem>
                             </Col>
                             <Col span={8}>
-                                <FormItem label='注册日期' {...formItemLayout}>
+                                <FormItem label='投诉日期' {...formItemLayout}>
                                     {getFieldDecorator('enrollTime')(
-                                        <RangePicker style={{width: '100%'}} format="YYYY-MM-DD"
-                                                     onChange={(dates, dateString) => {
-                                                         this.state.otherParams.startTime = dateString[0];
-                                                         this.state.otherParams.endTime = dateString[1];
-                                                     }}/>
+                                        <RangePicker style={{ width: '100%' }} format="YYYY-MM-DD"
+                                            onChange={(dates, dateString) => {
+                                                this.state.otherParams.beginTime = dates[0]._d;
+                                                this.state.otherParams.endTime = dates[1]._d;
+                                            }} />
                                     )}
                                 </FormItem>
                             </Col>
@@ -236,55 +238,67 @@ class ComplaintsList extends Component {
                             <Col span={8}>
                                 <FormItem label='投诉来源' {...formItemLayout}>
                                     {getFieldDecorator('tousulaiyuan')(
-                                      <Select defaultValue="全部" style={{width: '100%'}}>
-                                        <Option value="全部">全部</Option>
-                                        <Option value="微信公众号">微信公众号</Option>
-                                        <Option value="支付宝服务号">支付宝服务号</Option>
-                                        <Option value="APP">APP</Option>
-                                      </Select>
+                                        <Select placeholder="全部" style={{ width: '100%' }}
+                                            onSelect={(e) => {
+                                                this.state.otherParams.source = e;
+                                            }}>
+                                            <Option value="">全部</Option>
+                                            {
+                                                this.state.queryCondition.sources.map((value, index) => {
+                                                    return <Option value={value} key={value}>{value}</Option>
+                                                })
+                                            }
+                                        </Select>
                                     )}
                                 </FormItem>
                             </Col>
                             <Col span={8}>
                                 <FormItem label='投诉状态' {...formItemLayout}>
                                     {getFieldDecorator('tousuzhuangtai')(
-                                      <Select defaultValue="全部" style={{width: '100%'}}>
-                                        <Option value="全部">全部</Option>
-                                        <Option value="待处理">待处理</Option>
-                                        <Option value="已结案">已结案</Option>
-                                        <Option value="已生成工单">已生成工单</Option>
-                                        <Option value="已关闭">已关闭</Option>
-                                      </Select>
+                                        <Select placeholder="全部" style={{ width: '100%' }}
+                                            onSelect={(e) => {
+                                                this.state.otherParams.state = e;
+                                            }}>
+                                            <Option value="">全部</Option>
+                                            {
+                                                this.state.queryCondition.states.map((value, index) => {
+                                                    return <Option value={value} key={value}>{value}</Option>
+                                                })
+                                            }
+                                        </Select>
                                     )}
                                 </FormItem>
                             </Col>
                             <Col span={8}>
                                 <FormItem label='投诉类型' {...formItemLayout}>
                                     {getFieldDecorator('tousuleixin')(
-                                      <Select defaultValue="全部" style={{width: '100%'}}>
-                                        <Option value="全部">全部</Option>
-                                        <Option value="泊位异常">泊位异常</Option>
-                                        <Option value="充值异常">充值异常</Option>
-                                        <Option value="订单异常">订单异常</Option>
-                                        <Option value="其他问题">其他问题</Option>
-                                        <Option value="咨询建议">咨询建议</Option>
-                                      </Select>
+                                        <Select placeholder="全部" style={{ width: '100%' }}
+                                            onSelect={(e) => {
+                                                this.state.otherParams.type = e;
+                                            }}>
+                                            <Option value="">全部</Option>
+                                            {
+                                                this.state.queryCondition.types.map((value, index) => {
+                                                    return <Option value={value} key={value}>{value}</Option>
+                                                })
+                                            }
+                                        </Select>
                                     )}
                                 </FormItem>
                             </Col>
                         </Row>
                         <Row gutter={46}>
-                            <Col style={{textAlign: 'right'}}>
+                            <Col style={{ textAlign: 'right' }}>
                                 <Button type='primary' onClick={this.handleQuery.bind(this)}>查询</Button>
-                                <Button style={{marginLeft: '20px'}}
-                                        onClick={this.handleReset.bind(this)}>重置</Button>
+                                <Button style={{ marginLeft: '20px' }}
+                                    onClick={this.handleReset.bind(this)}>重置</Button>
                             </Col>
                         </Row>
                     </Form>
                     {/*表格*/}
                     <Spin tip="加载中.." spinning={loading}>
                         <Table
-                            style={{marginTop: '20px'}}
+                            style={{ marginTop: '20px' }}
                             rowKey={data => data.id}
                             columns={columns}
                             dataSource={AlarmRecord}
@@ -304,7 +318,7 @@ class ComplaintsList extends Component {
                                     onChange={this.onPageChange.bind(this)}
                                     onShowSizeChange={this.onShowSizeChange.bind(this)}
                                 />
-                                <div style={{clear: 'both'}}></div>
+                                <div style={{ clear: 'both' }}></div>
                             </div>
                         ) : ''}
                     </Spin>

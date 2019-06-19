@@ -1,8 +1,10 @@
 import React, {Component, Suspense, lazy} from 'react';
-import {Icon, Tabs, Spin} from 'antd';
+import {Icon, Tabs, Spin, message} from 'antd';
 import './Visualization.css';
 import _ from 'lodash';
 import {HttpClient} from "@/common/HttpClient";
+import $ from 'jquery';
+import moment from 'moment';
 
 const Berth = lazy(() => import('./Components/VisualizationBerth'));
 const Users = lazy(() => import('./Components/VisualizationUsers'));
@@ -135,8 +137,11 @@ export default class Visualization extends Component {
         HttpClient.query('/parking-resource/admin/parking/road/space/count', 'GET', params, (d, type) => {
             if (type === HttpClient.requestSuccess) {
                 const data = d.data.list;
+                if (data && !data.length) {
+                    message.info('暂无数据')
+                }
                 const markers = [];
-                data.forEach(item => {
+                data && data.forEach(item => {
                     let markerContent = `<div style="display: flex; justify-content: center; flex-direction: column; align-items: center">
                             <div class='markerLngLat'></div>
                             <span class='markerContent'>${item.areaName}：${item.count}个泊位</span>
@@ -228,8 +233,8 @@ export default class Visualization extends Component {
             this.usersMarkerGroup.hide();
             if (this.deviceMarkerGroup.getOverlays().length > 0) {
                 this.deviceMarkerGroup.show();
-            }else {
-                this.getDevice(null);
+            } else {
+                // this.getDevice(null);
             }
         }
     }
@@ -244,71 +249,120 @@ export default class Visualization extends Component {
     // 获取设备
     getDevice(params) {
         this.deviceMarkerGroup.clearOverlays();
-        const deviceType = ['dici', 'wifi', 'zhongjiqi'];
-        const deviceStatus = ['blue', 'red', 'green'];
-        HttpClient.query('/visualization/device', 'GET', params, (d, type) => {
-            if (type === HttpClient.requestSuccess) {
-                const data = d.data;
-                const markers = [];
-                data.forEach(item => {
-                    const marker = new window.AMap.Marker({
-                        position: new window.AMap.LngLat(item.location[0], item.location[1]),
-                        topWhenClick: true,
-                        icon: new window.AMap.Icon({
-                            image: `./resources/mapIcons/${deviceType[item.device_type]}_${deviceStatus[item.statu]}.png`,
-                            imageSize: new window.AMap.Size(30, 30),
-                        }),
-                        extData: item
+        $.ajax({
+            "url": 'https://iotdev.triplego.cn/admin/devices',
+            "async": true,
+            "cache": false,
+            "method": 'GET',
+            "data": params,
+            "dataType": 'json',
+            timeout: 40000,
+            "crossDomain": true,
+            success: (d) => {
+                if (d.ack_code === 'ok') {
+                    const data = d.data;
+                    const markers = [];
+                    data.forEach(item => {
+                        const marker = new window.AMap.Marker({
+                            position: new window.AMap.LngLat(item.geo_longlat[0], item.geo_longlat[1]),
+                            topWhenClick: true,
+                            icon: new window.AMap.Icon({
+                                image: `./resources/mapIcons/${item.sub_type}_${item.device_status}.png`,
+                                imageSize: new window.AMap.Size(30, 30),
+                            }),
+                            extData: item
+                        });
+
+                        marker.on('click', (e) => {
+                            //构建信息窗体中显示的内容
+                            const extData = e.target.C.extData;
+                            this.onClickDeviceMarker(extData, e.target.C.position);
+                        });
+                        markers.push(marker)
                     });
+                    this.deviceMarkerGroup.addOverlays(markers);
+                    this.deviceMarkerGroup.setMap(this.mapInstance)
+                }
+            },
+            error: (e) => {
+                message.error("服务器异常！");
+            }
+        });
+    }
+
+    // 点击设备图标
+    onClickDeviceMarker(extData, infoWindowPosition) {
+        const device_type = {
+            GMG: '地磁',
+            NBGMG: 'NB-地磁',
+            UWB: '超宽带射频定位',
+            CAM: '视频',
+            HCAM: '高位视频',
+            UWBCAM: '超宽带定位+视频',
+            USON: '超声波'
+        };
+        const params = {
+            service: 'admin.monitor',
+            version: '2.0',
+            timestamp: +moment(),
+            hardware_id: extData.hardware_id
+        };
+        $.ajax({
+            "url": `https://iotdev.triplego.cn/admin/monitor`,
+            "async": true,
+            "cache": false,
+            "method": 'GET',
+            "data": params,
+            "dataType": 'json',
+            timeout: 40000,
+            "crossDomain": true,
+            success: (d) => {
+                if (d.ack_code === 'ok') {
                     const infoWindow = new window.AMap.InfoWindow({
                         autoMove: true,
                         offset: new window.AMap.Pixel(8, -30)
                     });
-
-                    marker.on('click', (e) => {
-                        //构建信息窗体中显示的内容
-                        const extData = e.target.C.extData;
-                        const info = `<div style="max-width: 500px; padding: 10px">
-                                    <p>坐标 : ${extData.location[0]}，${extData.location[1]}</p>
-                                    <p>地址 :北京市朝阳区望京阜荣街10号首开广场4层</p>
-                                </div>`;
-                        infoWindow.setContent(info);
-                        infoWindow.open(this.mapInstance, e.target.C.position);
-                    });
-                    markers.push(marker)
-                });
-                this.deviceMarkerGroup.addOverlays(markers);
-                this.deviceMarkerGroup.setMap(this.mapInstance)
+                    const info = `<div style="max-width: 500px; padding: 10px">
+                           <p>设备类型：${device_type[d.device_type]}</p>
+                           <p>设备型号：${d.device_model}</p>
+                           <p>硬件ID：${d.hardware_id}</p>
+                           <p>设备厂家：${d.device_vendor || ''}</p>
+                           <p>坐标：${d.monitor_status.geo_longlat.join(',') || ''}</p>
+                           <p>设备电量：${d.monitor_status.battery || ''}</p>
+                           <p>设备温度：${d.monitor_status.temperature || ''}</p>
+                           <p>设备状态：${d.device_status || ''}</p>
+                           <p>最后状态更新时间：${d.time_created ? moment(d.time_created).format('YYYY-MM-DD HH:mm:ss') : ''}</p>
+                      </div>`;
+                    infoWindow.setContent(info);
+                    infoWindow.open(this.mapInstance, infoWindowPosition);
+                }
+            },
+            error: (e) => {
+                message.error("服务器异常！");
             }
-        })
+        });
     }
 
-    // 设备复选框change事件
-    checkBoxChange(values) {
-        this.deviceParams.status = values;
-        this.deviceParams = this.filterParams(this.deviceParams);
-        this.getDevice(this.deviceParams)
-    }
-
-    // 选择设备类型
-    selectDeviceType(value) {
-        this.deviceParams.type = value;
-        this.deviceParams = this.filterParams(this.deviceParams);
-        this.getDevice(this.deviceParams)
-    }
-
-    // 选择设备片区
-    selectArea(value) {
-        this.deviceParams.area = value;
-        this.deviceParams = this.filterParams(this.deviceParams);
-        this.getDevice(this.deviceParams)
-    }
-
-    // 选择设备行政区
-    selectDistrict(value) {
-        this.deviceParams.district = value;
-        this.deviceParams = this.filterParams(this.deviceParams);
-        this.getDevice(this.deviceParams)
+    // 设备查询
+    searchDevice(values) {
+        this.deviceParams = this.filterParams(values);
+        this.deviceParams.service = 'admin.devices';
+        this.deviceParams.version = '2.0';
+        this.deviceParams.timestamp = +moment();
+        if (this.deviceParams.areaCode && !this.deviceParams.geo_longlat) { //只选了区域
+            this.mapInstance.plugin(["AMap.DistrictSearch"], () => {
+                new window.AMap.DistrictSearch({
+                    extensions: 'all',
+                    subdistrict: 0
+                }).search(this.deviceParams.areaCode, (status, result) => {
+                    const center = result.districtList[0].center;
+                    this.deviceParams.geo_longlat = JSON.stringify([center.lng, center.lat]);
+                    this.getDevice(this.deviceParams);
+                })
+            });
+        } else { // 选择了片区
+            this.getDevice(this.deviceParams)
+        }
     }
 
     // 获取在线地图人员
@@ -328,7 +382,7 @@ export default class Visualization extends Component {
                         extData: item
                     });
                     marker.on('click', () => {
-                        location.hash = `/Home/Visualization/UserDetail?id=${item.userId}`
+                        location.hash = `${location.hash}/UserDetail?id=${item.userId}`
                     });
                     markers.push(marker);
                 });
@@ -392,10 +446,7 @@ export default class Visualization extends Component {
                                         <TabPane tab="设备" key="3">
                                             <Suspense fallback={null}>
                                                 <Devices
-                                                    selectDeviceType={this.selectDeviceType.bind(this)}
-                                                    selectArea={this.selectArea.bind(this)}
-                                                    selectDistrict={this.selectDistrict.bind(this)}
-                                                    checkBoxChange={this.checkBoxChange.bind(this)}/>
+                                                    searchDevice={this.searchDevice.bind(this)}/>
                                             </Suspense>
                                         </TabPane>
                                     </Tabs>

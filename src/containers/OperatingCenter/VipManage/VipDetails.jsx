@@ -158,6 +158,28 @@ export default class VipDetails extends Component {
                //console.log(parseInt(marr[0])+"点");
                return dd;
              };
+             const  gettime1=(str)=>{
+                    const arr=str.split("T");
+                    const d=arr[0];
+                    const darr = d.split('-');
+                    const t=arr[1];
+                    const tarr = t.split('.000');
+                    const marr = tarr[0].split(':');
+                    const dd = parseInt(darr[0])+"/"+parseInt(darr[1])+"/"+parseInt(darr[2]);
+                    //console.log(parseInt(marr[0])+"点");
+                    return dd;
+                  };
+                  const  gettime2=(str)=>{
+                         const arr=str.split("T");
+                         const d=arr[0];
+                         const darr = d.split('-');
+                         const t=arr[1];
+                         const tarr = t.split('.000');
+                         const marr = tarr[0].split(':');
+                         const dd = parseInt(darr[0])+"/"+parseInt(darr[1])+"/"+parseInt(darr[2])+" "+(parseInt(marr[0])>=10?parseInt(marr[0]):('0'+parseInt(marr[0])))+":"+(parseInt(marr[1])>=10?parseInt(marr[1]):('0'+parseInt(marr[1])))+":"+(parseInt(marr[2])>=10?parseInt(marr[2]):('0'+parseInt(marr[2])));
+                         //console.log(parseInt(marr[0])+"点");
+                         return dd;
+                       };
         const columns = [
             {
                 title: '车牌号',
@@ -291,7 +313,7 @@ export default class VipDetails extends Component {
                             <Row>
                                 <Col span={8}>
                                     <label>出生年月：</label>
-                                    <span>{baseInfo.birthday ?gettime(baseInfo.birthday): '--'}</span>
+                                    <span>{baseInfo.birthday ?gettime1(baseInfo.birthday): '--'}</span>
                                 </Col>
                                 <Col span={8}>
                                     <label>电子邮箱：</label>
@@ -305,7 +327,7 @@ export default class VipDetails extends Component {
                                 </Col>
                                 <Col span={8}>
                                     <label>注册时间：</label>
-                                    <span>{baseInfo.regTime ?gettime(baseInfo.regTime): '--'}</span>
+                                    <span>{baseInfo.regTime ?gettime2(baseInfo.regTime): '--'}</span>
                                 </Col>
                             </Row>
                             <Row>

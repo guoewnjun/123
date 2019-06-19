@@ -54,13 +54,13 @@ class AttendanceAddressModal extends Component {
                     }
                 });
             });
-            window.AMap.plugin('window.AMap.Autocomplete', () => {
+            window.AMap.plugin('AMap.Autocomplete', () => {
                 let autoOptions = {
                     input: 'search',
                 };
                 this.autoComplete = new window.AMap.Autocomplete(autoOptions);
             });
-            window.AMap.plugin('window.AMap.PlaceSearch', () => {
+            window.AMap.plugin('AMap.PlaceSearch', () => {
                 let autoOptions = {
                     city: '全国',
                     map: this.mapInstance

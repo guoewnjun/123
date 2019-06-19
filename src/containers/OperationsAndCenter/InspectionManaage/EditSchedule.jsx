@@ -143,6 +143,7 @@ export default class EditSchedule extends Component {
 
     // 组合dropDown子菜单
     genMenuItemElem(item) {
+        // console.log(item);
         return (
             item.workScheduleTimes.map(TimeItem => (
                 <MenuItem
@@ -151,7 +152,7 @@ export default class EditSchedule extends Component {
                 >
                     {workTypeEnum[TimeItem.workTimeType]}
                     {
-                        this.state.selectedKeys.map(keysItem => {
+                        this.state.selectedKeys.forEach(keysItem => {
                             if (keysItem == TimeItem.workTimeType) {
                                 return (<Icon key={keysItem} type="check" />)
                             }
@@ -203,9 +204,9 @@ export default class EditSchedule extends Component {
                     this.state.initWorkTimeTypeId = 0;
                     // return;
                     HttpClient.query(`${window.MODULE_PARKING_INSPECTION}/inspection/schedule/manage/group/month${paramString}`, 'PUT', null, (d, type) => {
-                        if (type == HttpClient.requestSuccess) {
+                        if (type === HttpClient.requestSuccess) {
                             let tbdata = this.state.tableData;
-                            tbdata.map(item => {
+                            tbdata.forEach(item => {
                                 if (item.groupMemberId == record.groupMemberId) {
                                     item[dateInfosItem.date.split('-')[2]] = selectKeys.map(Number)
                                 }
@@ -278,7 +279,7 @@ export default class EditSchedule extends Component {
         formData.append('files', file);
         formData.append('inspectionGroupId', this.state.inspectionGroupId.toString());
         HttpClient.query(window.MODULE_PARKING_INSPECTION + `/inspection/schedule/manage/import`, "POST", formData, (d, type) => {
-            if (type == HttpClient.requestSuccess) {
+            if (type === HttpClient.requestSuccess) {
                 message.success(d.data);
                 // 获取稽查组单月月排班日历信息
                 this.getCalendar();
@@ -301,7 +302,7 @@ export default class EditSchedule extends Component {
         const _this = this;
 
         function genPopoverMenu(dateInfosItem) {
-            let elem = groupSchedules.forEach(groupSchedulesItem => {
+            let elem = groupSchedules.map(groupSchedulesItem => {
                 if (groupSchedulesItem.groupScheduleType == 0) { //通用班次
                     return _this.genMenuItemElem(groupSchedulesItem)
                 } else if (groupSchedulesItem.groupScheduleType == 1 && dateInfosItem.dateStatus == 0) { //工作日

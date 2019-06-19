@@ -1,31 +1,22 @@
 import React, {Component} from 'react';
 import {Col, DatePicker, Select, Input, Row, Button, Table, Pagination} from "antd";
+import {HttpClient} from "@/common/HttpClient";
+import _ from "lodash";
+import moment from 'moment';
 
 class AbnormalDevice extends Component {
 
     constructor(props) {
         super(props);
-        this.roadName = '';
-        this.alarmStatus = -1;
-        this.alarmEvent = -1;
-        this.alarmTime = [];
+        this.payLoad = {};
     }
 
     state = {
-        dataSource: [{
-            number: 'G454465',
-            event: '低电量警告',
-            roadName: '南山一路',
-            deviceManufacturer: '金益科技',
-            deviceType: '车检器',
-            deviceModel: 'sp032',
-            alarmTime: '2018-09-02 12:00:00',
-            alarmGrade: '普通',
-            alarmStatus: '待处理'
-        }],
-        total: 0,
-        pageNum: 0,
-        pageSize: 0,
+        spinning: true,
+        dataSource: [],
+        total: 1,
+        pageNum: 1,
+        pageSize: 10,
     };
 
     componentWillMount() {
@@ -33,7 +24,32 @@ class AbnormalDevice extends Component {
     }
 
     componentDidMount() {
+        const parmas = this.filterParams({
+            pageNum: this.state.pageNum,
+            pageSize: this.state.pageSize,
+            ...this.payLoad
+        });
+        HttpClient.query(`${window.MODULE_PARKING_RESOURCE}/road/maintenance/warning/device/list`, 'GET', parmas, (d, type) => {
+            if (type === HttpClient.requestSuccess) {
+                console.log(d);
+                this.setState({
+                    dataSource: d.data.list || []
+                })
+            }
+            this.setState({
+                spinning: false
+            });
+        })
+    }
 
+    filterParams(params) {
+        const newParams = {};
+        _.forIn(params, (value, key) => {
+            if (value || value === 0) {
+                newParams[key] = value
+            }
+        });
+        return newParams
     }
 
     componentWillUnmount() {
@@ -42,7 +58,7 @@ class AbnormalDevice extends Component {
 
     // 查询
     search() {
-        console.log(this.roadName)
+        console.log(this.payLoad)
     }
 
     // 分页变化
@@ -62,16 +78,16 @@ class AbnormalDevice extends Component {
         const columns = [
             {
                 title: '告警编号',
-                dataIndex: 'number',
+                dataIndex: 'id',
             }, {
                 title: '告警事件',
-                dataIndex: 'event',
+                dataIndex: 'type',
             }, {
                 title: '路段名称',
-                dataIndex: 'roadName',
+                dataIndex: 'parkingName',
             }, {
                 title: '设备厂商',
-                dataIndex: 'deviceManufacturer',
+                dataIndex: 'factory',
             }, {
                 title: '设备类型',
                 dataIndex: 'deviceType',
@@ -80,19 +96,22 @@ class AbnormalDevice extends Component {
                 dataIndex: 'deviceModel'
             }, {
                 title: '告警时间',
-                dataIndex: 'alarmTime'
+                dataIndex: 'faultTime',
+                render: (value) => (
+                    moment(value).format('YYYY-MM-DD HH:mm:ss')
+                )
             }, {
                 title: '告警等级',
-                dataIndex: 'alarmGrade'
+                dataIndex: 'priority'
             }, {
                 title: '告警状态',
-                dataIndex: 'alarmStatus'
+                dataIndex: 'state'
             }, {
                 title: '操作',
                 dataIndex: 'action',
                 render: (value, row) => (
                     <a onClick={() => {
-                        location.hash = `${location.hash}/AbnormalDeviceDetail?id=${row.number}`
+                        location.hash = `${location.hash}/AbnormalDeviceDetail?id=${row.id}`
                     }}>详情</a>
                 )
 
@@ -108,14 +127,14 @@ class AbnormalDevice extends Component {
                         <Col span={8} style={{ display: 'flex', alignItems: 'center' }}>
                             <div>路段名称：</div>
                             <Input style={{ flexGrow: 1, width: 'auto' }} placeholder='请输入' onChange={(e) => {
-                                this.roadName = e.target.value
+                                this.payLoad.parkingName = e.target.value
                             }}/>
                         </Col>
                         <Col span={8} style={{ display: 'flex', alignItems: 'center' }}>
                             <div>告警状态：</div>
-                            <Select style={{ flexGrow: 1, width: 'auto' }} placeholder='请输入' allowClear
+                            <Select style={{ flexGrow: 1, width: 'auto' }} placeholder='请选择' allowClear
                                     onChange={(value) => {
-                                        this.alarmStatus = value
+                                        this.payLoad.state = value
                                     }}>
                                 <Option value={0}>待处理</Option>
                                 <Option value={1}>无需处理</Option>
@@ -124,9 +143,9 @@ class AbnormalDevice extends Component {
                         </Col>
                         <Col span={8} style={{ display: 'flex', alignItems: 'center' }}>
                             <div>告警事件：</div>
-                            <Select style={{ flexGrow: 1, width: 'auto' }} placeholder='请输入' allowClear
+                            <Select style={{ flexGrow: 1, width: 'auto' }} placeholder='请选择' allowClear
                                     onChange={(value) => {
-                                        this.alarmEvent = value
+                                        this.payLoad.faultType = value
                                     }}>
                                 <Option value={0}>低电量告警</Option>
                                 <Option value={1}>工作异常</Option>
@@ -138,10 +157,22 @@ class AbnormalDevice extends Component {
                             <div>告警时间：</div>
                             <RangePicker style={{ flexGrow: 1, width: 'auto' }} allowClear format="YYYY-MM-DD"
                                          onChange={(dates, dateString) => {
-                                             this.alarmTime = dateString;
+                                             this.payLoad.beginTime = dateString[0];
+                                             this.payLoad.endTime = dateString[1];
                                          }}/>
                         </Col>
-                        <Col span={16} style={{ textAlign: 'right' }}>
+                        <Col span={8} style={{ display: 'flex', alignItems: 'center' }}>
+                            <div>告警等级：</div>
+                            <Select style={{ flexGrow: 1, width: 'auto' }} placeholder='请选择' allowClear
+                                    onChange={(value) => {
+                                        this.payLoad.priority = value
+                                    }}>
+                                <Option value={0}>普通</Option>
+                                <Option value={1}>重要</Option>
+                                <Option value={2}>严重</Option>
+                            </Select>
+                        </Col>
+                        <Col span={8} style={{ textAlign: 'right' }}>
                             <Button type='primary' style={{ marginRight: 10 }}
                                     onClick={this.search.bind(this)}>查询</Button>
                             <Button>重置</Button>
@@ -150,7 +181,7 @@ class AbnormalDevice extends Component {
                     <Row>
                         <Table
                             style={{ marginTop: '20px' }}
-                            rowKey={data => data.number}
+                            rowKey={data => data.id}
                             columns={columns}
                             dataSource={dataSource}
                             pagination={false}

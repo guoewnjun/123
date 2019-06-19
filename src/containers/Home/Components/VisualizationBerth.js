@@ -1,5 +1,5 @@
 import React, {Component, Fragment} from 'react';
-import {Button, Card, List, Row, Select, Spin} from "antd";
+import {Button, Card, List, Row, Select, Spin, message} from "antd";
 import ProTypes from 'prop-types';
 import {HttpClient} from "@/common/HttpClient.jsx";
 
@@ -23,15 +23,19 @@ class VisualizationBerth extends Component {
 
     componentDidMount() {
         // 获取行政区
-        HttpClient.query(`/parking-resource/admin/city/areaInfo/450400`, 'GET', null, (d, type) => {
+        HttpClient.query(`${window.MODULE_PARKING_INFO}/admin/city/areaInfo/${window.cityCode}`, 'GET', null, (d, type) => {
             if (type === HttpClient.requestSuccess) {
                 this.setState({
                     districtOptions: d.data
                 })
             }
         });
+        this.getSubAreaInfo({ cityCode: window.cityCode });
+    }
+
+    getSubAreaInfo(params) {
         // 获取片区
-        HttpClient.query('/parking-info/admin/city/subAreaInfo', 'GET', { cityCode: 450400 }, (d, type) => {
+        HttpClient.query(`${window.MODULE_PARKING_INFO}/admin/city/subAreaInfo`, 'GET', params, (d, type) => {
             if (type === HttpClient.requestSuccess) {
                 this.setState({
                     areaOptions: d.data
@@ -44,18 +48,33 @@ class VisualizationBerth extends Component {
 
     }
 
+    selectArea(value) {
+        const params = {
+            cityCode: window.cityCode,
+            areaCode: value
+        };
+        this.payLoad.areaCode = value;
+        this.getSubAreaInfo(params)
+    }
+
     searchBerth() {
-        this.setState({
-            spinning: true
-        });
-        HttpClient.query('/parking-resource/admin/parking/road/space', 'GET', this.payLoad, (d, type) => {
-            if (type === HttpClient.requestSuccess) {
+        if (Object.keys(this.payLoad).length > 0) {
+            this.setState({
+                spinning: true
+            });
+            HttpClient.query('/parking-resource/admin/parking/road/space', 'GET', this.payLoad, (d, type) => {
+                if (type === HttpClient.requestSuccess) {
+                    this.setState({
+                        streetBerthData: d.data
+                    })
+                }
                 this.setState({
                     spinning: false,
-                    streetBerthData: d.data
                 })
-            }
-        });
+            });
+        } else {
+            message.info('请选择区域或者片区')
+        }
     }
 
     render() {
@@ -69,7 +88,8 @@ class VisualizationBerth extends Component {
                         style={{ flexGrow: 1 }}
                         placeholder="请选择"
                         optionFilterProp="children"
-                        onChange={(value) => this.payLoad.areaCode = value}
+                        allowClear
+                        onChange={(value) => this.selectArea(value)}
                     >
                         {
                             districtOptions.map(item => (
@@ -84,6 +104,7 @@ class VisualizationBerth extends Component {
                         style={{ flexGrow: 1 }}
                         placeholder="请选择"
                         optionFilterProp="children"
+                        allowClear
                         onChange={(value) => this.payLoad.subAreaName = value}
                     >
                         {
