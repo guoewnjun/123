@@ -64,6 +64,7 @@ class ParkingReport extends Component {
             },
           ],
 
+
           table1:[
             {
               key: '1',
@@ -79,19 +80,36 @@ class ParkingReport extends Component {
               scope: '福田区',
               admissions: '3290',
               appearances: '4800',
-
+              // operation: '展开',
             },
             {
               key: '3',
               date: '2019-05-05',
               scope: '南山区',
               admissions: '3782',
-              appearances: '3782',
+              appearances: '2890',
+              // operation: '展开',
 
+            },{
+              key: '1',
+              date: '2019-05-05',
+              scope: '...',
+              admissions: '...',
+              appearances: '...',
+              // operation: '展开',
+
+            },{
+              key: '5',
+              date: '2019-05-05',
+              scope: '深圳',
+              admissions: '18029',
+              appearances: '20230',
+              operation: '展开',
             },
           ],
           table2:[],
           table3:[],
+
 
           otherParams: {
               startTime: null, //开始时间
@@ -191,10 +209,10 @@ class ParkingReport extends Component {
           },
         ];
 
-const kuai = {
-  marginTop:15,
-  textAlign:'center'
-};
+        const kuai = {
+          marginTop:15,
+          textAlign:'center'
+        };
         return (
             <div className='page'>
                 <div className='page-header'>
@@ -202,8 +220,8 @@ const kuai = {
                 </div>
                 <div className='page-content' style={{ padding: 0 }}>
                   <Row gutter={64} type="flex" justify="space-around" style={{textAlign:'center'}}>
-                    <Col span={24}>
-                      <div style={{marginLeft:20, marginTop:12, fontSize:20,float:'left'}}>今日停车概况 (截至{getNowFormatDate()})</div>
+                    <Col span={24} style={{marginLeft:20, marginTop:12, fontSize:20,textAlign:'left'}}>
+                      今日停车概况 (截至{getNowFormatDate()})
                     </Col>
                     <Col span={4} style={{marginTop:20}}>
                       <Row gutter={0} >
@@ -211,7 +229,7 @@ const kuai = {
                           泊位总数
                         </Col>
                         <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
-                        {ParkingToday.BerthageTotal}
+                          {ParkingToday.BerthageTotal}
                         </Col>
                       </Row>
                     </Col>
@@ -221,7 +239,7 @@ const kuai = {
                           当前占用数
                         </Col>
                         <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
-                        {ParkingToday.CurrentOccupation}
+                          {ParkingToday.CurrentOccupation}
                         </Col>
                       </Row>
                     </Col>
@@ -231,19 +249,17 @@ const kuai = {
                           当前占用率
                         </Col>
                         <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
-                        {ParkingToday.CurrentOccupancyRate}
+                          {ParkingToday.CurrentOccupancyRate}
                         </Col>
                       </Row>
                     </Col>
-
-
                     <Col span={4} style={{marginTop:20}}>
                       <Row gutter={0} >
                         <Col span={24} style={{}}  style={{color:'#868686'}}>
                           实时空位
                         </Col>
                         <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
-                        {ParkingToday.CurrentTimeSlots}
+                          {ParkingToday.CurrentTimeSlots}
                         </Col>
                       </Row>
                     </Col>
@@ -253,7 +269,7 @@ const kuai = {
                           今日停车次数
                         </Col>
                         <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
-                        {ParkingToday.StopsToday}
+                          {ParkingToday.StopsToday}
                         </Col>
                       </Row>
                     </Col>
@@ -263,90 +279,90 @@ const kuai = {
                           平均停车时长
                         </Col>
                         <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
-                        {ParkingToday.AverageStoppingTime}
+                          {ParkingToday.AverageStoppingTime}
                         </Col>
                       </Row>
                     </Col>
                   </Row>
                 </div>
-                <div className='page-content' style={{ padding: 0 }} style={{textAlign:'center'}}>
-
-                    <Row gutter={0} type="flex" justify="space-around">
-                      <Col span={24}>
-                        <div style={{marginLeft:20, marginTop:12, fontSize:20,float:'left'}}>历史停车数据</div>
+                <div className='page-content' style={{ padding: 0 }}>
+                    <Row gutter={64} type="flex" justify="space-around" style={{textAlign:'center'}}>
+                      <Col span={24} style={{marginLeft:20, marginTop:12, fontSize:20,textAlign:'left'}}>
+                        历史停车数据
                       </Col>
                       <Col span={24} style={{marginTop:25}}>
-
-                        <Col span={6} style={{marginLeft:20,}}>
-                          <RangePicker style={{width: "100%",}} format="YYYY-MM-DD"
-                              onChange={(dates, dateString) => {
-                                  this.state.otherParams.startTime = dateString[0];
-                                  this.state.otherParams.endTime = dateString[1];
-                                  }}
-                          />
-                        </Col>
-                        <Col span={6} style={{marginLeft:80,}}>
-                          <Cascader options={options} onChange={() => this.onChange()} placeholder="深圳" style={{width:'100%'}} changeOnSelect />
-                        </Col>
-                        <Col span={4} style={{marginLeft:80,}}>
-                          <Button type="primary" onClick={this.handleQuery.bind(this)}>查询</Button>
-                        </Col>
+                        <Row gutter={0}>
+                          <Col span={6} style={{marginLeft:20,}}>
+                            <RangePicker style={{width: "100%",}} format="YYYY-MM-DD"
+                                onChange={(dates, dateString) => {
+                                    this.state.otherParams.startTime = dateString[0];
+                                    this.state.otherParams.endTime = dateString[1];
+                                    }}
+                            />
+                          </Col>
+                          <Col span={6} style={{marginLeft:80,}}>
+                            <Cascader options={options} onChange={() => this.onChange()} placeholder="深圳" style={{width:'100%',textAlign:'left'}} changeOnSelect />
+                          </Col>
+                          <Col span={4} style={{marginLeft:80,}}>
+                            <Button type="primary" onClick={this.handleQuery.bind(this)}>查询</Button>
+                          </Col>
+                        </Row>
                       </Col>
                       <Col span={24} style={{marginLeft:20, marginTop:15, fontSize:20,}}>
-                      <Row>
-                        <Col span={6} style={{marginTop:20}}>
-                          <Row gutter={0} >
-                            <Col span={24} style={{}}  style={{color:'#868686'}}>
-                              入场总次数
-                            </Col>
-                            <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
-                            {HistoricalParkingData.TotalAdmission}
-                            </Col>
-                          </Row>
-                        </Col>
-                        <Col span={6} style={{marginTop:20}}>
-                          <Row gutter={0} >
-                            <Col span={24} style={{}}  style={{color:'#868686'}}>
-                              出场总次数
-                            </Col>
-                            <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
-                            {HistoricalParkingData.TotalAppearances}
-                            </Col>
-                          </Row>
-                        </Col>
-                        <Col span={6} style={{marginTop:20}}>
-                          <Row gutter={0} >
-                            <Col span={24} style={{}}  style={{color:'#868686'}}>
-                              停车总次数
-                            </Col>
-                            <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
-                            {HistoricalParkingData.TotalStops}
-                            </Col>
-                          </Row>
-                        </Col>
-                        <Col span={6} style={{marginTop:20}}>
-                          <Row gutter={0} >
-                            <Col span={24} style={{}}  style={{color:'#868686'}}>
-                              平均停车时长
-                            </Col>
-                            <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
-                            {HistoricalParkingData.AverageStoppingTime}
-                            </Col>
-                          </Row>
-                        </Col>
+                        <Row gutter={0}>
+                          <Col span={6} style={{marginTop:20}}>
+                            <Row gutter={0} >
+                              <Col span={24} style={{}}  style={{color:'#868686'}}>
+                                入场总次数
+                              </Col>
+                              <Col span={24} style={{marginTop:0,fontSize:30}}>
+                                {HistoricalParkingData.TotalAdmission}
+                              </Col>
+                            </Row>
+                          </Col>
+                          <Col span={6} style={{marginTop:20}}>
+                            <Row gutter={0} >
+                              <Col span={24} style={{}}  style={{color:'#868686'}}>
+                                出场总次数
+                              </Col>
+                              <Col span={24} style={{marginTop:0,fontSize:30}}>
+                                {HistoricalParkingData.TotalAppearances}
+                              </Col>
+                            </Row>
+                          </Col>
+                          <Col span={6} style={{marginTop:20}}>
+                            <Row gutter={0} >
+                              <Col span={24} style={{}}  style={{color:'#868686'}}>
+                                停车总次数
+                              </Col>
+                              <Col span={24} style={{marginTop:0,fontSize:30}}>
+                                {HistoricalParkingData.TotalStops}
+                              </Col>
+                            </Row>
+                          </Col>
+                          <Col span={6} style={{marginTop:20}}>
+                            <Row gutter={0} >
+                              <Col span={24} style={{}}  style={{color:'#868686'}}>
+                                平均停车时长
+                              </Col>
+                              <Col span={24} style={{marginTop:0,fontSize:30}}>
+                                {HistoricalParkingData.AverageStoppingTime}
+                              </Col>
+                            </Row>
+                          </Col>
                         </Row>
                       </Col>
                     </Row>
-                    </div>
-                    <div className='page-content' style={{ padding: 0 ,marginTop:20}}>
-                    <Row gutter={0}>
-                      <div style={{marginLeft:20, marginTop:12,}}>
+                  </div>
+                  <div className='page-content' style={{ padding: 0 ,marginTop:20}}>
+                    <Row gutter={64}>
+                      <Col span={24} style={{marginLeft:20, marginTop:15,}}>
                         <Radio.Group defaultValue="a" buttonStyle="solid">
                           <Radio.Button value="a" style={{width:120,textAlign:'center'}}>出入场车流</Radio.Button>
                           <Radio.Button value="b" style={{width:120,textAlign:'center'}}>周转率</Radio.Button>
                           <Radio.Button value="c" style={{width:120,textAlign:'center'}}>停车次数/时长</Radio.Button>
                         </Radio.Group>
-                      </div>
+                      </Col>
                       <Col span={24} style={{marginLeft:20, marginTop:15, fontSize:20,}}>
                         每日出入车流统计
                       </Col>
@@ -360,18 +376,20 @@ const kuai = {
                         <Histogram />
                       </Col>
                     </Row>
-                    <Table
-                        style={{marginTop: 20,textAlign:'center'}}
-                        bordered
-                        pagination={false}
-                        columns={columns1}
-                        dataSource={table1}
-                    />
-                </div>
-            </div>
-        );
-    }
+                    <Row gutter={64} style={{textAlign:'center'}}>
+                      <Col span={24}>
+                        <Table
+                            bordered
+                            pagination={false}
+                            columns={columns1}
+                            dataSource={table1}
+                        />
+                      </Col>
+                    </Row>
+                  </div>
+              </div>
+            );
+      }
 }
-
 
 export default ParkingReport;
