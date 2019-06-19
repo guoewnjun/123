@@ -102,24 +102,20 @@ class OperationalDaily extends Component {
       ];
       const data4 = [
         {
-          item: "内容1",
-          count: 580
+          item: "泊位异常",
+          count: 10
         },
         {
-          item: "内容2",
-          count: 1280
+          item: "充值异常",
+          count: 8
         },
         {
-          item: "内容3",
-          count: 680
+          item: "订单异常",
+          count: 5
         },
         {
-          item: "内容4",
-          count: 1280
-        },
-        {
-          item: "内容5",
-          count: 680
+          item: "其他问题",
+          count: 0
         },
       ];
       const data5 = [
@@ -156,7 +152,7 @@ class OperationalDaily extends Component {
                     <div>运营综合日报</div>
                 </div>
                 <div className='page-content' style={{padding: 0,background: 'transparent'}} >
-                    <Card className='detail-card'>
+                    <Card >
                         <Form className='reportForm'>
                             <Row gutter={46}>
                                 <Col span={6}>
@@ -170,12 +166,17 @@ class OperationalDaily extends Component {
                             </Row>
                         </Form>
                     </Card>
-                    <div style={{textAlign:'center',fontSize:20,background:'white'}}>
-                          路内停车运营综合日报
-                    </div>
-                    <div style={{textAlign:'center',fontSize:15,background:'white',height:70}}>
-                          2019-05-05
-                    </div>
+                    <Card>
+                        <Row gutter={46}>
+                            <Col span={24} style={{textAlign:'center',fontSize:20}}>
+                            路内停车运营综合日报
+                            </Col>
+                            <Col span={24} style={{textAlign:'center',fontSize:15}}>
+                            2019-05-05
+                            </Col>
+                        </Row>
+
+                    </Card>
                         <Card
                             title='一、用户概况'
                         >

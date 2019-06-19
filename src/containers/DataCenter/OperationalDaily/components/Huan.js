@@ -50,7 +50,7 @@ export default class Huan extends PureComponent {
             height={250}
             data={dv}
             scale={cols}
-            padding={[30, 30, 30, 30]}
+            padding={[30, 30, 20, 30]}
             forceFit
           >
             <Coord type={"theta"} radius={0.9} innerRadius={0.5} />
@@ -66,7 +66,7 @@ export default class Huan extends PureComponent {
               tooltip={[
                 "item*percent",
                 (item, percent) => {
-                  percent = percent * 100 + "%";
+                  percent =_.ceil( (percent * 100), 2) + "%";
                   return {
                     name: item,
                     value: percent

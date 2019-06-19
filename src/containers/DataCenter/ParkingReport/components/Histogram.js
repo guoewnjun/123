@@ -69,7 +69,8 @@ export default class NewZhu extends PureComponent {
      };
      return (
        <div>
-         <Chart height={500} data={data} scale={cols} forceFit>
+         <Chart height={500} data={data} scale={cols}
+         padding={[80, 100, 20, 100]} forceFit>
            <Legend />
            <Axis name="year" />
            <Axis name="sales" />

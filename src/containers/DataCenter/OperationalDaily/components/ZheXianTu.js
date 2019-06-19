@@ -74,7 +74,9 @@ export default class ZheXianTu extends React.Component {
     });
     return (
       <div>
-        <Chart height={400} data={dv} scale={cols} forceFit>
+        <Chart height={400} data={dv} scale={cols}
+        padding={[80, 100, 20, 100]}
+        forceFit>
           <Axis name="item" />
           <Axis name="count" />
           <Tooltip
@@ -82,12 +84,14 @@ export default class ZheXianTu extends React.Component {
               type: "y"
             }}
           />
-          <Geom type="line" position="item*count" size={2} />
+          <Geom type="line" position="item*count" size={2}  />
+          <Geom type="area" position="item*count"/>
           <Geom
             type="point"
             position="item*count"
             size={4}
-            shape={"circle"}
+            color="type"
+            shape="smooth"
             style={{
               stroke: "#fff",
               lineWidth: 1

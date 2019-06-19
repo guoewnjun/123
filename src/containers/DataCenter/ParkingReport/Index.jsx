@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Empty, Row, Col, Select, Radio, DatePicker, Button, Cascader, Table,} from "antd";
+import {Empty, Row, Col, Select, Radio, DatePicker, Button, Cascader, Table,Card} from "antd";
 
 import {HttpClientImmidIot} from "@/common/HttpClientImmidIot";
 
@@ -87,7 +87,7 @@ class ParkingReport extends Component {
               scope: '南山区',
               admissions: '3782',
               appearances: '3782',
-              
+
             },
           ],
           table2:[],
@@ -191,50 +191,92 @@ class ParkingReport extends Component {
           },
         ];
 
-
+const kuai = {
+  marginTop:15,
+  textAlign:'center'
+};
         return (
             <div className='page'>
                 <div className='page-header'>
                     <div>停车报表</div>
                 </div>
                 <div className='page-content' style={{ padding: 0 }}>
-                  <Row gutter={0} >
+                  <Row gutter={64} type="flex" justify="space-around" style={{textAlign:'center'}}>
                     <Col span={24}>
-                      <div style={{marginLeft:20, marginTop:12, fontSize:20,}}>今日停车概况 (截至{getNowFormatDate()})</div>
+                      <div style={{marginLeft:20, marginTop:12, fontSize:20,float:'left'}}>今日停车概况 (截至{getNowFormatDate()})</div>
                     </Col>
-                    <Col span={4} style={{marginTop:15,textAlign:'center'}}>
-                      <div style={{color:'#868686'}}>泊位总数</div>
-                      <div style={{marginTop:0,fontSize:30,color:'#FF003B'}}>{ParkingToday.BerthageTotal}</div>
+                    <Col span={4} style={{marginTop:20}}>
+                      <Row gutter={0} >
+                        <Col span={24} style={{}}  style={{color:'#868686'}}>
+                          泊位总数
+                        </Col>
+                        <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
+                        {ParkingToday.BerthageTotal}
+                        </Col>
+                      </Row>
                     </Col>
-                    <Col span={4} style={{marginTop:15,textAlign:'center'}}>
-                      <div style={{color:'#868686'}}>当前占用数</div>
-                      <div style={{marginTop:0,fontSize:30,color:'#FF003B'}}>{ParkingToday.CurrentOccupation}</div>
+                    <Col span={4} style={{marginTop:20}}>
+                      <Row gutter={0} >
+                        <Col span={24} style={{}}  style={{color:'#868686'}}>
+                          当前占用数
+                        </Col>
+                        <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
+                        {ParkingToday.CurrentOccupation}
+                        </Col>
+                      </Row>
                     </Col>
-                    <Col span={4} style={{marginTop:15,textAlign:'center'}}>
-                      <div style={{color:'#868686'}}>当前占用率</div>
-                      <div style={{marginTop:0,fontSize:30,color:'#FF003B'}}>{ParkingToday.CurrentOccupancyRate}</div>
+                    <Col span={4} style={{marginTop:20}}>
+                      <Row gutter={0} >
+                        <Col span={24} style={{}}  style={{color:'#868686'}}>
+                          当前占用率
+                        </Col>
+                        <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
+                        {ParkingToday.CurrentOccupancyRate}
+                        </Col>
+                      </Row>
                     </Col>
-                    <Col span={4} style={{marginTop:15,textAlign:'center'}}>
-                      <div style={{color:'#868686'}}>实时空位</div>
-                      <div style={{marginTop:0,fontSize:30,color:'#FF003B'}}>{ParkingToday.CurrentTimeSlots}</div>
+
+
+                    <Col span={4} style={{marginTop:20}}>
+                      <Row gutter={0} >
+                        <Col span={24} style={{}}  style={{color:'#868686'}}>
+                          实时空位
+                        </Col>
+                        <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
+                        {ParkingToday.CurrentTimeSlots}
+                        </Col>
+                      </Row>
                     </Col>
-                    <Col span={4} style={{marginTop:15,textAlign:'center'}}>
-                      <div style={{color:'#868686'}}>今日停车次数</div>
-                      <div style={{marginTop:0,fontSize:30,color:'#FF003B'}}>{ParkingToday.StopsToday}</div>
+                    <Col span={4} style={{marginTop:20}}>
+                      <Row gutter={0} >
+                        <Col span={24} style={{}}  style={{color:'#868686'}}>
+                          今日停车次数
+                        </Col>
+                        <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
+                        {ParkingToday.StopsToday}
+                        </Col>
+                      </Row>
                     </Col>
-                    <Col span={4} style={{marginTop:15,textAlign:'center'}}>
-                      <div style={{color:'#868686'}}>平均停车时长</div>
-                      <div style={{marginTop:0,fontSize:30,color:'#FF003B'}}>{ParkingToday.AverageStoppingTime}</div>
+                    <Col span={4} style={{marginTop:20}}>
+                      <Row gutter={0} >
+                        <Col span={24} style={{}}  style={{color:'#868686'}}>
+                          平均停车时长
+                        </Col>
+                        <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
+                        {ParkingToday.AverageStoppingTime}
+                        </Col>
+                      </Row>
                     </Col>
                   </Row>
                 </div>
-                <div className='page-content' style={{ padding: 0 }}>
+                <div className='page-content' style={{ padding: 0 }} style={{textAlign:'center'}}>
 
-                    <Row gutter={0}>
+                    <Row gutter={0} type="flex" justify="space-around">
                       <Col span={24}>
-                        <div style={{marginLeft:20, marginTop:12, fontSize:20,}}>历史停车数据</div>
+                        <div style={{marginLeft:20, marginTop:12, fontSize:20,float:'left'}}>历史停车数据</div>
                       </Col>
-                      <Col span={24} style={{marginTop:15}}>
+                      <Col span={24} style={{marginTop:25}}>
+
                         <Col span={6} style={{marginLeft:20,}}>
                           <RangePicker style={{width: "100%",}} format="YYYY-MM-DD"
                               onChange={(dates, dateString) => {
@@ -251,25 +293,52 @@ class ParkingReport extends Component {
                         </Col>
                       </Col>
                       <Col span={24} style={{marginLeft:20, marginTop:15, fontSize:20,}}>
-                        <Col span={6} style={{marginTop:15,textAlign:'center'}}>
-                          <div style={{color:'#868686'}}>平均停车时长</div>
-                          <div style={{marginTop:0,fontSize:30}}>{HistoricalParkingData.TotalAdmission}</div>
+                      <Row>
+                        <Col span={6} style={{marginTop:20}}>
+                          <Row gutter={0} >
+                            <Col span={24} style={{}}  style={{color:'#868686'}}>
+                              入场总次数
+                            </Col>
+                            <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
+                            {HistoricalParkingData.TotalAdmission}
+                            </Col>
+                          </Row>
                         </Col>
-                        <Col span={6} style={{marginTop:15,textAlign:'center'}}>
-                          <div style={{color:'#868686'}}>平均停车时长</div>
-                          <div style={{marginTop:0,fontSize:30}}>{HistoricalParkingData.TotalAppearances}</div>
+                        <Col span={6} style={{marginTop:20}}>
+                          <Row gutter={0} >
+                            <Col span={24} style={{}}  style={{color:'#868686'}}>
+                              出场总次数
+                            </Col>
+                            <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
+                            {HistoricalParkingData.TotalAppearances}
+                            </Col>
+                          </Row>
                         </Col>
-                        <Col span={6} style={{marginTop:15,textAlign:'center'}}>
-                          <div style={{color:'#868686'}}>平均停车时长</div>
-                          <div style={{marginTop:0,fontSize:30}}>{HistoricalParkingData.TotalStops}</div>
+                        <Col span={6} style={{marginTop:20}}>
+                          <Row gutter={0} >
+                            <Col span={24} style={{}}  style={{color:'#868686'}}>
+                              停车总次数
+                            </Col>
+                            <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
+                            {HistoricalParkingData.TotalStops}
+                            </Col>
+                          </Row>
                         </Col>
-                        <Col span={6} style={{marginTop:15,textAlign:'center'}}>
-                          <div style={{color:'#868686'}}>平均停车时长</div>
-                          <div style={{marginTop:0,fontSize:30}}>{HistoricalParkingData.AverageStoppingTime}</div>
+                        <Col span={6} style={{marginTop:20}}>
+                          <Row gutter={0} >
+                            <Col span={24} style={{}}  style={{color:'#868686'}}>
+                              平均停车时长
+                            </Col>
+                            <Col span={24} style={{marginTop:0,fontSize:30,color:'#FF003B'}}>
+                            {HistoricalParkingData.AverageStoppingTime}
+                            </Col>
+                          </Row>
                         </Col>
+                        </Row>
                       </Col>
                     </Row>
-                    <hr />
+                    </div>
+                    <div className='page-content' style={{ padding: 0 ,marginTop:20}}>
                     <Row gutter={0}>
                       <div style={{marginLeft:20, marginTop:12,}}>
                         <Radio.Group defaultValue="a" buttonStyle="solid">

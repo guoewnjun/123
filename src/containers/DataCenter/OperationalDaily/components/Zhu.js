@@ -67,7 +67,7 @@ export default class Zhu extends PureComponent {
         }
       ];
         return (
-          <Chart height={250} data={dv} padding={[40, 20, 40, 40]}  forceFit>
+          <Chart height={250} data={dv} padding={[40, 20, 20, 40]}  forceFit>
             <Axis name="item" />
             <Axis name="count"
              grid ="null" />

@@ -2,6 +2,7 @@ import React, {Component} from 'react';
 import {Row,Col,Select,Button,Table } from "antd";
 import {HttpClientImmidIot} from "../../../common/HttpClientImmidIot";
 import {Chart,Geom,Axis,Tooltip,} from "bizcharts";
+import _ from 'lodash';
 
 const Option = Select.Option;
 class UerReport extends Component {
@@ -21,6 +22,9 @@ class UerReport extends Component {
           list3:[],
           list4:[],
           list:[],
+          bool1:true,
+          bool2:false,
+          bool3:false,
       }
   }
 
@@ -46,7 +50,30 @@ class UerReport extends Component {
 
     handleQueryData(d, type) {
         const data = d.data;
+        const list=[];
+        const list1=[];
+        const list2=[];
+        const list3=[];
+        const list4=[];
         if (type === HttpClientImmidIot.requestSuccess) {
+          for(let i=0;i<data.lists.length;i++){
+            list1.push({
+              time:data.lists[i].time,
+              num:data.lists[i].newUsers,
+            })
+            list2.push({
+              time:data.lists[i].time,
+              num:data.lists[i].phoneUsers,
+            })
+            list3.push({
+              time:data.lists[i].time,
+              num:data.lists[i].stopUsers,
+            })
+            list4.push({
+              time:data.lists[i].time,
+              num:data.lists[i].activeUser,
+            })
+          };
             this.setState({
                 lists: data.lists,
                 deadline: data.deadline,
@@ -55,7 +82,12 @@ class UerReport extends Component {
                 recharge: data.recharge,
                 parkingUsers: data.parkingUsers,
                 activeUsers: data.activeUsers,
-
+                lists: data.lists,
+                list1:list1,
+                list2:list2,
+                list3:list3,
+                list4:list4,
+                list:list1,
             })
         } else {
             //失败----做除了报错之外的操作
@@ -65,53 +97,55 @@ class UerReport extends Component {
         })
     }
 
+    build=(a)=>{
+      if(a==1){
+        this.setState({
+        bool1:true,
+        bool2:false,
+        bool3:false,
+          list: _.cloneDeep(this.state.list1),
+        })
+      }else if(a==2){
+        this.setState({
+        bool1:false,
+        bool2:true,
+        bool3:false,
+          list: _.cloneDeep(this.state.list2),
+        })
+      }else if(a==3){
+        this.setState({
+        bool1:false,
+        bool2:false,
+        bool3:true,
+          list: _.cloneDeep(this.state.list3),
+        })
+      }else if(a==4){
+        this.setState({
+          bool:false,
+          list: _.cloneDeep(this.state.list4),
+        })
+      }else{
+        this.setState({
+          bool:false,
+          list: _.cloneDeep(this.state.list1),
+        })
+      }
+    }
 
     render() {
-      const list=[];
-      const list1=[];
-      const list2=[];
-      const list3=[];
-      const list4=[];
-      const {loading, deadline, userTotal, newUsers, recharge, parkingUsers, activeUsers,lists} = this.state;
-      for(let i=0;i<lists.length;i++){
-        list1.push({
-          time:lists[i].time,
-          num:lists[i].newUsers,
-        })
-        list2.push({
-          time:lists[i].time,
-          num:lists[i].phoneUsers,
-        })
-        list3.push({
-          time:lists[i].time,
-          num:lists[i].stopUsers,
-        })
-        list4.push({
-          time:lists[i].time,
-          num:lists[i].activeUser,
-        })
-      };
+      const getNowFormatDate=()=> {//获取当前时间
+        	let date = new Date();
+        	let seperator1 = "-";
+        	let seperator2 = ":";
+        	let month = date.getMonth() + 1<10? "0"+(date.getMonth() + 1):date.getMonth() + 1;
+        	let strDate = date.getDate()<10? "0" + date.getDate():date.getDate();
+        	let currentdate = date.getFullYear() + seperator1  + month  + seperator1  + strDate
+        			+ " "  + date.getHours()  + seperator2  + date.getMinutes()
+        			+ seperator2 + date.getSeconds();
+        	return currentdate;
+      }
 
-    function huoqulist(number){
-        if(number==1){
-            for (var i = 0; i < list1.length; i++) {
-              list.push(list1[i]);
-            }
-        }else if(number==2){
-            for (var i = 0; i < list2.length; i++) {
-              list.push(list2[i]);
-            }
-          }else if(number==3){
-              for (var i = 0; i < list3.length; i++) {
-                list.push(list3[i]);
-              }
-            }
-            else if(number==4){
-                for (var i = 0; i < list4.length; i++) {
-                  list.push(list4[i]);
-                }
-              }
-      };
+      const {lists,list1,list2,list3,list4,list,loading, deadline, userTotal, newUsers, recharge, parkingUsers, activeUsers} = this.state;
       // list1:list1,
       // list2:list2,
       // list3:list3,
@@ -125,7 +159,7 @@ class UerReport extends Component {
               render: (value) => value || "--",
           }, {
               title: "新增用户",
-              dataIndex: "num",
+              dataIndex: "newUsers",
               render: (value) => value || "--",
           }, {
               title: "充值用户",
@@ -187,7 +221,7 @@ class UerReport extends Component {
                 <div className='page-content'>
                      <Row gutter={48}>
                           <Col span={8}>
-                               今日用户概况（截至{deadline}）
+                               今日用户概况（截至{getNowFormatDate()}）
                           </Col>
                      </Row>
                      <Row gutter={48}>
@@ -213,6 +247,36 @@ class UerReport extends Component {
                           </Col>
                      </Row>
                 </div>
+
+
+                {this.state.bool2?(<div className='page-content'>
+                      <Row gutter={48}>
+                           <Col span={24}>
+                                 22222222
+                           </Col>
+                      </Row>
+
+                </div>):''}
+                {this.state.bool1?(<div className='page-content'>
+                      <Row gutter={48}>
+                           <Col span={24}>
+                                 11111111
+                           </Col>
+                      </Row>
+
+                </div>):''}
+                {this.state.bool3?(<div className='page-content'>
+                      <Row gutter={48}>
+                           <Col span={24}>
+                                 333333333
+                           </Col>
+                      </Row>
+
+                </div>):''}
+
+
+
+
                 <div className='page-content'>
                       <Row gutter={48}>
                            <Col span={24}>
@@ -238,10 +302,10 @@ class UerReport extends Component {
                       <Row gutter={48}>
                            <Col span={24}>
                                <div style={{marginTop:20}}>
-                                    <Button type="primary" onClick={huoqulist(1)}>新增用户</Button>
-                                    <Button onClick={()=>huoqulist(2)}>充值用户</Button>
-                                    <Button onClick={()=>huoqulist(3)}>停车用户</Button>
-                                    <Button onClick={()=>huoqulist(4)}>活跃用户</Button>
+                                    <Button type="primary" onClick={()=>this.build(1)}>新增用户</Button>
+                                    <Button  onClick={()=>this.build(2)}>充值用户</Button>
+                                    <Button  onClick={()=>this.build(3)}>停车用户</Button>
+                                    <Button  onClick={()=>this.build(4)}>活跃用户</Button>
                                </div>
                            </Col>
                       </Row>
@@ -271,7 +335,7 @@ class UerReport extends Component {
                                <Table
                                    style={{marginTop: "20px"}}
                                    columns={columns}
-                                   dataSource={list}
+                                   dataSource={lists}
                                    pagination={false}
                                />
                            </Col>
