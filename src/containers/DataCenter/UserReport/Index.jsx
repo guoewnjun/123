@@ -247,36 +247,6 @@ class UerReport extends Component {
                           </Col>
                      </Row>
                 </div>
-
-
-                {this.state.bool2?(<div className='page-content'>
-                      <Row gutter={48}>
-                           <Col span={24}>
-                                 22222222
-                           </Col>
-                      </Row>
-
-                </div>):''}
-                {this.state.bool1?(<div className='page-content'>
-                      <Row gutter={48}>
-                           <Col span={24}>
-                                 11111111
-                           </Col>
-                      </Row>
-
-                </div>):''}
-                {this.state.bool3?(<div className='page-content'>
-                      <Row gutter={48}>
-                           <Col span={24}>
-                                 333333333
-                           </Col>
-                      </Row>
-
-                </div>):''}
-
-
-
-
                 <div className='page-content'>
                       <Row gutter={48}>
                            <Col span={24}>
