@@ -1,43 +1,71 @@
-import React, {Component, Fragment} from 'react';
-import {Button, Table, DatePicker, Select, Pagination, Form, Row, Col, Spin, Tooltip,Card} from 'antd';
+import React, {Component} from 'react';
+import {Button, DatePicker, Form, Row, Col, Spin,Card} from 'antd';
+import {HttpClientImmidIot} from "../../../common/HttpClientImmidIot";
 import Huan from "./components/Huan";
 import ZheXianTu from "./components/ZheXianTu";
 import Zhu from "./components/Zhu";
 const FormItem = Form.Item;
 const RangePicker = DatePicker.RangePicker;
 class OperationalDaily extends Component {
-
-    state = {};
-
+    constructor(props) {
+        super(props);
+        this.state = {
+            loading:false,
+            date:'',
+            userProfile:{},
+            berthSituation:{},
+            parkingProfile:{},
+        };
+    }
     componentWillMount() {
 
     }
 
     componentDidMount() {
-
+        this.loadData();
     }
 
     componentWillUnmount() {
 
     }
-
+    loadData() {
+        this.setState({
+            loading: true
+        });
+        HttpClientImmidIot.query('/containers/DataCenter/OperationalDaily', 'GET', null, this.handleQueryData.bind(this))
+    }
+    handleQueryData(d){
+        const data=d.data;
+        this.setState({
+            date:data.date,
+            userProfile:data.userProfile?data.userProfile:{},
+            berthSituation:data.berthSituation?data.berthSituation:{},
+            parkingProfile:data.parkingProfile?data.parkingProfile:{},
+        })
+        this.setState({
+            loading: false
+        });
+    }
     render() {
       const formItemLayout = {
           labelCol: { span: 5 },
           wrapperCol: { span: 19 },
       };
-      const data1 = [
+      const numberStyle = {
+          style:{color:'red'},
+      };
+      const dataUserProfile = [
         {
           item: "手机",
-          count: 580
+          count: this.state.userProfile.userApp
         },
         {
           item: "微信",
-          count: 1280
+          count: this.state.userProfile.userWechat
         },
         {
           item: "支付宝",
-          count: 680
+          count: this.state.userProfile.userAlipay
         },
       ];
       const data2 = [
@@ -78,26 +106,26 @@ class OperationalDaily extends Component {
           count: 65
         },
       ];
-      const data3 = [
+      const dataParkingProfile = [
         {
           item: "0-1小时",
-          count: 3820
+          count: this.state.parkingProfile.parking1
         },
         {
           item: "0.5-2小时",
-          count: 3100
+          count: this.state.parkingProfile.parking2
         },
         {
           item: "2-4小时",
-          count: 1234
+          count: this.state.parkingProfile.parking4
         },
         {
           item: "4-8小时",
-          count: 1324
+          count: this.state.parkingProfile.parking8
         },
         {
           item: ">8小时",
-          count: 1324
+          count: this.state.parkingProfile.parkingmax
         },
       ];
       const data4 = [
@@ -116,34 +144,6 @@ class OperationalDaily extends Component {
         {
           item: "其他问题",
           count: 0
-        },
-      ];
-      const data5 = [
-        {
-          item: "缺卡",
-          count: 35
-        },
-        {
-          item: "正常上班",
-          count: 1280
-        },
-        {
-          item: "迟到上班",
-          count: 234
-        },
-      ];
-      const data6 = [
-        {
-          item: "缺卡",
-          count: 64
-        },
-        {
-          item: "正常打卡",
-          count: 1280
-        },
-        {
-          item: "早退",
-          count: 213
         },
       ];
       const data7 = [
@@ -276,7 +276,7 @@ class OperationalDaily extends Component {
       ];
 
 
-
+        const {date,userProfile,berthSituation,parkingProfile}=this.state;
         return (
             <div className='page'>
                 <div className='page-header'>
@@ -303,7 +303,7 @@ class OperationalDaily extends Component {
                             路内停车运营综合日报
                             </Col>
                             <Col span={24} style={{textAlign:'center',fontSize:15}}>
-                            2019-05-05
+                            {date}
                             </Col>
                         </Row>
 
@@ -313,12 +313,12 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                    <label>本日注册人数合计<nobr style={{color:'red'}} >2,839</nobr>人。其中，手机APP注册<nobr style={{color:'red'}} >580</nobr>人，微信注册<nobr style={{color:'red'}} >1280</nobr>人，支付宝注册<nobr style={{color:'red'}} >680</nobr>人</label>
+                                    <label>本日注册人数合计<nobr {...numberStyle}>{userProfile.userSum}</nobr>人。其中，手机APP注册<nobr {...numberStyle} >{userProfile.userApp}</nobr>人，微信注册<nobr {...numberStyle} >{userProfile.userWechat}</nobr>人，支付宝注册<nobr {...numberStyle} >{userProfile.userAlipay}</nobr>人</label>
                                 </Col>
                                 <Col span={7}></Col>
                                 <Col span={8}>
                                           <div style={{textAlign:'center'}}>
-                                                <Huan data={data1}/>
+                                                <Huan data={dataUserProfile}/>
                                                 <div style={{fontSize:17}}>注册来源</div>
                                           </div>
                                 </Col>
@@ -329,7 +329,7 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                    <label>本日泊位平均占用率为<nobr style={{color:'red'}} >56.8%</nobr>，泊位日周转率数为<nobr style={{color:'red'}} >367</nobr>次。</label>
+                                    <label>本日泊位平均占用率为<nobr {...numberStyle} >{berthSituation.occupancyRate}</nobr>，泊位日周转率数为<nobr {...numberStyle} >{berthSituation.dayTurnover}</nobr>次。</label>
                                 </Col>
                                 <Col span={24}>
                                           <div style={{textAlign:'center'}}>
@@ -344,12 +344,12 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                    <label>本日停车<nobr style={{color:'red'}} >12,089</nobr>次。其中，0-1小时<nobr style={{color:'red'}} >3,820</nobr>次，0.5-2小时<nobr style={{color:'red'}} >2,820</nobr>次，2-4小时<nobr style={{color:'red'}} >2,820</nobr>次，4-8小时<nobr style={{color:'red'}} >2,820</nobr>次，大于8小时<nobr style={{color:'red'}} >2,820</nobr>次，平均停车时长<nobr style={{color:'red'}} >80</nobr>分钟</label>
+                                    <label>本日停车<nobr {...numberStyle} >{parkingProfile.parkingSum}</nobr>次。其中，0-1小时<nobr {...numberStyle} >{parkingProfile.parking1}</nobr>次，0.5-2小时<nobr {...numberStyle} >{parkingProfile.parking2}</nobr>次，2-4小时<nobr {...numberStyle} >{parkingProfile.parking4}</nobr>次，4-8小时<nobr {...numberStyle} >{parkingProfile.parking8}</nobr>次，大于8小时<nobr {...numberStyle} >{parkingProfile.parkingmax}</nobr>次，平均停车时长<nobr {...numberStyle} >{parkingProfile.parkingAverage}</nobr>分钟</label>
                                 </Col>
                                 <Col span={7}></Col>
                                 <Col span={8}>
                                           <div style={{textAlign:'center'}}>
-                                                <Huan data={data3}/>
+                                                <Huan data={dataParkingProfile}/>
                                                 <div style={{fontSize:17}}>停车时长</div>
                                           </div>
                                 </Col>
@@ -360,10 +360,10 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                    <label>本日缴费笔数<nobr style={{color:'red'}} >289</nobr>笔。其中，手机APP缴费<nobr style={{color:'red'}} >120</nobr>笔，微信缴费<nobr style={{color:'red'}} >120</nobr>笔，支付宝缴费<nobr style={{color:'red'}} >49</nobr>笔。</label>
+                                    <label>本日缴费笔数<nobr {...numberStyle} >289</nobr>笔。其中，手机APP缴费<nobr {...numberStyle} >120</nobr>笔，微信缴费<nobr {...numberStyle} >120</nobr>笔，支付宝缴费<nobr {...numberStyle} >49</nobr>笔。</label>
                                 </Col>
                                 <Col span={24}>
-                                    <label>本日缴费金额<nobr style={{color:'red'}} >12,089</nobr>元。其中，手机APP缴费<nobr style={{color:'red'}} >5,820</nobr>元，微信缴费<nobr style={{color:'red'}} >5,620</nobr>元，支付宝缴费<nobr style={{color:'red'}} >890</nobr>元，平均缴费金额<nobr style={{color:'red'}} >28</nobr>元。</label>
+                                    <label>本日缴费金额<nobr {...numberStyle} >12,089</nobr>元。其中，手机APP缴费<nobr {...numberStyle} >5,820</nobr>元，微信缴费<nobr {...numberStyle} >5,620</nobr>元，支付宝缴费<nobr {...numberStyle} >890</nobr>元，平均缴费金额<nobr {...numberStyle} >28</nobr>元。</label>
                                 </Col>
                                 <Col span={2}></Col>
                                 <Col span={9}>
@@ -385,7 +385,7 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                    <label>本日新增投诉工单<nobr style={{color:'red'}} >23</nobr>个。其中，泊位异常<nobr style={{color:'red'}} >10</nobr>个，充值异常<nobr style={{color:'red'}} >8</nobr>个，订单异常<nobr style={{color:'red'}} >5</nobr>个，其他问题<nobr style={{color:'red'}} >0</nobr>个。</label>
+                                    <label>本日新增投诉工单<nobr {...numberStyle} >23</nobr>个。其中，泊位异常<nobr {...numberStyle} >10</nobr>个，充值异常<nobr {...numberStyle} >8</nobr>个，订单异常<nobr {...numberStyle} >5</nobr>个，其他问题<nobr {...numberStyle} >0</nobr>个。</label>
                                 </Col>
                                 <Col span={2}></Col>
                                 <Col span={9}>
@@ -407,7 +407,7 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                    <label>本日新增维保工单<nobr style={{color:'red'}} >23</nobr>个。其中，车检器<nobr style={{color:'red'}} >10</nobr>个，中继器<nobr style={{color:'red'}} >8</nobr>个，集中器<nobr style={{color:'red'}} >5</nobr>个，车位锁<nobr style={{color:'red'}} >0</nobr>个，巡检PDA<nobr style={{color:'red'}} >0</nobr>个。</label>
+                                    <label>本日新增维保工单<nobr {...numberStyle} >23</nobr>个。其中，车检器<nobr {...numberStyle} >10</nobr>个，中继器<nobr {...numberStyle} >8</nobr>个，集中器<nobr {...numberStyle} >5</nobr>个，车位锁<nobr {...numberStyle} >0</nobr>个，巡检PDA<nobr {...numberStyle} >0</nobr>个。</label>
                                 </Col>
                                 <Col span={7}></Col>
                                 <Col span={9}>
@@ -423,7 +423,7 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                    <label>本日违停<nobr style={{color:'red'}} >283</nobr>次。其中，南山区违停<nobr style={{color:'red'}} >35</nobr>次，福田区违停<nobr style={{color:'red'}} >70</nobr>次，罗湖区违停<nobr style={{color:'red'}} >70</nobr>次，龙岗区违停<nobr style={{color:'red'}} >23</nobr>次，宝安区违停<nobr style={{color:'red'}} >23</nobr>次。</label>
+                                    <label>本日违停<nobr {...numberStyle} >283</nobr>次。其中，南山区违停<nobr {...numberStyle} >35</nobr>次，福田区违停<nobr {...numberStyle} >70</nobr>次，罗湖区违停<nobr {...numberStyle} >70</nobr>次，龙岗区违停<nobr {...numberStyle} >23</nobr>次，宝安区违停<nobr {...numberStyle} >23</nobr>次。</label>
                                 </Col>
                                 <Col span={2}></Col>
                                 <Col span={9}>
@@ -446,10 +446,10 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                  <label>本日上岗<nobr style={{color:'red'}} >283</nobr>人次。其中，南山区<nobr style={{color:'red'}} >70</nobr>人次，福田区<nobr style={{color:'red'}} >70</nobr>人次，罗湖区<nobr style={{color:'red'}} >70</nobr>人次，龙岗区<nobr style={{color:'red'}} >23</nobr>人次，宝安区<nobr style={{color:'red'}} >50</nobr>人次。</label>
+                                  <label>本日上岗<nobr {...numberStyle} >283</nobr>人次。其中，南山区<nobr {...numberStyle} >70</nobr>人次，福田区<nobr {...numberStyle} >70</nobr>人次，罗湖区<nobr {...numberStyle} >70</nobr>人次，龙岗区<nobr {...numberStyle} >23</nobr>人次，宝安区<nobr {...numberStyle} >50</nobr>人次。</label>
                                 </Col>
                                 <Col span={24}>
-                                    <label>正常上班<nobr style={{color:'red'}} >280</nobr>人次，迟到上班<nobr style={{color:'red'}} >40</nobr>人次，缺卡<nobr style={{color:'red'}} >3</nobr>人次。正常下班<nobr style={{color:'red'}} >270</nobr>人次，早退<nobr style={{color:'red'}} >10</nobr>人次，缺卡<nobr style={{color:'red'}} >3</nobr>人次。</label>
+                                    <label>正常上班<nobr {...numberStyle} >280</nobr>人次，迟到上班<nobr {...numberStyle} >40</nobr>人次，缺卡<nobr {...numberStyle} >3</nobr>人次。正常下班<nobr {...numberStyle} >270</nobr>人次，早退<nobr {...numberStyle} >10</nobr>人次，缺卡<nobr {...numberStyle} >3</nobr>人次。</label>
                                 </Col>
                                 <Col span={2}></Col>
                                 <Col span={9}>
