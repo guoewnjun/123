@@ -13,11 +13,7 @@ class OperationalDaily extends Component {
         super(props);
         this.state = {
             loading:false,
-<<<<<<< HEAD
             date:moment().format(dayFormat),
-=======
-            date:'',
->>>>>>> 5eeb8ae26fc667eb0f5cdec50c5155af4f98bd80
             userProfile:{},
             berthSituation:{},
             parkingProfile:{},
@@ -34,7 +30,7 @@ class OperationalDaily extends Component {
     componentWillUnmount() {
 
     }
-<<<<<<< HEAD
+
     loadData(newDate) {
         this.setState({
             loading: true
@@ -48,18 +44,6 @@ class OperationalDaily extends Component {
         console.log(data);
         this.setState({
             // date:data.date?data.date:data.date,
-=======
-    loadData() {
-        this.setState({
-            loading: true
-        });
-        HttpClientImmidIot.query('/containers/DataCenter/OperationalDaily', 'GET', null, this.handleQueryData.bind(this))
-    }
-    handleQueryData(d){
-        const data=d.data;
-        this.setState({
-            date:data.date,
->>>>>>> 5eeb8ae26fc667eb0f5cdec50c5155af4f98bd80
             userProfile:data.userProfile?data.userProfile:{},
             berthSituation:data.berthSituation?data.berthSituation:{},
             parkingProfile:data.parkingProfile?data.parkingProfile:{},
@@ -68,17 +52,16 @@ class OperationalDaily extends Component {
             loading: false
         });
     }
-<<<<<<< HEAD
     onDateChange (date,dateString) {
         console.log(dateString)
-        this.setState({
-        date: dateString
-        });
+        this.state.date=dateString;
+
         // this.loadData(dateString)
     }
+    chaxundate(){
+      this.loadData(this.state.date)
+    }
 
-=======
->>>>>>> 5eeb8ae26fc667eb0f5cdec50c5155af4f98bd80
     render() {
       const formItemLayout = {
           labelCol: { span: 5 },
@@ -321,11 +304,11 @@ class OperationalDaily extends Component {
                             <Row gutter={46}>
                                 <Col span={6}>
                                     <FormItem  {...formItemLayout}>
-                                          <DatePicker value={moment(this.state.date)} style={{ width: '100%' }} format="YYYY-MM-DD" onChange={this.onDateChange.bind(this)}/>
+                                          <DatePicker style={{ width: '100%' }} format="YYYY-MM-DD" onChange={this.onDateChange.bind(this)}/>
                                     </FormItem>
                                 </Col>
                                 <Col span={6}>
-                                      <Button type='primary' style={{marginLeft:-50}}>查询</Button>
+                                      <Button type='primary' style={{marginLeft:-50}} onClick={this.chaxundate.bind(this)}>查询</Button>
                                 </Col>
                             </Row>
                         </Form>
