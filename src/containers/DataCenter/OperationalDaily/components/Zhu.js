@@ -75,8 +75,19 @@ export default class Zhu extends PureComponent {
               crosshairs={{
                 type: "y"
               }}
+              showTitle={false}
+              itemTpl="<li><span style=&quot;background-color:{color};&quot; class=&quot;g2-tooltip-marker&quot;></span>{name}数量: {value}</li>"
             />
-            <Geom type="interval" position="item*count" />
+            <Geom type="interval" position="item*count"
+            tooltip={[
+              "item*count",
+              (item, count) => {
+                return {
+                  name: item,
+                  value: count
+                };
+              }
+            ]} />
           </Chart>
         );
     }

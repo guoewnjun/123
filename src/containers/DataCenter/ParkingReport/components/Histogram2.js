@@ -25,57 +25,33 @@ export default class NewZhu extends PureComponent {
     const ds = new DataSet();
     const dv = ds.createView().source(this.props.data);
 
-    // const data = [
-    //    {
-    //      year: "1951 年",
-    //      sales: 38
-    //    },
-    //    {
-    //      year: "1952 年",
-    //      sales: 52
-    //    },
-    //    {
-    //      year: "1956 年",
-    //      sales: 61
-    //    },
-    //    {
-    //      year: "1957 年",
-    //      sales: 145
-    //    },
-    //    {
-    //      year: "1958 年",
-    //      sales: 48
-    //    },
-    //    {
-    //      year: "1959 年",
-    //      sales: 38
-    //    },
-    //    {
-    //      year: "1960 年",
-    //      sales: 38
-    //    },
-    //    {
-    //      year: "1962 年",
-    //      sales: 38
-    //    },
-    //    {
-    //      year: "1966 年",
-    //      sales: 99
-    //    }
-    //  ];
+
     dv.transform({
       type: "fold",
       fields: ['福田区','南山区','宝安区','龙华区','罗湖区','龙岗区','光明区','坪山区',],
       // 展开字段集
       key: "地区",
       // key字段
-      value: "数量" // value字段
+      value: "数量", // value字段
     });
+   const cols = {
+     percent: {
+       formatter: val => {
+         val = val + "%";
+         return val;
+       }
+     }
+   };
      return (
        <div>
-        <Chart height={400} data={dv} forceFit>
+        <Chart height={400} data={dv} scale={cols} forceFit>
           <Axis name="地区" />
-          <Axis name="数量" />
+          <Axis
+            name="数量"
+            label={{
+              formatter: val => `${val}%`
+            }}
+          />
           <Legend />
           <Tooltip
             crosshairs={{

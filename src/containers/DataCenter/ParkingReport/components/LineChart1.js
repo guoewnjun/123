@@ -65,18 +65,26 @@ export default class LineChart extends PureComponent {
     //  ];
      const cols = {
        revenue: {
-         min: 0,
+         min:0,
+         percent: {
+          formatter: val => `${val}%`
+         }
        },
-       time: {
-         range: [0, 1],
-       }
-     };
+         time: {
+           range: [0, 1],
+         }
+     }
      return (
          <div>
           <Chart height={500} data={this.props.data} scale={cols} forceFit>
             <Legend />
             <Axis name="time" />
-            <Axis name="revenue" />
+            <Axis
+              name="revenue"
+              label={{
+                formatter: val => `${val}%`
+              }}
+            />
             <Tooltip
               crosshairs={{
                 type: "y"
