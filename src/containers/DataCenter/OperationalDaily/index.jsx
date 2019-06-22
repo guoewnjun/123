@@ -17,6 +17,11 @@ class OperationalDaily extends Component {
             userProfile:{},
             berthSituation:{},
             parkingProfile:{},
+            spendingProfile:{},
+            complaintsOverview:{},
+            maintenanceOverview:{},
+            stopOverview:{},
+            patrolInspector:{},
         };
     }
     componentWillMount() {
@@ -41,13 +46,23 @@ class OperationalDaily extends Component {
     }
     handleQueryData(d){
         const data=d.data;
-        console.log(data);
+        // console.log(data);
+        if(data){
         this.setState({
-            // date:data.date?data.date:data.date,
-            userProfile:data.userProfile?data.userProfile:{},
-            berthSituation:data.berthSituation?data.berthSituation:{},
-            parkingProfile:data.parkingProfile?data.parkingProfile:{},
-        })
+            userProfile:data.userProfile||{},
+            berthSituation:data.berthSituation||{},
+            parkingProfile:data.parkingProfile||{},
+            spendingProfile:data.spendingProfile||{},
+            complaintsOverview:data.complaintsOverview||{},
+            maintenanceOverview:data.maintenanceOverview||{},
+            stopOverview:data.stopOverview||{},
+            patrolInspector:data.patrolInspector||{},
+        });}else{
+          this.setState({
+              data:{},
+          })
+        }
+
         this.setState({
             loading: false
         });
@@ -87,39 +102,39 @@ class OperationalDaily extends Component {
       const data2 = [
         {
           item: "0:00",
-          count: 75
+          count: this.state.berthSituation.count1,
         },
         {
           item: "3:00",
-          count: 35
+          count: this.state.berthSituation.count2
         },
         {
           item: "6:00",
-          count: 45
+          count: this.state.berthSituation.count3
         },
         {
           item: "9:00",
-          count: 65
+          count: this.state.berthSituation.count4
         },
         {
           item: "12:00",
-          count: 85
+          count: this.state.berthSituation.count5
         },
         {
           item: "15:00",
-          count: 65
+          count: this.state.berthSituation.count6
         },
         {
           item: "18:00",
-          count: 35
+          count: this.state.berthSituation.count7
         },
         {
           item: "21:00",
-          count: 45
+          count: this.state.berthSituation.count8
         },
         {
           item: "23:00",
-          count: 65
+          count: this.state.berthSituation.count9
         },
       ];
       const dataParkingProfile = [
@@ -147,152 +162,153 @@ class OperationalDaily extends Component {
       const data4 = [
         {
           item: "泊位异常",
-          count: 10
+          count: this.state.complaintsOverview.count2
         },
         {
           item: "充值异常",
-          count: 8
+          count: this.state.complaintsOverview.count3
         },
         {
           item: "订单异常",
-          count: 5
+          count: this.state.complaintsOverview.count4
         },
         {
           item: "其他问题",
-          count: 0
+          count: this.state.complaintsOverview.count5
         },
       ];
       const data7 = [
         {
           item: "手机",
-          count: 120
+          count: this.state.spendingProfile.strokeCount2
         },
         {
           item: "微信",
-          count: 120
+          count: this.state.spendingProfile.strokeCount3
         },
         {
           item: "支付宝",
-          count: 49
+          count: this.state.spendingProfile.strokeCount4
         },
       ];
       const data8 = [
         {
           item: "手机",
-          count: 5820
+          count: this.state.spendingProfile.money2
         },
         {
           item: "微信",
-          count: 5620
+          count: this.state.spendingProfile.money3
         },
         {
           item: "支付宝",
-          count: 890
+          count: this.state.spendingProfile.money4
         },
       ];
       const sourceComplaints = [
         {
           item: "手机",
-          count: 520
+          count: this.state.complaintsOverview.complaintApp
         },
         {
           item: "微信",
-          count: 1620
+          count: this.state.complaintsOverview.complaintWechat
         },
         {
           item: "支付宝",
-          count: 290
+          count: this.state.complaintsOverview.complaintAlipay
         },
       ];
       const deviceType = [
         {
           item: "车检器",
-          count: 10
+          count: this.state.maintenanceOverview.count2
         },
         {
           item: "中继器",
-          count: 8
+          count: this.state.maintenanceOverview.count3
         },
         {
           item: "集中器",
-          count: 5
+          count: this.state.maintenanceOverview.count4
         },
         {
           item: "车位锁",
-          count: 0
+          count: this.state.maintenanceOverview.count5
         },
         {
           item: "巡检PDA",
-          count: 0
+          count: this.state.maintenanceOverview.count6
         },
       ];
       const areaStop = [
         {
           item: "南山区",
-          count: 35
+          count: this.state.stopOverview.count2,
+          color:'违停数',
         },
         {
           item: "福田区",
-          count: 70
+          count: this.state.stopOverview.count3
         },
         {
           item: "罗湖区",
-          count: 70
+          count: this.state.stopOverview.count4
         },
         {
           item: "龙岗区",
-          count: 23
+          count: this.state.stopOverview.count5
         },
         {
           item: "宝安区",
-          count: 23
+          count: this.state.stopOverview.count6
         },
       ];
       const stopType = [
         {
           item: "一般道路违停",
-          count: 63
+          count: this.state.stopOverview.count21
         },
         {
           item: "特殊道路违停",
-          count: 24
+          count:  this.state.stopOverview.count22
         },
         {
           item: "高速违停罚",
-          count: 12
+          count:  this.state.stopOverview.count23
         },
       ];
       const dataOffice = [
         {
           item: "缺卡",
-          count: 3
+          count: this.state.patrolInspector.count23
         },
         {
           item: "正常上班",
-          count: 280
+          count: this.state.patrolInspector.count21
         },
         {
           item: "迟到上班",
-          count: 40
+          count: this.state.patrolInspector.count22
         },
       ];
       const dataOff = [
         {
           item: "缺卡",
-          count: 3
+          count: this.state.patrolInspector.count31
         },
         {
           item: "正常打卡",
-          count: 280
+          count: this.state.patrolInspector.count32
         },
         {
           item: "早退",
-          count: 10
+          count: this.state.patrolInspector.count33
         },
       ];
 
 
-        const {date,userProfile,berthSituation,parkingProfile}=this.state;
+        const {date,userProfile,berthSituation,parkingProfile,spendingProfile,complaintsOverview,maintenanceOverview,stopOverview,patrolInspector,}=this.state;
         return (
             <div className='page'>
                 <div className='page-header'>
@@ -376,10 +392,10 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                    <label>本日缴费笔数<nobr {...numberStyle} >289</nobr>笔。其中，手机APP缴费<nobr {...numberStyle} >120</nobr>笔，微信缴费<nobr {...numberStyle} >120</nobr>笔，支付宝缴费<nobr {...numberStyle} >49</nobr>笔。</label>
+                                    <label>本日缴费笔数<nobr {...numberStyle} >{spendingProfile.strokeCount1}</nobr>笔。其中，手机APP缴费<nobr {...numberStyle} >{spendingProfile.strokeCount2}</nobr>笔，微信缴费<nobr {...numberStyle} >{spendingProfile.strokeCount3}</nobr>笔，支付宝缴费<nobr {...numberStyle} >{spendingProfile.strokeCount4}</nobr>笔。</label>
                                 </Col>
                                 <Col span={24}>
-                                    <label>本日缴费金额<nobr {...numberStyle} >12,089</nobr>元。其中，手机APP缴费<nobr {...numberStyle} >5,820</nobr>元，微信缴费<nobr {...numberStyle} >5,620</nobr>元，支付宝缴费<nobr {...numberStyle} >890</nobr>元，平均缴费金额<nobr {...numberStyle} >28</nobr>元。</label>
+                                    <label>本日缴费金额<nobr {...numberStyle} >{spendingProfile.money1}</nobr>元。其中，手机APP缴费<nobr {...numberStyle} >{spendingProfile.money2}</nobr>元，微信缴费<nobr {...numberStyle} >{spendingProfile.money3}</nobr>元，支付宝缴费<nobr {...numberStyle} >{spendingProfile.money4}</nobr>元，平均缴费金额<nobr {...numberStyle} >{spendingProfile.money5}</nobr>元。</label>
                                 </Col>
                                 <Col span={2}></Col>
                                 <Col span={9}>
@@ -401,7 +417,7 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                    <label>本日新增投诉工单<nobr {...numberStyle} >23</nobr>个。其中，泊位异常<nobr {...numberStyle} >10</nobr>个，充值异常<nobr {...numberStyle} >8</nobr>个，订单异常<nobr {...numberStyle} >5</nobr>个，其他问题<nobr {...numberStyle} >0</nobr>个。</label>
+                                    <label>本日新增投诉工单<nobr {...numberStyle} >{complaintsOverview.count1}</nobr>个。其中，泊位异常<nobr {...numberStyle} >{complaintsOverview.count2}</nobr>个，充值异常<nobr {...numberStyle} >{complaintsOverview.count3}</nobr>个，订单异常<nobr {...numberStyle} >{complaintsOverview.count4}</nobr>个，其他问题<nobr {...numberStyle} >{complaintsOverview.count5}</nobr>个。</label>
                                 </Col>
                                 <Col span={2}></Col>
                                 <Col span={9}>
@@ -423,7 +439,7 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                    <label>本日新增维保工单<nobr {...numberStyle} >23</nobr>个。其中，车检器<nobr {...numberStyle} >10</nobr>个，中继器<nobr {...numberStyle} >8</nobr>个，集中器<nobr {...numberStyle} >5</nobr>个，车位锁<nobr {...numberStyle} >0</nobr>个，巡检PDA<nobr {...numberStyle} >0</nobr>个。</label>
+                                    <label>本日新增维保工单<nobr {...numberStyle} >{maintenanceOverview.count1}</nobr>个。其中，车检器<nobr {...numberStyle} >{maintenanceOverview.count2}</nobr>个，中继器<nobr {...numberStyle} >{maintenanceOverview.count3}</nobr>个，集中器<nobr {...numberStyle} >{maintenanceOverview.count4}</nobr>个，车位锁<nobr {...numberStyle} >{maintenanceOverview.count5}</nobr>个，巡检PDA<nobr {...numberStyle} >{maintenanceOverview.count6}</nobr>个。</label>
                                 </Col>
                                 <Col span={7}></Col>
                                 <Col span={9}>
@@ -439,7 +455,7 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                    <label>本日违停<nobr {...numberStyle} >283</nobr>次。其中，南山区违停<nobr {...numberStyle} >35</nobr>次，福田区违停<nobr {...numberStyle} >70</nobr>次，罗湖区违停<nobr {...numberStyle} >70</nobr>次，龙岗区违停<nobr {...numberStyle} >23</nobr>次，宝安区违停<nobr {...numberStyle} >23</nobr>次。</label>
+                                    <label>本日违停<nobr {...numberStyle} >{stopOverview.count1}</nobr>次。其中，南山区违停<nobr {...numberStyle} >{stopOverview.count2}</nobr>次，福田区违停<nobr {...numberStyle} >{stopOverview.count3}</nobr>次，罗湖区违停<nobr {...numberStyle} >{stopOverview.count4}</nobr>次，龙岗区违停<nobr {...numberStyle} >{stopOverview.count5}</nobr>次，宝安区违停<nobr {...numberStyle} >{stopOverview.count6}</nobr>次。</label>
                                 </Col>
                                 <Col span={2}></Col>
                                 <Col span={9}>
@@ -462,10 +478,10 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                  <label>本日上岗<nobr {...numberStyle} >283</nobr>人次。其中，南山区<nobr {...numberStyle} >70</nobr>人次，福田区<nobr {...numberStyle} >70</nobr>人次，罗湖区<nobr {...numberStyle} >70</nobr>人次，龙岗区<nobr {...numberStyle} >23</nobr>人次，宝安区<nobr {...numberStyle} >50</nobr>人次。</label>
+                                  <label>本日上岗<nobr {...numberStyle} >{patrolInspector.count1}</nobr>人次。其中，南山区<nobr {...numberStyle} >{patrolInspector.count2}</nobr>人次，福田区<nobr {...numberStyle} >{patrolInspector.count3}</nobr>人次，罗湖区<nobr {...numberStyle} >{patrolInspector.count4}</nobr>人次，龙岗区<nobr {...numberStyle} >{patrolInspector.count5}</nobr>人次，宝安区<nobr {...numberStyle} >{patrolInspector.count6}</nobr>人次。</label>
                                 </Col>
                                 <Col span={24}>
-                                    <label>正常上班<nobr {...numberStyle} >280</nobr>人次，迟到上班<nobr {...numberStyle} >40</nobr>人次，缺卡<nobr {...numberStyle} >3</nobr>人次。正常下班<nobr {...numberStyle} >270</nobr>人次，早退<nobr {...numberStyle} >10</nobr>人次，缺卡<nobr {...numberStyle} >3</nobr>人次。</label>
+                                    <label>正常上班<nobr {...numberStyle} >{patrolInspector.count21}</nobr>人次，迟到上班<nobr {...numberStyle} >{patrolInspector.count22}</nobr>人次，缺卡<nobr {...numberStyle} >{patrolInspector.count23}</nobr>人次。正常下班<nobr {...numberStyle} >{patrolInspector.count24}</nobr>人次，早退<nobr {...numberStyle} >{patrolInspector.count25}</nobr>人次，缺卡<nobr {...numberStyle} >{patrolInspector.count26}</nobr>人次。</label>
                                 </Col>
                                 <Col span={2}></Col>
                                 <Col span={9}>

@@ -381,6 +381,7 @@ class ParkingReport extends Component {
                         <Table
                             bordered
                             pagination={false}
+                            expandedRowRender={record => <p style={{ margin: 0 }}>{record.description}</p>}
                             columns={columns1}
                             dataSource={table1}
                         />

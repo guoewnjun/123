@@ -15,6 +15,7 @@ import {
   Util
 } from "bizcharts";
 import DataSet from "@antv/data-set";
+import _ from "lodash";
 const { DataView } = DataSet;
 
 export default class ZheXianTu extends React.Component {
@@ -68,7 +69,7 @@ export default class ZheXianTu extends React.Component {
     const dv = new DataView();
     dv.source(this.props.data).transform({
       type: "percent",
-      field: "count",
+      fields: 'count',
       dimension: "item",
       as: "percent"
     });
@@ -78,20 +79,58 @@ export default class ZheXianTu extends React.Component {
         padding={[80, 100, 20, 100]}
         forceFit>
           <Axis name="item" />
-          <Axis name="count" />
+          <Axis
+              name="count"
+              label={{
+                  formatter: val => (_.ceil((val), 2) + '%')
+              }}
+          />
           <Tooltip
             crosshairs={{
               type: "y"
             }}
+            showTitle={false}
+            itemTpl="<li><span style=&quot;background-color:{color};&quot; class=&quot;g2-tooltip-marker&quot;></span>{name}: {value}</li>"
           />
-          <Geom type="line" position="item*count" size={2}  />
-          <Geom type="area" position="item*count"/>
-          <Geom
+          <Geom type="line" position="item*count" size={2}
+          tooltip={[
+            "item*count",
+            (item, count) => {
+              count =_.ceil( (count), 2) + "%";
+              return {
+                name: item,
+                value: count
+              };
+            }
+          ]}
+           />
+          <Geom type="area" position="item*count"
+              tooltip={[
+                "item*count",
+                (item, count) => {
+                  count =_.ceil( (count), 2) + "%";
+                  return {
+                    name: item,
+                    value: count
+                  };
+                }
+              ]}
+          />
+            <Geom
             type="point"
             position="item*count"
             size={4}
-            color="type"
             shape="smooth"
+            tooltip={[
+              "item*count",
+              (item, count) => {
+                count =_.ceil( (count), 2) + "%";
+                return {
+                  name: item,
+                  value: count
+                };
+              }
+            ]}
             style={{
               stroke: "#fff",
               lineWidth: 1
