@@ -39,6 +39,10 @@ class OperationalDaily extends Component {
 
     }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0c9b8e26705359942f2f175b34310c5d390ac5d6
 =======
 
 >>>>>>> 0c9b8e26705359942f2f175b34310c5d390ac5d6
@@ -53,6 +57,7 @@ class OperationalDaily extends Component {
     handleQueryData(d){
         const data=d.data;
 <<<<<<< HEAD
+<<<<<<< HEAD
         console.log(data);
         this.setState({
             // date:data.date?data.date:data.date,
@@ -64,6 +69,11 @@ class OperationalDaily extends Component {
         // console.log(data);
         if(data){
         this.setState({
+=======
+        // console.log(data);
+        if(data){
+        this.setState({
+>>>>>>> 0c9b8e26705359942f2f175b34310c5d390ac5d6
             userProfile:data.userProfile||{},
             berthSituation:data.berthSituation||{},
             parkingProfile:data.parkingProfile||{},
@@ -78,6 +88,9 @@ class OperationalDaily extends Component {
           })
         }
 
+<<<<<<< HEAD
+>>>>>>> 0c9b8e26705359942f2f175b34310c5d390ac5d6
+=======
 >>>>>>> 0c9b8e26705359942f2f175b34310c5d390ac5d6
         this.setState({
             loading: false
