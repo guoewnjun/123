@@ -35,11 +35,7 @@ class OperationalDaily extends Component {
     componentWillUnmount() {
 
     }
-<<<<<<< HEAD
-=======
 
-=======
->>>>>>> 3a8016b9ceca526c3b5bbc59d165c9fe4d8eeef8
 
 
     loadData(newDate) {
@@ -50,59 +46,34 @@ class OperationalDaily extends Component {
         console.log(date)
         HttpClientImmidIot.query('/containers/DataCenter/OperationalDaily', 'GET', date, this.handleQueryData.bind(this))
     }
+    
     handleQueryData(d){
-<<<<<<< HEAD
-      const data=d.data;
-  		if(data){
-					this.setState({
-						userProfile:data.userProfile||{},
-						berthSituation:data.berthSituation||{},
-						parkingProfile:data.parkingProfile||{},
-						spendingProfile:data.spendingProfile||{},
-						complaintsOverview:data.complaintsOverview||{},
-						maintenanceOverview:data.maintenanceOverview||{},
-						stopOverview:data.stopOverview||{},
-						patrolInspector:data.patrolInspector||{},
-					})
-  		}else{
-  			this.setState({
-  				data:{},
-  			})
-  		};
-      this.setState({
-        loading: false,
-      })
-  	}
-
-
-=======
-        const data=d.data;
-        // console.log(data);
-        if(data){
-        this.setState({
-=======
-        // console.log(data);
-        if(data){
-        this.setState({
-            userProfile:data.userProfile||{},
-            berthSituation:data.berthSituation||{},
-            parkingProfile:data.parkingProfile||{},
-            spendingProfile:data.spendingProfile||{},
-            complaintsOverview:data.complaintsOverview||{},
-            maintenanceOverview:data.maintenanceOverview||{},
-            stopOverview:data.stopOverview||{},
-            patrolInspector:data.patrolInspector||{},
-        });}else{
-          this.setState({
-              data:{},
-          })
-        }
-
-        this.setState({
+    	const data=d.data;
+    	if(data){
+    		this.setState({
+    			if(data){
+    				this.setState({
+    					userProfile:data.userProfile||{},
+    					berthSituation:data.berthSituation||{},
+    					parkingProfile:data.parkingProfile||{},
+    					spendingProfile:data.spendingProfile||{},
+    					complaintsOverview:data.complaintsOverview||{},
+    					maintenanceOverview:data.maintenanceOverview||{},
+    					stopOverview:data.stopOverview||{},
+    					patrolInspector:data.patrolInspector||{},
+    				})
+    			}
+    		})
+    	}else{
+    		this.setState({
+    			data:{},
+    		})
+    	};
+    	this.setState({
             loading: false
         });
     }
->>>>>>> 3a8016b9ceca526c3b5bbc59d165c9fe4d8eeef8
+
     onDateChange (date,dateString) {
         console.log(dateString)
         this.state.date=dateString;
