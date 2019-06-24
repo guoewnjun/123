@@ -13,7 +13,7 @@ class OperationalDaily extends Component {
         super(props);
         this.state = {
             loading:false,
-            date:moment().format(dayFormat),
+            date:'',
             userProfile:{},
             berthSituation:{},
             parkingProfile:{},
@@ -36,18 +36,26 @@ class OperationalDaily extends Component {
 
     }
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> 3a8016b9ceca526c3b5bbc59d165c9fe4d8eeef8
+>>>>>>> 1d01ec13f8d520a06f35befbe8bc11c9256a9a6f
 
 
+>>>>>>> bead402ed958702775f2ef2c8354f2a110c29661
     loadData(newDate) {
         this.setState({
             loading: true
         });
-        let date={date:newDate?newDate:this.state.date}
-        console.log(date)
+        let date=newDate;
         HttpClientImmidIot.query('/containers/DataCenter/OperationalDaily', 'GET', date, this.handleQueryData.bind(this))
     }
     
     handleQueryData(d){
+<<<<<<< HEAD
     	const data=d.data;
     	if(data){
     		this.setState({
@@ -70,15 +78,60 @@ class OperationalDaily extends Component {
     		})
     	};
     	this.setState({
+=======
+<<<<<<< HEAD
+      const data=d.data;
+  		if(data){
+					this.setState({
+						userProfile:data.userProfile||{},
+						berthSituation:data.berthSituation||{},
+						parkingProfile:data.parkingProfile||{},
+						spendingProfile:data.spendingProfile||{},
+						complaintsOverview:data.complaintsOverview||{},
+						maintenanceOverview:data.maintenanceOverview||{},
+						stopOverview:data.stopOverview||{},
+						patrolInspector:data.patrolInspector||{},
+					})
+  		}else{
+  			this.setState({
+  				data:{},
+  			})
+  		};
+      this.setState({
+        loading: false,
+      })
+  	}
+
+
+=======
+        const data=d.data;
+        // console.log(data);
+        if(data){
+        this.setState({
+            date:data.date||'',
+            userProfile:data.userProfile||{},
+            berthSituation:data.berthSituation||{},
+            parkingProfile:data.parkingProfile||{},
+            spendingProfile:data.spendingProfile||{},
+            complaintsOverview:data.complaintsOverview||{},
+            maintenanceOverview:data.maintenanceOverview||{},
+            stopOverview:data.stopOverview||{},
+            patrolInspector:data.patrolInspector||{},
+        })}else{
+          this.setState({
+              data:{},
+          })
+        }
+
+        this.setState({
+>>>>>>> 1d01ec13f8d520a06f35befbe8bc11c9256a9a6f
             loading: false
         });
     }
 
     onDateChange (date,dateString) {
-        console.log(dateString)
+        // console.log(dateString)
         this.state.date=dateString;
-
-        // this.loadData(dateString)
     }
     chaxundate(){
       this.loadData(this.state.date)
@@ -315,7 +368,7 @@ class OperationalDaily extends Component {
       ];
 
 
-        const {date,userProfile,berthSituation,parkingProfile,spendingProfile,complaintsOverview,maintenanceOverview,stopOverview,patrolInspector,}=this.state;
+        const {loading,date,userProfile,berthSituation,parkingProfile,spendingProfile,complaintsOverview,maintenanceOverview,stopOverview,patrolInspector,}=this.state;
         return (
             <div className='page'>
                 <div className='page-header'>
@@ -347,6 +400,7 @@ class OperationalDaily extends Component {
                         </Row>
 
                     </Card>
+                    <Spin tip="加载中.." spinning={loading}>
                         <Card
                             title='一、用户概况'
                         >
@@ -505,6 +559,7 @@ class OperationalDaily extends Component {
                                 </Col>
                             </Row>
                         </Card>
+                      </Spin>
                 </div>
             </div>
         );
