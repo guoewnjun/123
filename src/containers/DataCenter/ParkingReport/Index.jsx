@@ -1694,7 +1694,6 @@ class ParkingReport extends Component {
                         </Row>
                       </Col>
                     </Row>
-<<<<<<< HEAD
                   </Form>
                 </div>
                 <div className='page-content' style={{ padding: 0 ,marginTop:20}}>
@@ -1790,9 +1789,6 @@ class ParkingReport extends Component {
                   ):''}
                 </div>
               </Spin>
-            </div>
-=======
-                  </div>
                   <div className='page-content' style={{ padding: 0 ,marginTop:20}}>
                     <Row gutter={64}>
                       <Col span={24} style={{marginLeft:20, marginTop:15,}}>
@@ -1827,8 +1823,7 @@ class ParkingReport extends Component {
                       </Col>
                     </Row>
                   </div>
-              </div>
->>>>>>> 0c9b8e26705359942f2f175b34310c5d390ac5d6
+             </div>
             );
       }
 }

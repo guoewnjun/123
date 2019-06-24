@@ -13,7 +13,7 @@ class OperationalDaily extends Component {
         super(props);
         this.state = {
             loading:false,
-            date:moment().format(dayFormat),
+            date:'',
             userProfile:{},
             berthSituation:{},
             parkingProfile:{},
@@ -36,15 +36,11 @@ class OperationalDaily extends Component {
 
     }
 
-=======
-
->>>>>>> 0c9b8e26705359942f2f175b34310c5d390ac5d6
     loadData(newDate) {
         this.setState({
             loading: true
         });
-        let date={date:newDate?newDate:this.state.date}
-        console.log(date)
+        let date=newDate;
         HttpClientImmidIot.query('/containers/DataCenter/OperationalDaily', 'GET', date, this.handleQueryData.bind(this))
     }
     handleQueryData(d){
@@ -52,10 +48,7 @@ class OperationalDaily extends Component {
         // console.log(data);
         if(data){
         this.setState({
-=======
-        // console.log(data);
-        if(data){
-        this.setState({
+            date:data.date||'',
             userProfile:data.userProfile||{},
             berthSituation:data.berthSituation||{},
             parkingProfile:data.parkingProfile||{},
@@ -64,7 +57,7 @@ class OperationalDaily extends Component {
             maintenanceOverview:data.maintenanceOverview||{},
             stopOverview:data.stopOverview||{},
             patrolInspector:data.patrolInspector||{},
-        });}else{
+        })}else{
           this.setState({
               data:{},
           })
@@ -75,10 +68,8 @@ class OperationalDaily extends Component {
         });
     }
     onDateChange (date,dateString) {
-        console.log(dateString)
+        // console.log(dateString)
         this.state.date=dateString;
-
-        // this.loadData(dateString)
     }
     chaxundate(){
       this.loadData(this.state.date)
@@ -315,7 +306,7 @@ class OperationalDaily extends Component {
       ];
 
 
-        const {date,userProfile,berthSituation,parkingProfile,spendingProfile,complaintsOverview,maintenanceOverview,stopOverview,patrolInspector,}=this.state;
+        const {loading,date,userProfile,berthSituation,parkingProfile,spendingProfile,complaintsOverview,maintenanceOverview,stopOverview,patrolInspector,}=this.state;
         return (
             <div className='page'>
                 <div className='page-header'>
@@ -347,6 +338,7 @@ class OperationalDaily extends Component {
                         </Row>
 
                     </Card>
+                    <Spin tip="加载中.." spinning={loading}>
                         <Card
                             title='一、用户概况'
                         >
@@ -505,6 +497,7 @@ class OperationalDaily extends Component {
                                 </Col>
                             </Row>
                         </Card>
+                      </Spin>
                 </div>
             </div>
         );
