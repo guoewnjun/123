@@ -1694,7 +1694,6 @@ class ParkingReport extends Component {
                         </Row>
                       </Col>
                     </Row>
-<<<<<<< HEAD
                   </Form>
                 </div>
                 <div className='page-content' style={{ padding: 0 ,marginTop:20}}>
@@ -1791,44 +1790,6 @@ class ParkingReport extends Component {
                 </div>
               </Spin>
             </div>
-=======
-                  </div>
-                  <div className='page-content' style={{ padding: 0 ,marginTop:20}}>
-                    <Row gutter={64}>
-                      <Col span={24} style={{marginLeft:20, marginTop:15,}}>
-                        <Radio.Group defaultValue="a" buttonStyle="solid">
-                          <Radio.Button value="a" style={{width:120,textAlign:'center'}}>出入场车流</Radio.Button>
-                          <Radio.Button value="b" style={{width:120,textAlign:'center'}}>周转率</Radio.Button>
-                          <Radio.Button value="c" style={{width:120,textAlign:'center'}}>停车次数/时长</Radio.Button>
-                        </Radio.Group>
-                      </Col>
-                      <Col span={24} style={{marginLeft:20, marginTop:15, fontSize:20,}}>
-                        每日出入车流统计
-                      </Col>
-                      <Col span={24}>
-                        <LineChart />
-                      </Col>
-                      <Col span={24} style={{marginLeft:20, marginTop:15, fontSize:20,}}>
-                        区域出入车流统计
-                      </Col>
-                      <Col span={24}>
-                        <Histogram />
-                      </Col>
-                    </Row>
-                    <Row gutter={64} style={{textAlign:'center'}}>
-                      <Col span={24}>
-                        <Table
-                            bordered
-                            pagination={false}
-                            expandedRowRender={record => <p style={{ margin: 0 }}>{record.description}</p>}
-                            columns={columns1}
-                            dataSource={table1}
-                        />
-                      </Col>
-                    </Row>
-                  </div>
-              </div>
->>>>>>> 0c9b8e26705359942f2f175b34310c5d390ac5d6
             );
       }
 }
