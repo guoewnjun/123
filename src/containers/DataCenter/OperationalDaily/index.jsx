@@ -46,6 +46,7 @@ class OperationalDaily extends Component {
       const data=d.data;
   		if(data){
 					this.setState({
+            date:data.date||{},
 						userProfile:data.userProfile||{},
 						berthSituation:data.berthSituation||{},
 						parkingProfile:data.parkingProfile||{},
