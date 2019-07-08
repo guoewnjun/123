@@ -214,6 +214,18 @@ export default class SectionDetailCard extends Component {
                                 <div style={custom.clear}/>
                             </Col>
                         </Row>
+                        <Row gutter={34}>
+                            <Col span={8}>
+                                <div style={titleStyle}>所属片区：</div>
+                                <div style={contentStyle}>{this.state.roadInfo?this.state.roadInfo.subAreaName:""}</div>
+                                <div style={custom.clear}/>
+                            </Col>
+                            <Col span={8}>
+                                <div style={titleStyle}>坐标：</div>
+                                <div style={contentStyle}></div>
+                                <div style={custom.clear}/>
+                            </Col>
+                        </Row>
                     </div>
                     :
                     ""}

@@ -68,17 +68,9 @@ export default class DisplayChargeRules extends Component {
         if (this.state.rule && this.state.rule.status && this.state.rule.hasParking) {//
             message.error('此计费规则正在应用，无法编辑');
         } else {
-            location.hash = location.hash.split("#")[1].replace("DisplayChargeRules", "EditChargeRules");
+            location.hash = location.hash.replace("DisplayChargeRules", "EditChargeRules");
         }
-        //'/ConfigCenter/ChargeRules/EditChargeRules/' + Global.getUrlId(window.location.hash);
-        //DisplayChargeRules
     }
-
-    //cancelEdit(){
-    //    this.setState({
-    //        inEdit:false
-    //    })
-    //}
 
     render () {
         // console.log(this.props.routes);

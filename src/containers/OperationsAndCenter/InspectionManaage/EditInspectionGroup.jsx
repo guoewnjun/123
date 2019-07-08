@@ -481,6 +481,10 @@ class EditInspectionGroup extends Component {
                         members.push({ userId: item })
                     }
                 });
+                if (!members.length) {
+                    message.info('请选择稽查组内人员，且组内人员不能只为稽查组负责人');
+                    return
+                }
                 if (!this.state.isCommonClass) {
                     inspectionGroupSchedules = [workingDaySelect, restDaySelect]
                 }
@@ -514,7 +518,7 @@ class EditInspectionGroup extends Component {
                         workingDaySelect = {};
                         restDaySelect = {};
                         message.success('编辑成功');
-                        location.hash = `${location.hash}/InspectionGroupDetail?id=${this.state.inspectionGroupId}`;
+                        location.hash = location.hash.replace(/EditInspectionGroup/, 'InspectionGroupDetail')
                     } else {
                         //失败----做除了报错之外的操作
                     }

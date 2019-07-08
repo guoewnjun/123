@@ -28,7 +28,7 @@ class ResetPasswordCard extends Component {
 
     // 组件卸载之前
     componentWillUnmount() {
-
+        globalCountDown = null;
     }
 
     // 获取验证码
@@ -138,13 +138,16 @@ class ResetPasswordCard extends Component {
             <Card className='reset-card' style={style} bordered={false} hoverable={false}>
                 <div className='top'>
                     <div className='header'>
-                        <img style={{width: 50, height: 50}} src={window.LOGO_SRC}/>
+                        <img style={{width: 60, height: 50}} src={window.LOGO_SRC}/>
                         <span style={{
                             color: "#1890FF",
                             fontSize: "34px",
                             lineHeight: "42px",
                             margin: "0 20px"
-                        }}>{window.OPERATOR_NAME}中台</span>
+                        }}>
+                            {/*{window.OPERATOR_NAME}中台*/}
+                            大树停车运营中台
+                        </span>
                     </div>
                 </div>
                 <div className='form-title'>

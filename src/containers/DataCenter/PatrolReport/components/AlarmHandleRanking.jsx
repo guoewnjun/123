@@ -5,55 +5,45 @@ import {
     Axis,
     Tooltip,
 } from "bizcharts";
+import _ from 'lodash';
+import {Empty} from "antd";
 
 class AlarmHandleRanking extends Component {
-
-    state = {};
-
-    componentWillMount() {
-
-    }
-
-    componentDidMount() {
-
-    }
-
-    componentWillUnmount() {
-
-    }
-
     render() {
-        const genData = () => {
-            let data = [];
-            for (let i = 10; i > 0; i--) {
-                const obj = {
-                    name: `姓名${i}`,
-                    count: i * 10
-                };
-                data.push(obj)
-            }
-            return data;
-        };
-        const data = genData();
-        console.log(data);
+        const { data } = this.props;
+        let sortData = _.sortBy(data, (o) => o.times);
+        _.reverse(sortData);
         const cols = {
-            count: {
+            times: {
                 tickInterval: 20
             }
         };
         return (
             <div>
-                <div style={{ fontSize: 20, textAlign: 'center' }}>告警处理排行TOP10</div>
-                <Chart height={400} data={data} scale={cols} forceFit>
-                    <Axis name="name"/>
-                    <Axis name="count"/>
-                    <Tooltip
-                        crosshairs={{
-                            type: "y"
-                        }}
-                    />
-                    <Geom type="interval" position="name*count"/>
-                </Chart>
+                <div style={{ fontSize: 20, textAlign: 'center' }}>{this.props.title}</div>
+                {
+                    sortData.length > 0 ? (
+                        <Chart height={400} data={sortData} scale={cols} forceFit>
+                            <Axis name="userName"/>
+                            <Axis name="times"/>
+                            <Tooltip
+                                crosshairs={{
+                                    type: "y"
+                                }}
+                            />
+                            <Geom type="interval" position="userName*times"
+                                  tooltip={['userName*times', (userName, times) => {
+                                      return {
+                                          name: '处理次数',
+                                          value: times
+                                      }
+                                  }]}
+                            />
+                        </Chart>
+                    ) : (
+                        <Empty style={{ marginBottom: 20 }}/>
+                    )
+                }
             </div>
         );
     }

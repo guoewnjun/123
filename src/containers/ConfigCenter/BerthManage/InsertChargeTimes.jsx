@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 
-import {Button, Card, Input, Form, Spin} from 'antd';
+import {Button, Card, Input, Form, Spin, message} from 'antd';
 import {custom} from "@/common/SystemStyle";
 import SectionPriceSettingContent from "./Components/SectionDetailCard/SectionPriceSettingContent";
 import {react} from 'react.eval';
@@ -71,7 +71,9 @@ class InsertChargeTimes extends Component {
                         loading: false
                     }, () => {
                         if (type === HttpClient.requestSuccess) {
-                            location.hash = `${location.hash}/ChargeTimes`
+                            message.success('新建成功');
+                            history.back(-1)
+                            // location.hash = `${location.hash}/ChargeTimes`
                         } else {
 
                         }

@@ -233,12 +233,12 @@ class AbnormalParkingAlarm extends Component {
                                         }}>
                                             {
                                                 warningTypeEnum.map((value, index) => {
-                                                    if (index > 2) {
+                                                    // if (index > 2) {
                                                         return (
                                                             <Option key={index}
                                                                     value={index.toString()}>{value}</Option>
                                                         )
-                                                    }
+                                                    // }
                                                 })
                                             }
                                         </Select>
@@ -274,30 +274,30 @@ class AbnormalParkingAlarm extends Component {
                     </Row>
                     {/*表格*/}
                     <Spin tip="加载中.." spinning={loading}>
-                        <Table
-                            style={{marginTop: '20px'}}
-                            rowKey={data => data.id}
-                            columns={columns}
-                            dataSource={AlarmRecord}
-                            pagination={false}
-                        />
-                        {/*分页*/}
-                        {AlarmRecord.length > 0 ? (
-                            <div>
-                                <div className="table_pagination_total">共{total}条</div>
-                                <Pagination
-                                    className="table_pagination"
-                                    showSizeChanger
-                                    showQuickJumper
-                                    total={total}
-                                    current={pageNum}
-                                    pageSize={pageSize}
-                                    onChange={this.onPageChange.bind(this)}
-                                    onShowSizeChange={this.onShowSizeChange.bind(this)}
-                                />
-                                <div style={{clear: 'both'}}></div>
-                            </div>
-                        ) : ''}
+                        <Row style={{marginTop: '20px'}}>
+                            <Table
+                                rowKey={data => data.id}
+                                columns={columns}
+                                dataSource={AlarmRecord}
+                                pagination={false}
+                            />
+                            {/*分页*/}
+                            {AlarmRecord.length > 0 ? (
+                                <div>
+                                    <div className="table_pagination_total">共{total}条</div>
+                                    <Pagination
+                                        className="table_pagination"
+                                        showSizeChanger
+                                        showQuickJumper
+                                        total={total}
+                                        current={pageNum}
+                                        pageSize={pageSize}
+                                        onChange={this.onPageChange.bind(this)}
+                                        onShowSizeChange={this.onShowSizeChange.bind(this)}
+                                    />
+                                </div>
+                            ) : ''}
+                        </Row>
                     </Spin>
                 </div>
             </div>

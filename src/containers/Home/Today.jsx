@@ -112,9 +112,6 @@ export default class Today extends Component {
             value: "temperature" // value字段
         });
         const cols2 = {
-            areaName: {
-                range: [0, 1]
-            }
         };
         const dd = new DataSet();
         const ddt = dd.createView().source(ddtdata);
@@ -433,16 +430,10 @@ export default class Today extends Component {
                                         }}
                                     />
                                     <Tooltip
-                                        crosshairs={{
-                                            type: "y"
-                                        }}
                                     />
                                     <Geom
-                                        type="line"
+                                        type="interval"
                                         position="areaName*temperature"
-                                        size={2}
-                                        color={"city"}
-                                        shape={"smooth"}
                                         tooltip={[
                                             'areaName*temperature',
                                             (areaName, temperature) => {
@@ -453,28 +444,6 @@ export default class Today extends Component {
                                                 };
                                             },
                                         ]}
-                                        style={{ lineWidth: 1, stroke: '#fff' }}
-                                    />
-                                    <Geom
-                                        type="point"
-                                        position="areaName*temperature"
-                                        size={4}
-                                        shape={"circle"}
-                                        color={"city"}
-                                        tooltip={[
-                                            'areaName*temperature',
-                                            (areaName, temperature) => {
-                                                temperature = _.ceil((temperature * 100), 2) + '%';
-                                                return {
-                                                    name: areaName,
-                                                    value: temperature,
-                                                };
-                                            },
-                                        ]}
-                                        style={{
-                                            stroke: "#fff",
-                                            lineWidth: 1
-                                        }}
                                     />
                                 </Chart>
                             </Card>

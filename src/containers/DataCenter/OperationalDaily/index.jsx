@@ -1,27 +1,31 @@
 import React, {Component} from 'react';
 import {Button, DatePicker, Form, Row, Col, Spin,Card} from 'antd';
-import {HttpClientImmidIot} from "../../../common/HttpClientImmidIot";
+import {HttpClient} from "../../../common/HttpClient";
 import Huan from "./components/Huan";
 import ZheXianTu from "./components/ZheXianTu";
 import Zhu from "./components/Zhu";
 import moment from 'moment';
+import _ from "lodash";
 const FormItem = Form.Item;
 const RangePicker = DatePicker.RangePicker;
 const dayFormat = "YYYY-MM-DD";
+
+const zhifuleixin = ['钱包 ','微信'];
 class OperationalDaily extends Component {
     constructor(props) {
         super(props);
         this.state = {
             loading:false,
-            date:'',
+            date:moment().format(dayFormat),
             userProfile:{},
-            berthSituation:{},
-            parkingProfile:{},
-            spendingProfile:{},
-            complaintsOverview:{},
-            maintenanceOverview:{},
+            berthSituation:{statisticsSpaceUsageRateHour:[]},
+            parkingProfile:{parkTimesVOList:[]},
+            spendingProfile:{rpPayTimeCountVO:{rpPayTypeTimesCountVOList:[]},rpPayAmountCountVO:{rpPayTypeAmountCountVOList:[]}},
+            complaintsOverview:{complaintTypeCountList:[],complaintSourceCountList:[]},
+            maintenanceOverview:{ todayIncreasedCount:0,rpDeviceTypeWarnCountList:[] },
             stopOverview:{},
-            patrolInspector:{},
+            stopOverview1:{},
+            patrolInspector:{attendanceCountVO:{areaAttendanceCountList:[]},scheduleDetailCountList:[]},
         };
     }
     componentWillMount() {
@@ -35,44 +39,152 @@ class OperationalDaily extends Component {
     componentWillUnmount() {
 
     }
+
     loadData(newDate) {
         this.setState({
             loading: true
         });
-        let date=newDate;
-        HttpClientImmidIot.query('/containers/DataCenter/OperationalDaily', 'GET', date, this.handleQueryData.bind(this))
+        let date={queryDate:newDate?newDate:this.state.date}
+        let date1={startTime:newDate?newDate:this.state.date,endTime:newDate?newDate:this.state.date}
+        HttpClient.query('/parking-report/dailyReport/operation/spaceInfo', 'GET', date, this.handleQueryData2.bind(this));
+        HttpClient.query('/parking-report/dailyReport/operation/parkingInfo', 'GET', date, this.handleQueryData3.bind(this));
+        HttpClient.query('/parking-report/dailyReport/operation/payInfo', 'GET', date, this.handleQueryData4.bind(this));
+        HttpClient.query('/parking-report/dailyReport/operation/complaintInfo', 'GET', date, this.handleQueryData5.bind(this));
+        HttpClient.query('/parking-report/dailyReport/operation/deviceWarnCount', 'GET', date, this.handleQueryData6.bind(this));
+        HttpClient.query('/parking-report/data/parkWarn/analysis/area', 'GET', date1, this.handleQueryData7.bind(this));
+        HttpClient.query('/parking-report/data/parkWarn/parkwarnDistribute', 'GET', date1, this.handleQueryData71.bind(this));
+        HttpClient.query('/parking-report/dailyReport/operation/inspectionTodayAttendance', 'GET', date, this.handleQueryData.bind(this));
+    }
+    handleQueryData2(d){
+        const data=d.data;
+        if(data){
+        this.setState({
+            // userProfile:data.userProfile||{},
+             berthSituation:data||{},
+            // stopOverview:data.stopOverview||{},
+        });}else{
+          this.setState({
+              data:{},
+          })
+        }
+
+        this.setState({
+            loading: false
+        });
+    }
+    handleQueryData3(d){
+        const data=d.data;
+        if(data){
+        this.setState({
+             parkingProfile:data||{},
+        });}else{
+          this.setState({
+              data:{},
+          })
+        }
+
+        this.setState({
+            loading: false
+        });
+    }
+    handleQueryData4(d){
+        const data=d.data;
+        if(data){
+        this.setState({
+             spendingProfile:data||{},
+        });}else{
+          this.setState({
+              data:{},
+          })
+        }
+
+        this.setState({
+            loading: false
+        });
+    }
+    handleQueryData5(d){
+        const data=d.data;
+        if(data){
+        this.setState({
+            complaintsOverview:data||{},
+        });}else{
+          this.setState({
+              data:{},
+          })
+        }
+
+        this.setState({
+            loading: false
+        });
+    }
+    handleQueryData6(d){
+        const data=d.data;
+        if(data){
+        this.setState({
+            maintenanceOverview:data||{},
+        });}else{
+          this.setState({
+              data:{},
+          })
+        }
+
+        this.setState({
+            loading: false
+        });
+    }
+    handleQueryData7(d){
+        const data=d.data;
+        if(data){
+        this.setState({
+            stopOverview:data||{},
+        });}else{
+          this.setState({
+              data:{},
+          })
+        }
+
+        this.setState({
+            loading: false
+        });
+    }
+    handleQueryData71(d){
+        const data=d.data;
+        if(data){
+        this.setState({
+            stopOverview1:data||{},
+        });}else{
+          this.setState({
+              data:{},
+          })
+        }
+
+        this.setState({
+            loading: false
+        });
     }
     handleQueryData(d){
-      const data=d.data;
-  		if(data){
-					this.setState({
-            date:data.date||{},
-						userProfile:data.userProfile||{},
-						berthSituation:data.berthSituation||{},
-						parkingProfile:data.parkingProfile||{},
-						spendingProfile:data.spendingProfile||{},
-						complaintsOverview:data.complaintsOverview||{},
-						maintenanceOverview:data.maintenanceOverview||{},
-						stopOverview:data.stopOverview||{},
-						patrolInspector:data.patrolInspector||{},
-					})
-  		}else{
-  			this.setState({
-  				data:{},
-  			})
-  		};
-      this.setState({
-        loading: false,
-      })
-  	}
+        const data=d.data;
+        if(data){
+        this.setState({
+            patrolInspector:data||{},
+        });}else{
+          this.setState({
+              data:{},
+          })
+        }
 
-
+        this.setState({
+            loading: false
+        });
+    }
     onDateChange (date,dateString) {
-        // console.log(dateString)
+        console.log(dateString)
         this.state.date=dateString;
+
+        // this.loadData(dateString)
     }
     chaxundate(){
-      this.loadData(this.state.date)
+      this.loadData(this.state.date);
     }
 
     render() {
@@ -97,221 +209,361 @@ class OperationalDaily extends Component {
           count: this.state.userProfile.userAlipay
         },
       ];
-      const data2 = [
-        {
-          item: "0:00",
-          count: this.state.berthSituation.count1,
-        },
-        {
-          item: "3:00",
-          count: this.state.berthSituation.count2
-        },
-        {
-          item: "6:00",
-          count: this.state.berthSituation.count3
-        },
-        {
-          item: "9:00",
-          count: this.state.berthSituation.count4
-        },
-        {
-          item: "12:00",
-          count: this.state.berthSituation.count5
-        },
-        {
-          item: "15:00",
-          count: this.state.berthSituation.count6
-        },
-        {
-          item: "18:00",
-          count: this.state.berthSituation.count7
-        },
-        {
-          item: "21:00",
-          count: this.state.berthSituation.count8
-        },
-        {
-          item: "23:00",
-          count: this.state.berthSituation.count9
-        },
-      ];
-      const dataParkingProfile = [
-        {
-          item: "0-1小时",
-          count: this.state.parkingProfile.parking1
-        },
-        {
-          item: "0.5-2小时",
-          count: this.state.parkingProfile.parking2
-        },
-        {
-          item: "2-4小时",
-          count: this.state.parkingProfile.parking4
-        },
-        {
-          item: "4-8小时",
-          count: this.state.parkingProfile.parking8
-        },
-        {
-          item: ">8小时",
-          count: this.state.parkingProfile.parkingmax
-        },
-      ];
-      const data4 = [
-        {
-          item: "泊位异常",
-          count: this.state.complaintsOverview.count2
-        },
-        {
-          item: "充值异常",
-          count: this.state.complaintsOverview.count3
-        },
-        {
-          item: "订单异常",
-          count: this.state.complaintsOverview.count4
-        },
-        {
-          item: "其他问题",
-          count: this.state.complaintsOverview.count5
-        },
-      ];
-      const data7 = [
-        {
-          item: "手机",
-          count: this.state.spendingProfile.strokeCount2
-        },
-        {
-          item: "微信",
-          count: this.state.spendingProfile.strokeCount3
-        },
-        {
-          item: "支付宝",
-          count: this.state.spendingProfile.strokeCount4
-        },
-      ];
-      const data8 = [
-        {
-          item: "手机",
-          count: this.state.spendingProfile.money2
-        },
-        {
-          item: "微信",
-          count: this.state.spendingProfile.money3
-        },
-        {
-          item: "支付宝",
-          count: this.state.spendingProfile.money4
-        },
-      ];
-      const sourceComplaints = [
-        {
-          item: "手机",
-          count: this.state.complaintsOverview.complaintApp
-        },
-        {
-          item: "微信",
-          count: this.state.complaintsOverview.complaintWechat
-        },
-        {
-          item: "支付宝",
-          count: this.state.complaintsOverview.complaintAlipay
-        },
-      ];
-      const deviceType = [
-        {
-          item: "车检器",
-          count: this.state.maintenanceOverview.count2
-        },
-        {
-          item: "中继器",
-          count: this.state.maintenanceOverview.count3
-        },
-        {
-          item: "集中器",
-          count: this.state.maintenanceOverview.count4
-        },
-        {
-          item: "车位锁",
-          count: this.state.maintenanceOverview.count5
-        },
-        {
-          item: "巡检PDA",
-          count: this.state.maintenanceOverview.count6
-        },
-      ];
-      const areaStop = [
-        {
-          item: "南山区",
-          count: this.state.stopOverview.count2,
-          color:'违停数',
-        },
-        {
-          item: "福田区",
-          count: this.state.stopOverview.count3
-        },
-        {
-          item: "罗湖区",
-          count: this.state.stopOverview.count4
-        },
-        {
-          item: "龙岗区",
-          count: this.state.stopOverview.count5
-        },
-        {
-          item: "宝安区",
-          count: this.state.stopOverview.count6
-        },
-      ];
-      const stopType = [
-        {
-          item: "一般道路违停",
-          count: this.state.stopOverview.count21
-        },
-        {
-          item: "特殊道路违停",
-          count:  this.state.stopOverview.count22
-        },
-        {
-          item: "高速违停罚",
-          count:  this.state.stopOverview.count23
-        },
-      ];
-      const dataOffice = [
-        {
-          item: "缺卡",
-          count: this.state.patrolInspector.count23
-        },
-        {
-          item: "正常上班",
-          count: this.state.patrolInspector.count21
-        },
-        {
-          item: "迟到上班",
-          count: this.state.patrolInspector.count22
-        },
-      ];
-      const dataOff = [
-        {
-          item: "缺卡",
-          count: this.state.patrolInspector.count31
-        },
-        {
-          item: "正常打卡",
-          count: this.state.patrolInspector.count32
-        },
-        {
-          item: "早退",
-          count: this.state.patrolInspector.count33
-        },
-      ];
+      const {loading,stopOverview1,date,userProfile,berthSituation,parkingProfile,spendingProfile,complaintsOverview,maintenanceOverview,stopOverview,patrolInspector,}=this.state;
+      //二、泊位概况----start------
+        let boweixiangqin = '本日泊位平均占用率为'+(berthSituation.averageUsageRate?( _.ceil(((berthSituation.averageUsageRate) / 100), 2) + '%'):(0+'%'))+'，泊位日周转率为'+(berthSituation.turnOverRate?(berthSituation.turnOverRate + '%'):(0+'%'))+'。';
+        const meixiaoshizhanyonglv =()=>{
+            let list = [];
+            for (var i = 0; i < berthSituation.statisticsSpaceUsageRateHour.length; i++) {
+              list.push(
+                {
+                  item: berthSituation.statisticsSpaceUsageRateHour[i].statisticsTime.split(' ')[1],
+                  count: berthSituation.statisticsSpaceUsageRateHour[i].usageRate
+                }
+              );
+            }
+            if(berthSituation.statisticsSpaceUsageRateHour.length==0){
+              list.push(
+                {
+                  item: '暂无数据',
+                  count: 0
+                }
+              );
+            }
+            return list
+          };
+      //二、泊位概况----end------
 
+      //三、停车概况----start------
+      let tinchegaikuang = '本日停车'+(parkingProfile.todayParkTimes||0)+'次。其中，';
+      let tinchegaikuang1 = '';
+      let tinchegaikuangList = [];
+      for (let i = 0; i < parkingProfile.parkTimesVOList.length; i++) {
+        if(parkingProfile.parkTimesVOList[i]['parkDurationType']==0){
+          tinchegaikuang1 = tinchegaikuang1+'0-1小时'+parkingProfile.parkTimesVOList[i]['parkTimes']+'次，';
+          tinchegaikuangList.push({
+            item: '0-1小时',
+            count: parkingProfile.parkTimesVOList[i]['parkTimes']
+          });
+        }else if(parkingProfile.parkTimesVOList[i]['parkDurationType']==1){
+          tinchegaikuang1 = tinchegaikuang1+'0.5-2小时'+parkingProfile.parkTimesVOList[i]['parkTimes']+'次，';
+          tinchegaikuangList.push({
+            item: '0.5-2小时',
+            count: parkingProfile.parkTimesVOList[i]['parkTimes']
+          });
+        }else if(parkingProfile.parkTimesVOList[i]['parkDurationType']==2){
+          tinchegaikuang1 = tinchegaikuang1+'2-4小时'+parkingProfile.parkTimesVOList[i]['parkTimes']+'次，';
+          tinchegaikuangList.push({
+            item: '2-4小时',
+            count: parkingProfile.parkTimesVOList[i]['parkTimes']
+          });
+        }else if(parkingProfile.parkTimesVOList[i]['parkDurationType']==3){
+          tinchegaikuang1 = tinchegaikuang1+'4-8小时'+parkingProfile.parkTimesVOList[i]['parkTimes']+'次，';
+          tinchegaikuangList.push({
+            item: '4-8小时',
+            count: parkingProfile.parkTimesVOList[i]['parkTimes']
+          });
+        }else if(parkingProfile.parkTimesVOList[i]['parkDurationType']==4){
+          tinchegaikuang1 = tinchegaikuang1+'大于8小时'+parkingProfile.parkTimesVOList[i]['parkTimes']+'次，';
+          tinchegaikuangList.push({
+            item: '大于8小时',
+            count: parkingProfile.parkTimesVOList[i]['parkTimes']
+          });
+        }
+      }
+      tinchegaikuang = tinchegaikuang + tinchegaikuang1+'平均停车时长'+(parkingProfile.todayParkTimeAverage||0)+'分钟。';
+      if(parkingProfile.parkTimesVOList.length==0){
+        tinchegaikuang = '本日停车'+(parkingProfile.todayParkTimes||0)+'次。';
+      }
+      //三、停车概况----end------
 
-        const {loading,date,userProfile,berthSituation,parkingProfile,spendingProfile,complaintsOverview,maintenanceOverview,stopOverview,patrolInspector,}=this.state;
+      //四、消费概况----start------
+        let xiaofeigaikuang = '本日缴费笔数'+(spendingProfile.rpPayTimeCountVO.payTimesTotalCount||0)+'笔。其中，';
+        if(spendingProfile.rpPayTimeCountVO.rpPayTypeTimesCountVOList.length==0){
+          xiaofeigaikuang = '本日缴费笔数'+(spendingProfile.rpPayTimeCountVO.payTimesTotalCount||0)+'笔。';
+        }
+        for (var i = 0; i < spendingProfile.rpPayTimeCountVO.rpPayTypeTimesCountVOList.length; i++) {
+          xiaofeigaikuang = xiaofeigaikuang + zhifuleixin[spendingProfile.rpPayTimeCountVO.rpPayTypeTimesCountVOList[i].payType]+spendingProfile.rpPayTimeCountVO.rpPayTypeTimesCountVOList[i].payTimesCount+'个，'
+        }
+        xiaofeigaikuang = xiaofeigaikuang.substr(0,xiaofeigaikuang.length-1)+'。';
+
+        let xiaofeigaikuang1 = '本日缴费金额'+spendingProfile.rpPayAmountCountVO.payAmountTotalCount+'元。其中，';
+        if(spendingProfile.rpPayAmountCountVO.rpPayTypeAmountCountVOList.length==0){
+          xiaofeigaikuang1 = '本日缴费金额'+spendingProfile.rpPayAmountCountVO.payAmountTotalCount+'元。';
+        }
+        for (var i = 0; i < spendingProfile.rpPayAmountCountVO.rpPayTypeAmountCountVOList.length; i++) {
+          xiaofeigaikuang1 = xiaofeigaikuang1 + zhifuleixin[spendingProfile.rpPayAmountCountVO.rpPayTypeAmountCountVOList[i].payType]+spendingProfile.rpPayAmountCountVO.rpPayTypeAmountCountVOList[i].payAmountCount+'元，'
+        }
+        xiaofeigaikuang1 = xiaofeigaikuang1.substr(0,xiaofeigaikuang1.length-1)+'。';
+        const jiaofeibishu = () => {
+          let list = [];
+          for (var i = 0; i < spendingProfile.rpPayTimeCountVO.rpPayTypeTimesCountVOList.length; i++) {
+            list.push({item:zhifuleixin[spendingProfile.rpPayTimeCountVO.rpPayTypeTimesCountVOList[i].payType],count:spendingProfile.rpPayTimeCountVO.rpPayTypeTimesCountVOList[i].payTimesCount});
+          }
+          if(spendingProfile.rpPayTimeCountVO.rpPayTypeTimesCountVOList.length==0){
+            list.push({item:'暂无数据',count:1});
+          }
+          return list
+        }
+        const jiaofeijine = () => {
+          let list = [];
+          for (var i = 0; i < spendingProfile.rpPayAmountCountVO.rpPayTypeAmountCountVOList.length; i++) {
+            list.push({item:zhifuleixin[spendingProfile.rpPayAmountCountVO.rpPayTypeAmountCountVOList[i].payType],count:spendingProfile.rpPayAmountCountVO.rpPayTypeAmountCountVOList[i].payAmountCount});
+          }
+          if(spendingProfile.rpPayAmountCountVO.rpPayTypeAmountCountVOList.length==0){
+            list.push({item:'暂无数据',count:1});
+          }
+          return list
+        }
+
+      //四、消费概况----end------
+      //五、投诉概况----start------
+        let tousugaikuang = '本日新增投诉工单'+(complaintsOverview.totalComplaintCount)||0+'个。';
+        if(complaintsOverview.complaintSourceCountList.length==0){
+          tousugaikuang = '本日新增维保工单'+(complaintsOverview.totalComplaintCount||0)+'个。';
+        }
+        const tousugaikuangList1 = [];
+        const tousugaikuangList2 = [];
+        if(complaintsOverview.complaintTypeCountList){
+          for (var i = 0; i < complaintsOverview.complaintTypeCountList.length; i++) {
+            if(complaintsOverview.complaintTypeCountList[i]['complaintType']==0){
+              tousugaikuangList1.push({
+                item:'泊位',
+                count:complaintsOverview.complaintTypeCountList[i]['count']
+              });
+            }else if(complaintsOverview.complaintTypeCountList[i]['complaintType']==1){
+              tousugaikuangList1.push({
+                item:'充值',
+                count:complaintsOverview.complaintTypeCountList[i]['count']
+              });
+            }else if(complaintsOverview.complaintTypeCountList[i]['complaintType']==2){
+              tousugaikuangList1.push({
+                item:'订单',
+                count:complaintsOverview.complaintTypeCountList[i]['count']
+              });
+            }else if(complaintsOverview.complaintTypeCountList[i]['complaintType']==3){
+              tousugaikuangList1.push({
+                item:'其它问题',
+                count:complaintsOverview.complaintTypeCountList[i]['count']
+              });
+            }else if(complaintsOverview.complaintTypeCountList[i]['complaintType']==4){
+              tousugaikuangList1.push({
+                item:'咨询建议',
+                count:complaintsOverview.complaintTypeCountList[i]['count']
+              });
+            }
+          }
+        }
+        if(complaintsOverview.complaintSourceCountList){
+          for (var i = 0; i < complaintsOverview.complaintSourceCountList.length; i++) {
+            if(complaintsOverview.complaintSourceCountList[i]['complaintType']==0){
+              tousugaikuangList2.push({
+                item:'微信公众号',
+                count:complaintsOverview.complaintSourceCountList[i]['count']
+              });
+            }else if(complaintsOverview.complaintSourceCountList[i]['complaintType']==1){
+              tousugaikuangList2.push({
+                item:'支付宝服务号',
+                count:complaintsOverview.complaintSourceCountList[i]['count']
+              });
+            }else if(complaintsOverview.complaintSourceCountList[i]['complaintType']==2){
+              tousugaikuangList2.push({
+                item:'手机app',
+                count:complaintsOverview.complaintSourceCountList[i]['count']
+              });
+            }
+          }
+        }
+
+      //五、投诉概况----end------
+      //六、设备维保概况----start------
+        let shebeiweibao = '本日新增维保工单'+(maintenanceOverview.todayIncreasedCount||0)+'个。其中，';
+        if(maintenanceOverview.rpDeviceTypeWarnCountList.length==0){
+          shebeiweibao = '本日新增维保工单'+(maintenanceOverview.todayIncreasedCount||0)+'个。';
+        }
+        for (var i = 0; i < maintenanceOverview.rpDeviceTypeWarnCountList.length; i++) {
+          shebeiweibao = shebeiweibao + maintenanceOverview.rpDeviceTypeWarnCountList[i].deviceType+maintenanceOverview.rpDeviceTypeWarnCountList[i].count+'个，'
+        }
+        shebeiweibao = shebeiweibao.substr(0,shebeiweibao.length-1)+'。';
+      const deviceType =()=>{
+          let list = [];
+          for (var i = 0; i < maintenanceOverview.rpDeviceTypeWarnCountList.length; i++) {
+            list.push(
+              {
+                item: maintenanceOverview.rpDeviceTypeWarnCountList[i].deviceType,
+                count: maintenanceOverview.rpDeviceTypeWarnCountList[i].count
+              }
+            );
+          }
+          if(maintenanceOverview.rpDeviceTypeWarnCountList.length==0){
+            list.push(
+              {
+                item: '暂无数据',
+                count: 0
+              }
+            );
+          }
+          return list
+        };
+      //六、设备维保概况----end------
+      //七、违停概况----start------
+        let weitingaikuang = '';
+        let weitingaikuang1 = '';
+        let weitingaikuangnum = 0;
+        const weitingaikuangList = [];
+        for (var i = 0; i < stopOverview.length; i++) {
+          weitingaikuangList.push({
+            count:stopOverview[i].parkwarnTimes,
+            item:stopOverview[i].areaName,
+          });
+          weitingaikuangnum = weitingaikuangnum + stopOverview[i].parkwarnTimes;
+          weitingaikuang1 = weitingaikuang1 + stopOverview[i].areaName+stopOverview[i].parkwarnTimes+'次，';
+        }
+        weitingaikuang ='本日违停'+(weitingaikuangnum||0)+'次，其中，'+weitingaikuang1;
+        if(stopOverview.length==0){
+          weitingaikuang ='本日违停0次。';
+        }
+        weitingaikuang = weitingaikuang.substr(0,weitingaikuang.length-1)+'。';
+
+        const weitingaikuangList1 = [];
+          if(stopOverview1['warnEstablishCount']){
+            weitingaikuangList1.push({
+              count:stopOverview1['warnEstablishCount'],
+              item:'告警成立数',
+            });
+          }else if(stopOverview1['noPayCount']){
+            weitingaikuangList1.push({
+              count:stopOverview1['noPayCount'],
+              item:'未支付',
+            });
+          }else if(stopOverview1['crossSpaceCount']){
+            weitingaikuangList1.push({
+              count:stopOverview1['crossSpaceCount'],
+              item:'跨泊位',
+            });
+          }else if(stopOverview1['reverseParkCount']){
+            weitingaikuangList1.push({
+              count:stopOverview1['reverseParkCount'],
+              item:'逆向停车',
+            });
+          }else if(stopOverview1['forbiddenTimeCount']){
+            weitingaikuangList1.push({
+              count:stopOverview1['forbiddenTimeCount'],
+              item:'禁停时段',
+            });
+          }else if(stopOverview1['blackListCount']){
+            weitingaikuangList1.push({
+              count:stopOverview1['blackListCount'],
+              item:'黑名单停车',
+            });
+          }
+      //七、违停概况----end------
+
+      //八、巡检员管理概况的数据----start------
+        let str = '';
+        for (let i = 0; i < patrolInspector.attendanceCountVO.areaAttendanceCountList.length; i++) {
+          str = str +patrolInspector.attendanceCountVO.areaAttendanceCountList[i].areaName+patrolInspector.attendanceCountVO.areaAttendanceCountList[i].peopleCount+'人次，'
+        }
+        str = str.substr(0,str.length-1);
+        const xunjian = (value) => {
+          let shangban = 0;
+          let chidao = 0;
+          let shangbanqueka = 0;
+          let zaotui = 0;
+          let xiabanqueka = 0;
+          let xiaban = 0;
+          for (let i = 0; i < value.length; i++) {
+              if(value[i].signType==0){
+                if(value[i].signStatus==0){
+                  chidao = chidao + value[i].count;
+                }else if(value[i].signStatus==2){
+                  shangban = shangban + value[i].count;
+                }else{
+                  shangbanqueka = shangbanqueka + value[i].count;
+                }
+              }
+
+              if(value[i].signType==1){
+                if(value[i].signStatus==1){
+                  zaotui = zaotui + value[i].count;
+                }else if(value[i].signStatus==2){
+                  xiaban = xiaban + value[i].count;
+                }else{
+                  xiabanqueka = xiabanqueka + value[i].count;
+                }
+              }
+            }
+
+            return '正常上班'+shangban+'人次，迟到上班'+chidao+'人次，缺卡'+shangbanqueka+'人次。正常下班'+xiaban+'人次，早退'+zaotui+'人次，缺卡'+xiabanqueka+'人次。';
+          }
+        let banci = xunjian(patrolInspector.scheduleDetailCountList);
+      const dataOffice =(value)=>{
+        let shangban = 0;
+        let chidao = 0;
+        let shangbanqueka = 0;
+        let zaotui = 0;
+        let xiabanqueka = 0;
+        let xiaban = 0;
+        for (let i = 0; i < value.length; i++) {
+            if(value[i].signType==0){
+              if(value[i].signStatus==0){
+                chidao = chidao + value[i].count;
+              }else if(value[i].signStatus==2){
+                shangban = shangban + value[i].count;
+              }else{
+                shangbanqueka = shangbanqueka + value[i].count;
+              }
+            }
+
+            if(value[i].signType==1){
+              if(value[i].signStatus==1){
+                zaotui = zaotui + value[i].count;
+              }else if(value[i].signStatus==2){
+                xiaban = xiaban + value[i].count;
+              }else{
+                xiabanqueka = xiabanqueka + value[i].count;
+              }
+            }
+          }
+          let list = {
+            shangban:[
+              {
+                item: "缺卡",
+                count: shangbanqueka
+              },
+              {
+                item: "正常上班",
+                count: shangban
+              },
+              {
+                item: "迟到上班",
+                count: chidao
+              },
+            ],
+            xiaban:[
+              {
+                item: "缺卡",
+                count: xiabanqueka
+              },
+              {
+                item: "正常打卡",
+                count: xiaban
+              },
+              {
+                item: "早退",
+                count: zaotui
+              },
+            ],
+          };
+            return list
+        }
+        //八、巡检员管理概况的数据----end------
         return (
             <div className='page'>
                 <div className='page-header'>
                     <div>运营综合日报</div>
                 </div>
+              <Spin tip="加载中.." spinning={loading}>
                 <div className='page-content' style={{padding: 0,background: 'transparent'}} >
                     <Card >
                         <Form className='reportForm'>
@@ -338,7 +590,6 @@ class OperationalDaily extends Component {
                         </Row>
 
                     </Card>
-                    <Spin tip="加载中.." spinning={loading}>
                         <Card
                             title='一、用户概况'
                         >
@@ -360,11 +611,11 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                    <label>本日泊位平均占用率为<nobr {...numberStyle} >{berthSituation.occupancyRate}</nobr>，泊位日周转率数为<nobr {...numberStyle} >{berthSituation.dayTurnover}</nobr>次。</label>
+                                    <label>{boweixiangqin}</label>
                                 </Col>
                                 <Col span={24}>
                                           <div style={{textAlign:'center'}}>
-                                                <ZheXianTu data={data2}/>
+                                                <ZheXianTu data={meixiaoshizhanyonglv()}/>
                                                 <div style={{fontSize:17}}>每小时泊位占用率</div>
                                           </div>
                                 </Col>
@@ -375,12 +626,12 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                    <label>本日停车<nobr {...numberStyle} >{parkingProfile.parkingSum}</nobr>次。其中，0-1小时<nobr {...numberStyle} >{parkingProfile.parking1}</nobr>次，0.5-2小时<nobr {...numberStyle} >{parkingProfile.parking2}</nobr>次，2-4小时<nobr {...numberStyle} >{parkingProfile.parking4}</nobr>次，4-8小时<nobr {...numberStyle} >{parkingProfile.parking8}</nobr>次，大于8小时<nobr {...numberStyle} >{parkingProfile.parkingmax}</nobr>次，平均停车时长<nobr {...numberStyle} >{parkingProfile.parkingAverage}</nobr>分钟</label>
+                                    <label>{tinchegaikuang}</label>
                                 </Col>
                                 <Col span={7}></Col>
                                 <Col span={8}>
                                           <div style={{textAlign:'center'}}>
-                                                <Huan data={dataParkingProfile}/>
+                                                <Huan data={tinchegaikuangList}/>
                                                 <div style={{fontSize:17}}>停车时长</div>
                                           </div>
                                 </Col>
@@ -391,22 +642,22 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                    <label>本日缴费笔数<nobr {...numberStyle} >{spendingProfile.strokeCount1}</nobr>笔。其中，手机APP缴费<nobr {...numberStyle} >{spendingProfile.strokeCount2}</nobr>笔，微信缴费<nobr {...numberStyle} >{spendingProfile.strokeCount3}</nobr>笔，支付宝缴费<nobr {...numberStyle} >{spendingProfile.strokeCount4}</nobr>笔。</label>
+                                    <label>{xiaofeigaikuang}</label>
                                 </Col>
                                 <Col span={24}>
-                                    <label>本日缴费金额<nobr {...numberStyle} >{spendingProfile.money1}</nobr>元。其中，手机APP缴费<nobr {...numberStyle} >{spendingProfile.money2}</nobr>元，微信缴费<nobr {...numberStyle} >{spendingProfile.money3}</nobr>元，支付宝缴费<nobr {...numberStyle} >{spendingProfile.money4}</nobr>元，平均缴费金额<nobr {...numberStyle} >{spendingProfile.money5}</nobr>元。</label>
+                                    <label>{xiaofeigaikuang1}</label>
                                 </Col>
                                 <Col span={2}></Col>
                                 <Col span={9}>
                                           <div style={{textAlign:'center'}}>
-                                                <Huan data={data7}/>
-                                                <div style={{fontSize:17}}>缴费笔数</div>
+                                                <Huan data={jiaofeibishu()}/>
+                                                <div style={{fontSize:17}}>缴费笔数占比</div>
                                           </div>
                                 </Col>
                                 <Col span={8}>
                                           <div style={{textAlign:'center'}}>
-                                                <Huan data={data8}/>
-                                                <div style={{fontSize:17}}>缴费金额</div>
+                                                <Huan data={jiaofeijine()}/>
+                                                <div style={{fontSize:17}}>缴费金额占比</div>
                                           </div>
                                 </Col>
                             </Row>
@@ -416,18 +667,18 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                    <label>本日新增投诉工单<nobr {...numberStyle} >{complaintsOverview.count1}</nobr>个。其中，泊位异常<nobr {...numberStyle} >{complaintsOverview.count2}</nobr>个，充值异常<nobr {...numberStyle} >{complaintsOverview.count3}</nobr>个，订单异常<nobr {...numberStyle} >{complaintsOverview.count4}</nobr>个，其他问题<nobr {...numberStyle} >{complaintsOverview.count5}</nobr>个。</label>
+                                    <label>{tousugaikuang}</label>
                                 </Col>
                                 <Col span={2}></Col>
                                 <Col span={9}>
                                           <div style={{textAlign:'center'}}>
-                                                <Zhu data={data4}/>
+                                                <Zhu data={tousugaikuangList1}/>
                                                 <div style={{fontSize:17}}>各投诉类型数</div>
                                           </div>
                                 </Col>
                                 <Col span={8}>
                                           <div style={{textAlign:'center'}}>
-                                                <Huan data={sourceComplaints}/>
+                                                <Huan data={tousugaikuangList2}/>
                                                 <div style={{fontSize:17}}>投诉来源</div>
                                           </div>
                                 </Col>
@@ -438,12 +689,12 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                    <label>本日新增维保工单<nobr {...numberStyle} >{maintenanceOverview.count1}</nobr>个。其中，车检器<nobr {...numberStyle} >{maintenanceOverview.count2}</nobr>个，中继器<nobr {...numberStyle} >{maintenanceOverview.count3}</nobr>个，集中器<nobr {...numberStyle} >{maintenanceOverview.count4}</nobr>个，车位锁<nobr {...numberStyle} >{maintenanceOverview.count5}</nobr>个，巡检PDA<nobr {...numberStyle} >{maintenanceOverview.count6}</nobr>个。</label>
+                                    <label>{shebeiweibao}</label>
                                 </Col>
                                 <Col span={7}></Col>
                                 <Col span={9}>
                                           <div style={{textAlign:'center'}}>
-                                                <Zhu data={deviceType}/>
+                                                <Zhu data={deviceType()}/>
                                                 <div style={{fontSize:17}}>各设备类型数</div>
                                           </div>
                                 </Col>
@@ -454,19 +705,19 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                    <label>本日违停<nobr {...numberStyle} >{stopOverview.count1}</nobr>次。其中，南山区违停<nobr {...numberStyle} >{stopOverview.count2}</nobr>次，福田区违停<nobr {...numberStyle} >{stopOverview.count3}</nobr>次，罗湖区违停<nobr {...numberStyle} >{stopOverview.count4}</nobr>次，龙岗区违停<nobr {...numberStyle} >{stopOverview.count5}</nobr>次，宝安区违停<nobr {...numberStyle} >{stopOverview.count6}</nobr>次。</label>
+                                    <label>{weitingaikuang}</label>
                                 </Col>
                                 <Col span={2}></Col>
                                 <Col span={9}>
                                           <div style={{textAlign:'center'}}>
-                                                <Zhu data={areaStop}/>
+                                                <Zhu data={weitingaikuangList}/>
                                                 <div style={{fontSize:17}}>各区违停数</div>
                                           </div>
                                 </Col>
                                 <Col span={2}></Col>
                                 <Col span={9}>
                                           <div style={{textAlign:'center'}}>
-                                                <Zhu data={stopType}/>
+                                                <Zhu data={weitingaikuangList1}/>
                                                 <div style={{fontSize:17}}>各违停类型数</div>
                                           </div>
                                 </Col>
@@ -477,28 +728,28 @@ class OperationalDaily extends Component {
                         >
                             <Row gutter={50}>
                                 <Col span={24}>
-                                  <label>本日上岗<nobr {...numberStyle} >{patrolInspector.count1}</nobr>人次。其中，南山区<nobr {...numberStyle} >{patrolInspector.count2}</nobr>人次，福田区<nobr {...numberStyle} >{patrolInspector.count3}</nobr>人次，罗湖区<nobr {...numberStyle} >{patrolInspector.count4}</nobr>人次，龙岗区<nobr {...numberStyle} >{patrolInspector.count5}</nobr>人次，宝安区<nobr {...numberStyle} >{patrolInspector.count6}</nobr>人次。</label>
+                                  <label>本日上岗<nobr {...numberStyle} >{patrolInspector.attendanceCountVO.totalPeopleCount}</nobr>人次。其中，{str}。</label>
                                 </Col>
                                 <Col span={24}>
-                                    <label>正常上班<nobr {...numberStyle} >{patrolInspector.count21}</nobr>人次，迟到上班<nobr {...numberStyle} >{patrolInspector.count22}</nobr>人次，缺卡<nobr {...numberStyle} >{patrolInspector.count23}</nobr>人次。正常下班<nobr {...numberStyle} >{patrolInspector.count24}</nobr>人次，早退<nobr {...numberStyle} >{patrolInspector.count25}</nobr>人次，缺卡<nobr {...numberStyle} >{patrolInspector.count26}</nobr>人次。</label>
+                                  <label>{banci}</label>
                                 </Col>
                                 <Col span={2}></Col>
                                 <Col span={9}>
                                           <div style={{textAlign:'center'}}>
-                                                <Huan data={dataOffice}/>
+                                                <Huan data={dataOffice(patrolInspector.scheduleDetailCountList).shangban}/>
                                                 <div style={{fontSize:17}}>上班情况</div>
                                           </div>
                                 </Col>
                                 <Col span={8}>
                                           <div style={{textAlign:'center'}}>
-                                                <Huan data={dataOff}/>
+                                                <Huan data={dataOffice(patrolInspector.scheduleDetailCountList).xiaban}/>
                                                 <div style={{fontSize:17}}>下班情况</div>
                                           </div>
                                 </Col>
                             </Row>
                         </Card>
-                      </Spin>
                 </div>
+              </Spin>
             </div>
         );
     }

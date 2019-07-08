@@ -15,13 +15,27 @@ export default class App extends Component {
     }
 
     componentWillMount () {
+        window.LOGO_SRC = require('@static/images/logo_unicom.png');
+        // 获取logo，名字
+        /*HttpClient.query(`${window.MODULE_PARKING_INFO}/configureInfo/getLogoConfig`, 'GET', {
+            operatorId: window.OPERATOR_ID,
+            client: 'console'
+        }, (d, type) => {
+            if (type === HttpClient.requestSuccess) {
+                // window.LOGO_SRC = d.data.logo || require('../static/images/logo.png');
+                window.LOGO_SRC = require('../../static/images/logo_unicom.png');
+            } else {
+                //失败----做除了报错之外的操作
+            }
+        });*/
+        //window.addEventListener("resize", this.onResizeHandle);
     }
 
     componentDidMount () {
-        window.LOGO_SRC = require('@static/images/logo_unicom.png');
     }
 
     componentWillUnmount () {
+        //window.removeEventListener("resize", this.onResizeHandle);
     }
 
 

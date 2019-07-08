@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Col, DatePicker, Select, Input, Row, Button, Table, Pagination} from "antd";
+import {Col, DatePicker, Select, Input, Row, Button, Table, Pagination, Form, Spin} from "antd";
 import {HttpClient} from "@/common/HttpClient";
 import _ from "lodash";
 import moment from 'moment';
@@ -24,16 +24,21 @@ class AbnormalDevice extends Component {
     }
 
     componentDidMount() {
-        const parmas = this.filterParams({
+        this.loadData()
+    }
+
+    loadData() {
+        const params = this.filterParams({
             pageNum: this.state.pageNum,
             pageSize: this.state.pageSize,
             ...this.payLoad
         });
-        HttpClient.query(`${window.MODULE_PARKING_RESOURCE}/road/maintenance/warning/device/list`, 'GET', parmas, (d, type) => {
+        HttpClient.query(`${window.MODULE_PARKING_RESOURCE}/road/maintenance/warning/device/list`, 'GET', params, (d, type) => {
             if (type === HttpClient.requestSuccess) {
-                console.log(d);
+                // console.log(d);
                 this.setState({
-                    dataSource: d.data.list || []
+                    dataSource: d.data.list || [],
+                    total: d.data.total
                 })
             }
             this.setState({
@@ -58,21 +63,48 @@ class AbnormalDevice extends Component {
 
     // 查询
     search() {
-        console.log(this.payLoad)
+        this.loadData()
     }
 
     // 分页变化
-    onPageChange() {
-
+    onPageChange(pageNum) {
+        this.setState({
+            pageNum: pageNum,
+        }, () => {
+            this.loadData()
+        });
     }
 
     // 分页大小变化
-    onShowSizeChange() {
+    onShowSizeChange(pageNum, pageSize) {
+        this.setState({
+            pageNum,
+            pageSize
+        }, () => {
+            this.loadData()
+        });
+    }
 
+    //重置
+    reset() {
+        this.props.form.resetFields();
+        this.payLoad = {};
+        this.setState({
+            pageNum: 1, //当前页
+            pageSize: 10, //一页多少数据
+        }, () => {
+            this.loadData()
+        });
     }
 
     render() {
-        const { dataSource, total, pageNum, pageSize } = this.state;
+        const { dataSource, total, pageNum, pageSize, spinning } = this.state;
+        const FormItem = Form.Item;
+        const {getFieldDecorator} = this.props.form;
+        const formItemLayout = {
+            labelCol: {span: 5},
+            wrapperCol: {span: 19},
+        };
         const Option = Select.Option;
         const RangePicker = DatePicker.RangePicker;
         const columns = [
@@ -123,86 +155,107 @@ class AbnormalDevice extends Component {
                     设备告警
                 </div>
                 <div className='page-content'>
-                    <Row gutter={50} style={{ marginBottom: 24 }}>
-                        <Col span={8} style={{ display: 'flex', alignItems: 'center' }}>
-                            <div>路段名称：</div>
-                            <Input style={{ flexGrow: 1, width: 'auto' }} placeholder='请输入' onChange={(e) => {
-                                this.payLoad.parkingName = e.target.value
-                            }}/>
+                    <Row gutter={50}>
+                        <Col span={8}>
+                            <FormItem label='路段名称' {...formItemLayout}>
+                                {getFieldDecorator('parkingName')(
+                                    <Input placeholder='请输入' onChange={(e) => {
+                                        this.payLoad.parkingName = e.target.value
+                                    }}/>
+                                )}
+                            </FormItem>
                         </Col>
-                        <Col span={8} style={{ display: 'flex', alignItems: 'center' }}>
-                            <div>告警状态：</div>
-                            <Select style={{ flexGrow: 1, width: 'auto' }} placeholder='请选择' allowClear
-                                    onChange={(value) => {
-                                        this.payLoad.state = value
-                                    }}>
-                                <Option value={0}>待处理</Option>
-                                <Option value={1}>无需处理</Option>
-                                <Option value={2}>已生成工单</Option>
-                            </Select>
+                        <Col span={8}>
+                            <FormItem label='告警状态' {...formItemLayout}>
+                                {getFieldDecorator('state')(
+                                    <Select placeholder='请选择' allowClear
+                                            style={{width: '100%'}}
+                                            onChange={(value) => {
+                                                this.payLoad.state = value
+                                            }}>
+                                        <Option value={0}>待处理</Option>
+                                        <Option value={1}>无需处理</Option>
+                                        <Option value={2}>已生成工单</Option>
+                                    </Select>
+                                )}
+                            </FormItem>
                         </Col>
-                        <Col span={8} style={{ display: 'flex', alignItems: 'center' }}>
-                            <div>告警事件：</div>
-                            <Select style={{ flexGrow: 1, width: 'auto' }} placeholder='请选择' allowClear
-                                    onChange={(value) => {
-                                        this.payLoad.faultType = value
-                                    }}>
-                                <Option value={0}>低电量告警</Option>
-                                <Option value={1}>工作异常</Option>
-                            </Select>
+                        <Col span={8}>
+                            <FormItem label='告警事件' {...formItemLayout}>
+                                {getFieldDecorator('faultType')(
+                                    <Select placeholder='请选择' allowClear
+                                            style={{width: '100%'}}
+                                            onChange={(value) => {
+                                                this.payLoad.faultType = value
+                                            }}>
+                                        <Option value={0}>低电量告警</Option>
+                                        <Option value={1}>工作异常</Option>
+                                    </Select>
+                                )}
+                            </FormItem>
                         </Col>
                     </Row>
-                    <Row gutter={50} style={{ marginBottom: 24 }}>
-                        <Col span={8} style={{ display: 'flex', alignItems: 'center' }}>
-                            <div>告警时间：</div>
-                            <RangePicker style={{ flexGrow: 1, width: 'auto' }} allowClear format="YYYY-MM-DD"
-                                         onChange={(dates, dateString) => {
-                                             this.payLoad.beginTime = dateString[0];
-                                             this.payLoad.endTime = dateString[1];
-                                         }}/>
+                    <Row gutter={50}>
+                        <Col span={8}>
+                            <FormItem label='告警时间' {...formItemLayout}>
+                                {getFieldDecorator('time')(
+                                    <RangePicker allowClear format="YYYY-MM-DD"
+                                                 style={{width: '100%'}}
+                                                 onChange={(dates, dateString) => {
+                                                     this.payLoad.beginTime = dateString[0];
+                                                     this.payLoad.endTime = dateString[1];
+                                                 }}/>
+                                )}
+                            </FormItem>
                         </Col>
-                        <Col span={8} style={{ display: 'flex', alignItems: 'center' }}>
-                            <div>告警等级：</div>
-                            <Select style={{ flexGrow: 1, width: 'auto' }} placeholder='请选择' allowClear
-                                    onChange={(value) => {
-                                        this.payLoad.priority = value
-                                    }}>
-                                <Option value={0}>普通</Option>
-                                <Option value={1}>重要</Option>
-                                <Option value={2}>严重</Option>
-                            </Select>
+                        <Col span={8}>
+                            <FormItem label='告警等级' {...formItemLayout}>
+                                {getFieldDecorator('priority')(
+                                    <Select placeholder='请选择' allowClear
+                                            style={{width: '100%'}}
+                                            onChange={(value) => {
+                                                this.payLoad.priority = value
+                                            }}>
+                                        <Option value={0}>普通</Option>
+                                        <Option value={1}>重要</Option>
+                                        <Option value={2}>严重</Option>
+                                    </Select>
+                                )}
+                            </FormItem>
                         </Col>
                         <Col span={8} style={{ textAlign: 'right' }}>
                             <Button type='primary' style={{ marginRight: 10 }}
                                     onClick={this.search.bind(this)}>查询</Button>
-                            <Button>重置</Button>
+                            <Button onClick={this.reset.bind(this)}>重置</Button>
                         </Col>
                     </Row>
                     <Row>
-                        <Table
-                            style={{ marginTop: '20px' }}
-                            rowKey={data => data.id}
-                            columns={columns}
-                            dataSource={dataSource}
-                            pagination={false}
-                        />
-                        {
-                            dataSource.length > 0 && (
-                                <div>
-                                    <div className="table_pagination_total">共{total}条</div>
-                                    <Pagination
-                                        className="table_pagination"
-                                        showSizeChanger
-                                        showQuickJumper
-                                        total={total}
-                                        current={pageNum}
-                                        pageSize={pageSize}
-                                        onChange={this.onPageChange.bind(this)}
-                                        onShowSizeChange={this.onShowSizeChange.bind(this)}
-                                    />
-                                </div>
-                            )
-                        }
+                        <Spin spinning={spinning} tip='加载中...'>
+                            <Table
+                                style={{ marginTop: '20px' }}
+                                rowKey={data => data.id}
+                                columns={columns}
+                                dataSource={dataSource}
+                                pagination={false}
+                            />
+                            {
+                                dataSource.length > 0 && (
+                                    <div>
+                                        <div className="table_pagination_total">共{total}条</div>
+                                        <Pagination
+                                            className="table_pagination"
+                                            showSizeChanger
+                                            showQuickJumper
+                                            total={total}
+                                            current={pageNum}
+                                            pageSize={pageSize}
+                                            onChange={this.onPageChange.bind(this)}
+                                            onShowSizeChange={this.onShowSizeChange.bind(this)}
+                                        />
+                                    </div>
+                                )
+                            }
+                        </Spin>
                     </Row>
                 </div>
             </div>
@@ -210,4 +263,4 @@ class AbnormalDevice extends Component {
     }
 }
 
-export default AbnormalDevice;
+export default Form.create()(AbnormalDevice);

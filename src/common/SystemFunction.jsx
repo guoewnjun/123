@@ -105,7 +105,7 @@ export var Global = (function () {
 
 export var StringUtil = (function () {
     // 获取不同编码字符串长度
-    function getStrFullLength(str = ''){
+    function getStrFullLength(str = '') {
         return str.split('').reduce((pre, cur) => {
             const charCode = cur.charCodeAt(0);
             if (charCode >= 0 && charCode <= 128) {
@@ -144,3 +144,45 @@ export const getQueryString = (search, name) => {
     if (r != null) return _.unescape(r[2]);
     return null;
 };
+
+// 获取用户本地ip
+export function getUserIP(onNewIP) {
+    //onNewIp - your listener function for new IPs
+    //compatibility for firefox and chrome
+    var myPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+    var pc = new myPeerConnection({
+            iceServers: []
+        }),
+        noop = function () {
+        },
+        localIPs = {},
+        ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/g
+
+    function iterateIP(ip) {
+        if (!localIPs[ip]) onNewIP(ip)
+        localIPs[ip] = true
+    }
+
+    //create a bogus data channel
+    pc.createDataChannel("")
+    // create offer and set local description
+    try {
+        pc.createOffer(function (sdp) {
+            sdp.sdp.split('\n').forEach(function (line) {
+                if (line.indexOf('candidate') < 0) return
+                line.match(ipRegex).forEach(iterateIP)
+            })
+
+            pc.setLocalDescription(sdp, noop, noop)
+        }, function (sdp) {
+            console.log('fail')
+        })
+    } catch (err) {
+        console.log(err)
+    }
+    //listen for candidate events
+    pc.onicecandidate = function (ice) {
+        if (!ice || !ice.candidate || !ice.candidate.candidate || !ice.candidate.candidate.match(ipRegex)) return
+        ice.candidate.candidate.match(ipRegex).forEach(iterateIP)
+    };
+}

@@ -21,56 +21,32 @@ import DataSet from "@antv/data-set";
 //柱
 export default class NewZhu extends PureComponent {
 
-  render() {
-    const ds = new DataSet();
-    const dv = ds.createView().source(this.props.data);
-
-    // const data = [
-    //    {
-    //      year: "1951 年",
-    //      sales: 38
-    //    },
-    //    {
-    //      year: "1952 年",
-    //      sales: 52
-    //    },
-    //    {
-    //      year: "1956 年",
-    //      sales: 61
-    //    },
-    //    {
-    //      year: "1957 年",
-    //      sales: 145
-    //    },
-    //    {
-    //      year: "1958 年",
-    //      sales: 48
-    //    },
-    //    {
-    //      year: "1959 年",
-    //      sales: 38
-    //    },
-    //    {
-    //      year: "1960 年",
-    //      sales: 38
-    //    },
-    //    {
-    //      year: "1962 年",
-    //      sales: 38
-    //    },
-    //    {
-    //      year: "1966 年",
-    //      sales: 99
-    //    }
-    //  ];
-    dv.transform({
-      type: "fold",
-      fields: ['福田区','南山区','宝安区','龙华区','罗湖区','龙岗区','光明区','坪山区',],
-      // 展开字段集
-      key: "地区",
-      // key字段
-      value: "数量" // value字段
-    });
+    render() {
+      const ds = new DataSet();
+      const data  =this.props.data;
+      if(this.props.data.length==0){
+        data.push({name:'暂无数据 ',in:0,out:0});
+      }
+      const list = [];
+      const in1 = {name:'入场'};
+      const out1 = {name:'出场'};
+      const listcol = [];
+      for (let i = 0; i < data.length; i++) {
+        in1[data[i].name] = data[i].in;
+        out1[data[i].name] = data[i].out;
+        listcol[i] = data[i].name;
+      }
+      list[0] = in1;
+      list[1] = out1;
+      const dv = ds.createView().source(list);
+      dv.transform({
+        type: "fold",
+        fields: listcol,
+        // 展开字段集
+        key: "地区",
+        // key字段
+        value: "数量" // value字段
+      });
      return (
        <div>
         <Chart height={400} data={dv} forceFit>

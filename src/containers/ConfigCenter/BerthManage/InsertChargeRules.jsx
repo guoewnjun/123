@@ -241,7 +241,7 @@ class InsertChargeRules extends Component {
         });
         if (type === HttpClient.requestSuccess) {
             message.success(e.data, 1, () => {
-                window.location.hash = `${location.hash}/ChargeRules`;
+                window.location.hash = location.hash.replace(/InsertChargeRules/, '');
             });
         }
     }

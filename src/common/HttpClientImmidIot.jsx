@@ -11,22 +11,22 @@ export var HttpClientImmidIot = (function () {
     var requestServiceError = 2;
 
     //获取请求host
-    var httpClientHost = '';
+    var baseUrl = '';
     switch (process.env.NODE_ENV) {
         case "development":
             //开发环境
-            httpClientHost = 'https://www.easy-mock.com/mock/5cd0f2f3682f200251f31dd3/immidiot'; //
+            baseUrl = 'https://www.easy-mock.com/mock/5cd0f2f3682f200251f31dd3/immidiot'; //
             break;
         case "production":
             //大树 生产环境
-            httpClientHost = 'https://wzzctc.triplego.cn/api';
+            baseUrl = 'https://www.easy-mock.com/mock/5cd0f2f3682f200251f31dd3/immidiot';
             break;
         default:
             break;
     }
 
     function query(url, rtype, data, callback, contentType = 'application/json;charset=UTF-8', processData = true) {
-        console.log(REQUEST + "--" + url + "--Params:", data);
+        // console.log(REQUEST + "--" + url + "--Params:", data);
         let headers = null;
         let header_token = null;
         if ((url === window.window.MODULE_PARKING_AUTHORITY + '/admin/token') || (url === window.MODULE_PARKING_AUTHORITY + '/configureInfo/getLogoConfig')) { // 判断是否是登录接口
@@ -36,9 +36,17 @@ export var HttpClientImmidIot = (function () {
             header_token = "Bearer " + access_token;
         }
         headers = { "Authorization": header_token };
+        let httpUrl = '';
+        if (url.indexOf('http') > -1) {
+            httpUrl = url
+        } else if (url.indexOf('easy-mock') > -1) {
+            httpUrl = url.replace(/easy-mock/, 'https://www.easy-mock.com/mock/5cd0f2f3682f200251f31dd3/immidiot')
+        } else {
+            httpUrl = baseUrl + url
+        }
         $(function () {
             $.ajax({
-                "url": httpClientHost + url,
+                "url": httpUrl,
                 "async": true,
                 "cache": false,
                 "method": rtype,
@@ -92,42 +100,8 @@ export var HttpClientImmidIot = (function () {
         })
     }
 
-    function querySimple(url, rtype, data, callback, contentType = 'application/json;charset=UTF-8', processData = true) {
-        const baseUrl = 'http://10.0.0.207:30377';
-        $(function () {
-            $.ajax({
-                "url": baseUrl + url,
-                "async": true,
-                "cache": false,
-                "method": rtype,
-                "data": data,
-                "processData": processData,
-                "dataType": 'json',
-                "contentType": contentType,
-                "xhrFields": {
-                    "withCredentials": true,
-                },
-                timeout: 40000,
-                "crossDomain": true,
-                success: function (d) {
-                    if (d.success) {
-                        //成功
-                        console.log(REQUEST + "--" + url + "--Success:", d);
-                        callback(d, requestSuccess);
-                    }
-                },
-                error: function (e) {
-                    //服务异常
-                    console.error(REQUEST + "--" + url + "--Error:", e);
-                    message.error("服务器异常！");
-                    callback(e, requestServiceError);
-                }
-            });
-        })
-    }
-
     return {
-        ClientHost: httpClientHost,
+        ClientHost: baseUrl,
         GET: 'GET',
         POST: "POST",
         PUT: "PUT",
@@ -136,7 +110,6 @@ export var HttpClientImmidIot = (function () {
         requestDataError: requestDataError,
         requestServiceError: requestServiceError,
         query: query,
-        querySimple: querySimple,
         REQUEST: REQUEST
     }
 

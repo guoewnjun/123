@@ -20,13 +20,13 @@ import {
 } from 'antd';
 import Exception from '../../components/Exception/index.jsx';
 //请求
-import {HttpClient} from '../../common/HttpClient.jsx';
+import {HttpClient} from '@/common/HttpClient.jsx';
 //其他
-import {TimeUtils, Global} from '../../common/SystemFunction.jsx';
+// import {TimeUtils, Global} from '../../common/SystemFunction.jsx';
 //上传
-import {getUploadObj} from '../../common/UploadFn.jsx';
+import {getUploadObj} from '@/common/UploadFn.jsx';
 //省市区
-import ChinaRegion from "../../components/ChinaRegion";
+import ChinaRegion from "@/components/ChinaRegion";
 //css
 import './Style/PartnerListContainer.css';
 

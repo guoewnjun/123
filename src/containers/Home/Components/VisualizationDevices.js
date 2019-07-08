@@ -12,6 +12,7 @@ class VisualizationDevices extends Component {
     state = {
         districtOptions: [],
         areaOptions: [],
+        subAreaValue: undefined,
     };
 
     componentWillMount() {
@@ -46,6 +47,9 @@ class VisualizationDevices extends Component {
     }
 
     selectArea(value) {
+        this.setState({
+            subAreaValue: undefined,
+        });
         const params = {
             cityCode: window.cityCode,
             areaCode: value
@@ -55,7 +59,7 @@ class VisualizationDevices extends Component {
     }
 
     render() {
-        const { districtOptions, areaOptions } = this.state;
+        const { districtOptions, areaOptions, subAreaValue } = this.state;
         const Option = Select.Option;
         return (
             <Fragment>
@@ -80,15 +84,25 @@ class VisualizationDevices extends Component {
                     <label>片区：</label>
                     <Select
                         allowClear
-                        onChange={(value) => this.payLoad.geo_longlat = JSON.stringify([value.split('_')[0], value.split('_')[1]])}
+                        onChange={(value) => {
+                            this.setState({
+                                subAreaValue: value
+                            });
+                            if (value) {
+                                this.payLoad.geo_longlat = JSON.stringify([value.split('_')[0], value.split('_')[1]])
+                            }else {
+                                this.payLoad.geo_longlat = undefined
+                            }
+                        }}
                         style={{ flexGrow: 1 }}
+                        value={subAreaValue}
                         placeholder="请选择"
                         optionFilterProp="children"
                     >
                         {
                             areaOptions.map(item => (
                                 <Option key={item.subAreaCode}
-                                        value={`${item.longitude}_${item.latitude}`}>{item.subAreaName}</Option>
+                                        value={`${item.longitude}_${item.latitude}_${item.subAreaCode}`}>{item.subAreaName}</Option>
                             ))
                         }
                     </Select>
@@ -96,7 +110,6 @@ class VisualizationDevices extends Component {
                 <Row type='flex' align='middle' style={{ marginBottom: 20 }}>
                     <label>设备类型：</label>
                     <Select
-                        allowClear
                         onChange={(value) => this.payLoad.type = value}
                         style={{ flexGrow: 1 }}
                         placeholder="请选择"

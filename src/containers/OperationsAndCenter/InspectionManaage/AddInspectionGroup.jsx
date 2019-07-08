@@ -344,7 +344,7 @@ class AddInspectionGroup extends Component {
                 let tableData = this.state.tableData;
                 const currentPosition = parseFloat(values.location.lat) + parseFloat(values.location.lng);
                 let isSamePosition = false;
-                tableData.map(item => {
+                tableData.forEach(item => {
                     if ((parseFloat(item.checkPointLatitude) + parseFloat(item.checkPointLongitude)) === currentPosition) {
                         message.warning('请不要添加相同的考勤点');
                         isSamePosition = true

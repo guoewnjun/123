@@ -2,12 +2,11 @@ import React, {Component} from 'react';
 import {
     Chart,
     Geom,
+    Axis,
     Tooltip,
-    Coord,
-    Label,
-    View,
 } from 'bizcharts';
-import DataSet from '@antv/data-set';
+import _ from "lodash";
+import {Empty} from "antd";
 
 class IllegalParkingTreatment extends Component {
 
@@ -26,134 +25,51 @@ class IllegalParkingTreatment extends Component {
     }
 
     render() {
-        const { DataView } = DataSet;
-        const data = [
-            {
-                value: 251,
-                type: '大事例一',
-                name: '子事例一',
-            },
-            {
-                value: 1048,
-                type: '大事例一',
-                name: '子事例二',
-            },
-            {
-                value: 610,
-                type: '大事例二',
-                name: '子事例三',
-            },
-            {
-                value: 434,
-                type: '大事例二',
-                name: '子事例四',
-            },
-            {
-                value: 335,
-                type: '大事例三',
-                name: '子事例五',
-            },
-            {
-                value: 250,
-                type: '大事例三',
-                name: '子事例六',
-            },
-        ];
-        const dv = new DataView();
-        dv.source(data).transform({
-            type: 'percent',
-            field: 'value',
-            dimension: 'type',
-            as: 'percent',
+        const { data } = this.props;
+        const enm = {
+            invalidReportTimes: '误报',
+            validReportTimes: '有效告警',
+            hasPrintOrderTimes: '贴条',
+            notPrintOrderTimes: '未贴条'
+        };
+        let sortData = [];
+        _.forEach(data, (value, key) => {
+            sortData.push({
+                name: enm[key],
+                times: value
+            })
         });
         const cols = {
-            percent: {
-                formatter: (val) => {
-                    val = `${(val * 100).toFixed(2)}%`;
-                    return val;
-                },
-            },
+            times: {
+                tickInterval: 20
+            }
         };
-        const dv1 = new DataView();
-        dv1.source(data).transform({
-            type: 'percent',
-            field: 'value',
-            dimension: 'name',
-            as: 'percent',
-        });
         return (
             <div>
-                <div style={{ fontSize: 20, textAlign: 'center' }}>违停处理</div>
-                <Chart
-                    height={400}
-                    data={dv}
-                    scale={cols}
-                    padding={20}
-                    forceFit
-                >
-                    <Coord type="theta" radius={0.5} />
-                    <Tooltip
-                        showTitle={false}
-                        itemTpl="<li><span style=&quot;background-color:{color};&quot; class=&quot;g2-tooltip-marker&quot;></span>{name}: {value}</li>"
-                    />
-                    <Geom
-                        type="intervalStack"
-                        position="percent"
-                        color="type"
-                        tooltip={[
-                            'type*percent',
-                            (item, percent) => {
-                                percent = `${(percent * 100).toFixed(2)}%`;
-                                return {
-                                    name: item,
-                                    value: percent,
-                                };
-                            },
-                        ]}
-                        style={{
-                            lineWidth: 1,
-                            stroke: '#fff',
-                        }}
-                        select={false}
-                    >
-                        <Label content="type" offset={-10} />
-                    </Geom>
-                    <View data={dv1} scale={cols}>
-                        <Coord type="theta" radius={0.75} innerRadius={0.5 / 0.75} />
-                        <Geom
-                            type="intervalStack"
-                            position="percent"
-                            color={[
-                                'name',
-                                [
-                                    '#BAE7FF',
-                                    '#7FC9FE',
-                                    '#71E3E3',
-                                    '#ABF5F5',
-                                    '#8EE0A1',
-                                    '#BAF5C4',
-                                ],
-                            ]}
-                            tooltip={[
-                                'name*percent',
-                                (item, percent) => {
-                                    percent = `${(percent * 100).toFixed(2)}%`;
-                                    return {
-                                        name: item,
-                                        value: percent,
-                                    };
-                                },
-                            ]}
-                            style={{
-                                lineWidth: 1,
-                                stroke: '#fff',
-                            }}
-                            select={false}
-                        >
-                            <Label content="name" />
-                        </Geom>
-                    </View>
-                </Chart>
+                <div style={{ fontSize: 20, textAlign: 'center' }}>{this.props.title}</div>
+                {
+                    sortData.length > 0 ? (
+                        <Chart height={400} data={sortData} scale={cols} forceFit>
+                            <Axis name="name"/>
+                            <Axis name="times"/>
+                            <Tooltip
+                                crosshairs={{
+                                    type: "y"
+                                }}
+                            />
+                            <Geom type="interval" position="name*times"
+                                  tooltip={['name*times', (name, times) => {
+                                      return {
+                                          name: '次数',
+                                          value: times
+                                      }
+                                  }]}
+                            />
+                        </Chart>
+                    ) : (
+                        <Empty style={{ marginBottom: 20 }}/>
+                    )
+                }
             </div>
         );
     }

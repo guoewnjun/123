@@ -20,44 +20,6 @@ const { DataView } = DataSet;
 
 export default class ZheXianTu extends React.Component {
   render() {
-    const data = [
-      {
-        year: "1991",
-        value: 3
-      },
-      {
-        year: "1992",
-        value: 4
-      },
-      {
-        year: "1993",
-        value: 3.5
-      },
-      {
-        year: "1994",
-        value: 5
-      },
-      {
-        year: "1995",
-        value: 4.9
-      },
-      {
-        year: "1996",
-        value: 6
-      },
-      {
-        year: "1997",
-        value: 7
-      },
-      {
-        year: "1998",
-        value: 9
-      },
-      {
-        year: "1999",
-        value: 13
-      }
-    ];
     const cols = {
       value: {
         min: 0
@@ -82,7 +44,7 @@ export default class ZheXianTu extends React.Component {
           <Axis
               name="count"
               label={{
-                  formatter: val => (_.ceil((val), 2) + '%')
+                  formatter: val => (val + "%")
               }}
           />
           <Tooltip
@@ -96,10 +58,9 @@ export default class ZheXianTu extends React.Component {
           tooltip={[
             "item*count",
             (item, count) => {
-              count =_.ceil( (count), 2) + "%";
               return {
-                name: item,
-                value: count
+                name: '占用率',
+                value: (count + "%")
               };
             }
           ]}
@@ -108,10 +69,9 @@ export default class ZheXianTu extends React.Component {
               tooltip={[
                 "item*count",
                 (item, count) => {
-                  count =_.ceil( (count), 2) + "%";
                   return {
-                    name: item,
-                    value: count
+                    name: '占用率',
+                    value: (count + "%")
                   };
                 }
               ]}
@@ -124,10 +84,9 @@ export default class ZheXianTu extends React.Component {
             tooltip={[
               "item*count",
               (item, count) => {
-                count =_.ceil( (count), 2) + "%";
                 return {
-                  name: item,
-                  value: count
+                  name: '占用率',
+                  value: (count + "%")
                 };
               }
             ]}

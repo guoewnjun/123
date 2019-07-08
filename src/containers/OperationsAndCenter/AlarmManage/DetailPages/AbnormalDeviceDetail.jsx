@@ -117,7 +117,7 @@ class AbnormalDeviceDetail extends Component {
             <div className='page'>
                 <div className='page-header'>
                     设备告警详情
-                    <Button type='primary' onClick={() => window.history.back()} style={{ float: 'right' }}>返回</Button>
+                    {/*<Button type='primary' onClick={() => window.history.back()} style={{ float: 'right' }}>返回</Button>*/}
                 </div>
                 <div className='page-content' style={{ padding: 0, background: 'transparent' }}>
                     <Spin spinning={spinning} tip='加载中...'>

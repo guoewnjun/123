@@ -15,8 +15,6 @@ import PartnerDetail from '../containers/PartnerManage/PartnerDetail.jsx';//合�
 import PartnerAccounts from '../containers/PartnerManage/PartnerAccounts.jsx';//合作方主账号
 // import PartnerOrganization from '../containers/PartnerManage/PartnerOrganization.jsx';//合作方组织结构
 
-// -----------------------------------------------计费规则------------------------------------------------------------------------------
-
 // 监控中心
 import Today from "../containers/Home/Today.jsx";//今日数据
 import Visualization from '../containers/Home/Visualization'; //可视化页面
@@ -54,15 +52,20 @@ import ScheduleManage from '../containers/OperationsAndCenter/InspectionManaage/
 import InspectionGroupDetail from '../containers/OperationsAndCenter/InspectionManaage/InspectionGroupDetail.jsx';//稽查组详情
 import EditSchedule from '../containers/OperationsAndCenter/InspectionManaage/EditSchedule.jsx';//编辑排班
 import CheckInInformation from '../containers/OperationsAndCenter/InspectionManaage/CheckInInformation.jsx';//签到信息
-import PatrolManage1 from '../containers/OperationsAndCenter/DeviceManage/PatrolManage1.jsx';
-import PatrolManage2 from '../containers/OperationsAndCenter/DeviceManage/PatrolManage2.jsx';
+import DeviceList from '../containers/OperationsAndCenter/DeviceManage/DeviceList.jsx'; //设备列表
+import EquipmentManufacturers from '../containers/OperationsAndCenter/DeviceManage/EquipmentManufacturers.jsx'; //设备厂商
+import EquipmentManufacturersDetail from '../containers/OperationsAndCenter/DeviceManage/EquipmentManufacturersDetail.jsx';//设备厂商详情
 
 // 配置中心
 import BerthSearch from '../containers/ConfigCenter/BerthManage/BerthSearch.jsx'; // 泊位查询
 import BerthDetail from '../containers/ConfigCenter/BerthManage/BerthDetail.jsx'; // 泊位详情
 import AreaManage from '../containers/ConfigCenter/BerthManage/AreaManage.jsx'; // 片区管理
+import AddArea from '../containers/ConfigCenter/BerthManage/AddArea.jsx'; // 新增片区
+import EditArea from '../containers/ConfigCenter/BerthManage/EditArea.jsx'; // 编辑片区
 import BerthTypeManage from '../containers/ConfigCenter/BerthManage/BerthTypeManage.jsx'; // 泊位查询
 import SectionResource from '../containers/ConfigCenter/BerthManage/SectionResource.jsx';//路段资源
+import SectionVisualizationManage from '../containers/ConfigCenter/BerthManage/SectionVisualizationManage.jsx';//路段可视化管理
+import SectionVisualizationSetting from '../containers/ConfigCenter/BerthManage/SectionVisualizationSetting.jsx';//路段可视化设置
 import SectionDetails from '../containers/ConfigCenter/BerthManage/SectionDetails.jsx';//路段资源
 import ChargeRules from '../containers/ConfigCenter/BerthManage/ChargeRules.jsx';//收费规则
 import InsertChargeRules from '../containers/ConfigCenter/BerthManage/InsertChargeRules.jsx';//收费规则
@@ -179,11 +182,13 @@ export default (
             <Route path="WorkOrder" breadcrumbName="工单管理">
                 <Route path="ComplaintWorkOrder" breadcrumbName="投诉工单" isLink={true}>
                     <IndexRoute component={ComplaintWorkOrder}/>
-                    <Route path="ComplaintWorkOrderDetails" breadcrumbName="投诉工单详情" components={ComplaintWorkOrderDetails}/>
+                    <Route path="ComplaintWorkOrderDetails" breadcrumbName="投诉工单详情"
+                           components={ComplaintWorkOrderDetails}/>
                 </Route>
                 <Route path="FacilityMaintenance" breadcrumbName="设备维保" isLink={true}>
                     <IndexRoute component={FacilityMaintenance}/>
-                    <Route path="FacilityMaintenanceDetails" breadcrumbName="设备维保详情" components={FacilityMaintenanceDetails}/>
+                    <Route path="FacilityMaintenanceDetails" breadcrumbName="设备维保详情"
+                           components={FacilityMaintenanceDetails}/>
                 </Route>
                 <Route path="OpinionTemplate" breadcrumbName="意见模板" components={OpinionTemplate}/>
             </Route>
@@ -213,12 +218,17 @@ export default (
                            onEnter={requireAuth}/>
                     <Route path='EditSchedule' component={EditSchedule} breadcrumbName="编辑排班" onEnter={requireAuth}/>
                 </Route>
-                <Route path="CheckInInformation" component={CheckInInformation} breadcrumbName="签到信息" onEnter={requireAuth}/>
+                <Route path="CheckInInformation" component={CheckInInformation} breadcrumbName="签到信息"
+                       onEnter={requireAuth}/>
                 <Route path="ScheduleManage" component={ScheduleManage} breadcrumbName="班次管理" onEnter={requireAuth}/>
             </Route>
             <Route path="DeviceManage" breadcrumbName="设备管理">
-                <Route path="PatrolManage1" component={PatrolManage1} breadcrumbName="设备列表" />
-                <Route path="PatrolManage2" component={PatrolManage2} breadcrumbName="设备厂商" />
+                <Route path="DeviceList" component={DeviceList} breadcrumbName="设备列表"/>
+                <Route path="EquipmentManufacturers" breadcrumbName="设备厂商" isLink={true}>
+                    <IndexRoute component={EquipmentManufacturers} onEnter={requireAuth}/>
+                    <Route path='EquipmentManufacturersDetail' component={EquipmentManufacturersDetail} breadcrumbName="设备厂商详情"
+                           onEnter={requireAuth}/>
+                </Route>
             </Route>
         </Route>
 
@@ -231,6 +241,10 @@ export default (
                 </Route>
                 <Route path="SectionResource" breadcrumbName="路段管理" isLink={true}>
                     <IndexRoute component={SectionResource} onEnter={requireAuth}/>
+                    <Route path='SectionVisualizationManage' breadcrumbName='路段可视化管理' isLink={true}>
+                        <IndexRoute component={SectionVisualizationManage} onEnter={requireAuth}/>
+                        <Route path='SectionVisualizationSetting' breadcrumbName='路段可视化设置' component={SectionVisualizationSetting}/>
+                    </Route>
                     <Route path="SectionDetails" breadcrumbName="路段详情" isLink={true}>
                         <IndexRoute component={SectionDetails} onEnter={requireAuth}/>
                         <Route path="DisplayChargeRules" breadcrumbName="计费规则详情" component={DisplayChargeRules}
@@ -259,6 +273,8 @@ export default (
                 </Route>
                 <Route path='AreaManage' breadcrumbName='片区管理' isLink={true}>
                     <IndexRoute component={AreaManage} onEnter={requireAuth}/>
+                    <Route path='AddArea' component={AddArea} breadcrumbName='新增片区' onEnter={requireAuth}/>
+                    <Route path='EditArea' component={EditArea} breadcrumbName='编辑片区' onEnter={requireAuth}/>
                 </Route>
                 <Route path='BerthTypeManage' breadcrumbName='泊位类型管理' isLink={true}>
                     <IndexRoute component={BerthTypeManage} onEnter={requireAuth}/>
@@ -294,17 +310,18 @@ export default (
         </Route>
 
         <Route path="DataCenter" breadcrumbName="数据中心">
-            <Route path='UerReport' breadcrumbName='用户报表' components={UserReport} />
-            <Route path='DeviceReport' breadcrumbName='设备报表' components={DeviceReport} />
-            <Route path='ParkingReport' breadcrumbName='停车报表' components={ParkingReport} />
-            <Route path='PatrolReport' breadcrumbName='巡检报表' components={PatrolReport} />
-            <Route path='OperationsReport' breadcrumbName='运维报表' components={OperationsReport} />
-            <Route path='OperationalDaily' breadcrumbName='运营综合日报' components={OperationalDaily} />
-            <Route path='OperationalWeekly' breadcrumbName='运营综合周报' components={OperationalWeekly} />
-            <Route path='OperationalMonthly' breadcrumbName='运营综合月报' components={OperationalMonthly} />
+            <Route path='UerReport' breadcrumbName='用户报表' components={UserReport}/>
+            <Route path='DeviceReport' breadcrumbName='设备报表' components={DeviceReport}/>
+            <Route path='ParkingReport' breadcrumbName='停车报表' components={ParkingReport}/>
+            <Route path='PatrolReport' breadcrumbName='巡检报表' components={PatrolReport}/>
+            <Route path='OperationsReport' breadcrumbName='运维报表' components={OperationsReport}/>
+            <Route path='OperationalDaily' breadcrumbName='运营综合日报' components={OperationalDaily}/>
+            <Route path='OperationalWeekly' breadcrumbName='运营综合周报' components={OperationalWeekly}/>
+            <Route path='OperationalMonthly' breadcrumbName='运营综合月报' components={OperationalMonthly}/>
             <Route path="FinancialReport" breadcrumbName="财务报表" isLink={true}>
                 <IndexRoute component={FinancialReport} onEnter={requireAuth}/>
-                <Route path='AreaPaymentDetail' breadcrumbName='区域缴费金额详情' component={AreaPaymentDetail} onEnter={requireAuth}/>
+                <Route path='AreaPaymentDetail' breadcrumbName='区域缴费金额详情' component={AreaPaymentDetail}
+                       onEnter={requireAuth}/>
             </Route>
         </Route>
 
@@ -313,8 +330,10 @@ export default (
                 <IndexRoute component={InvoicesManage} onEnter={requireAuth}/>
                 <Route path='InvoiceDetail' breadcrumbName='发票详情' component={InvoiceDetail} onEnter={requireAuth}/>
             </Route>
-            <Route path='ParkingRevenueAndExpenditureDetails' breadcrumbName='停车收支明细' component={ParkingRevenueAndExpenditureDetails}/>
-            <Route path='ParkingRevenueAndExpenditureSummary' breadcrumbName='停车收支汇总' component={ParkingRevenueAndExpenditureSummary}/>
+            <Route path='ParkingRevenueAndExpenditureDetails' breadcrumbName='停车收支明细'
+                   component={ParkingRevenueAndExpenditureDetails}/>
+            <Route path='ParkingRevenueAndExpenditureSummary' breadcrumbName='停车收支汇总'
+                   component={ParkingRevenueAndExpenditureSummary}/>
             <Route path='MembershipRechargeDetails' breadcrumbName='会员充值明细' component={MembershipRechargeDetails}/>
             <Route path='WalletBalanceInquiry' breadcrumbName='钱包余额查询' component={WalletBalanceInquiry}/>
         </Route>

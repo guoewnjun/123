@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import {
-    Card, Row, Col, Button, Form, Select, Input, Radio,
+    Card, Row, Col, Button, Form, Select, Input, Radio, message
 } from 'antd';
 import { HttpClient } from "@/common/HttpClient";
 // import ImagePreview from '../../components/ImagePreview/';
@@ -21,8 +21,11 @@ class ComplaintDetails extends Component {
             switchover: 1, //切换处理页面
             nengbunengtian: true,
             uId: this.props.location.query.id || '',
-            complainInformation: {},
-
+            complaintsInfo: {},
+            disposedInfo: {},
+            opinionEntry: [],
+            opinionTitleList: [],
+            adminList: []
         }
     }
 
@@ -33,21 +36,55 @@ class ComplaintDetails extends Component {
 
     // 组件挂载后
     componentDidMount() {
-        HttpClient.query(`/parking-person-info/business/complaints/detail/nodisposed?id=${this.state.uId}`, 'GET', null, this.parkingDetail.bind(this));
+        HttpClient.query(`/parking-person-info/business/complaints/detail/disposed?id=${this.state.uId}`, 'GET', null, this.parkingDetail.bind(this));
+        this.getOpinionEntry();
+        this.getAdminList();
     }
 
     // 组件卸载之前
     componentWillUnmount() {
     }
 
-    // 获取停车详情回调
+    // 获取意见词条
+    getOpinionEntry() {
+        HttpClient.query(`/parking-info/dictionary/opinion`, 'GET', null, (d, type) => {
+            const data = d.data;
+            if (type === HttpClient.requestSuccess) {
+                //成功-------在这里做你的数据处理
+                console.log(data[0].list)
+                this.setState({
+                    opinionEntry: data[0].list,
+                });
+            } else {
+                //失败----做除了报错之外的操作
+            }
+        });
+    }
+
+    //获取客服人员列表
+    getAdminList() {
+        HttpClient.query(`/parking-info/admin/user/simple/complaints`, 'GET', null, (d, type) => {
+            const data = d.data;
+            if (type === HttpClient.requestSuccess) {
+                //成功-------在这里做你的数据处理
+                this.setState({
+                    adminList: data,
+                });
+            } else {
+                //失败----做除了报错之外的操作
+            }
+        });
+    }
+
+    // 获取投诉详情
     parkingDetail(d, type) {
         const data = d.data;
         if (type === HttpClient.requestSuccess) {
             //成功-------在这里做你的数据处理
             console.log(data)
             this.setState({
-                complainInformation: data,
+                complaintsInfo: data.complaintsInfo,
+                disposedInfo: data.disposeInfo
             });
         } else {
             //失败----做除了报错之外的操作
@@ -85,7 +122,64 @@ class ComplaintDetails extends Component {
 
     //提交按钮
     tijiao(e) {
-        alert("已提交");
+        let params = {};
+        params.id = this.state.uId;
+        this.props.form.validateFields((err, values) => {
+            console.log(values)
+            switch (values.complainStatus) {
+                case '1':
+                    params.state = '结案'
+                    params.content = values.closeContent
+                    params.isAdvise = values.sendMessage == 2 ? true : false
+                    if (!params.content) {
+                        message.error('请输入结案内容')
+                        return
+                    }
+                    break;
+                case '2':
+                    params.state = '生成工单'
+                    params.caption = values.workOrderTitle
+                    params.priority = values.priority
+                    this.state.adminList.map(item => {
+                        if (item.id == values.adminId) {
+                            params.toDisposer = item.name
+                            params.toDisposerId = item.id
+                        }
+                    })
+                    params.content = values.workOrderContent
+                    if (!params.caption || !params.priority || !params.toDisposer || !params.content) {
+                        message.error('请完整填写信息')
+                        return
+                    }
+                    break;
+                case '3':
+                    params.state = '关闭'
+                    if (values.close == 1) {
+                        params.content = '无效内容'
+                    } else if (values.close == 2) {
+                        params.content = '问题不存在'
+                    } else if (values.closeReason) {
+                        params.content = values.closeReason
+                    } else {
+                        message.error('请输入原因')
+                        return
+                    }
+                    break;
+            }
+            console.log(params)
+            HttpClient.query(`/parking-person-info/business/complaints/dispose`, 'POST', params, (d, type) => {
+                const data = d.data;
+                console.log(d)
+                if (type === HttpClient.requestSuccess) {
+                    //成功-------在这里做你的数据处理
+                    // this.setState({
+                    //     adminList: data,
+                    // });
+                } else {
+                    //失败----做除了报错之外的操作
+                }
+            });
+        })
     }
     gaibian(value) {
         if (value.target.value == '3') {
@@ -98,8 +192,39 @@ class ComplaintDetails extends Component {
             })
         }
     }
+
+    //处理意见分类选择
+    handleOpinionType(type) {
+        this.state.opinionEntry.map((item) => {
+            if (item.type == type) {
+                this.setState({
+                    opinionTitleList: item.list
+                })
+            }
+        })
+    }
+
+    //处理添加意见
+    handleAddOpinion() {
+        let opinionContent;
+        let closeContent;
+        this.props.form.validateFields((err, values) => {
+            if (values.opinionContent != undefined) {
+                opinionContent = values.opinionContent
+                closeContent = values.closeContent || ''
+            } else {
+                message.error('请选择常用意见')
+            }
+        })
+        if (opinionContent != undefined) {
+            this.props.form.setFieldsValue({
+                closeContent: closeContent ? closeContent + '\n' + opinionContent : opinionContent
+            })
+        }
+    }
+
     render() {
-        const { show, switchover, nengbunengtian, complainInformation } = this.state;
+        const { show, switchover, nengbunengtian, complaintsInfo, opinionEntry, opinionTitleList, adminList } = this.state;
 
         const { getFieldDecorator } = this.props.form;
 
@@ -124,7 +249,7 @@ class ComplaintDetails extends Component {
                                 <Row>
                                     <Col span={8}>
                                         <FormItem label='投诉状态' {...formItemLayout}>
-                                            {getFieldDecorator('ComplainStatus', { initialValue: '1' })(
+                                            {getFieldDecorator('complainStatus', { initialValue: '1' })(
                                                 <Select initialValue="1" onChange={this.switchover.bind(this)}>
                                                     <Option value="1">结案</Option>
                                                     <Option value="2">生成工单</Option>
@@ -144,32 +269,42 @@ class ComplaintDetails extends Component {
                                 <Row style={{ marginTop: "25px" }}>
                                     <Col span={8}>
                                         <FormItem label="常用意见" {...formItemLayout}>
-                                            {getFieldDecorator('OpinionClassify')(
-                                                <Select initialValue="1" onChange={handleChange}>
-                                                    <Option value="1">请选择意见分类</Option>
-                                                </Select>
-                                            )}
+                                            <Select placeholder='请选择意见分类' onChange={this.handleOpinionType.bind(this)}>
+                                                {
+                                                    opinionEntry.map((item, index) => {
+                                                        return (
+                                                            <Option key={index} value={item.type} > {item.type}</Option>
+                                                        )
+                                                    })
+                                                }
+                                            </Select>
                                         </FormItem>
                                     </Col>
                                     <Col span={6} style={{ marginLeft: "10px" }}>
                                         <FormItem>
-                                            {getFieldDecorator('OpinionTitle')(
-                                                <Select initialValue="1" onChange={handleChange}>
-                                                    <Option value="1">请选择意见标题</Option>
+                                            {getFieldDecorator('opinionContent')(
+                                                <Select placeholder='请选择意见标题'>
+                                                    {
+                                                        opinionTitleList.map((item, index) => {
+                                                            return (
+                                                                <Option key={index} value={item.content}>{item.caption}</Option>
+                                                            )
+                                                        })
+                                                    }
                                                 </Select>
                                             )}
                                         </FormItem>
                                     </Col>
                                     <Col span={6} style={{ marginLeft: "10px" }}>
-                                        <Button>添加意见</Button>
+                                        <Button onClick={this.handleAddOpinion.bind(this)}>添加意见</Button>
                                     </Col>
                                 </Row>
                                 <Row>
                                     <Col span={8} >
                                         <FormItem label="结案内容" {...formItemLayout}>
-                                            {getFieldDecorator('CloseContent')(
+                                            {getFieldDecorator('closeContent')(
                                                 <TextArea rows={5}
-                                                    placeholder=""
+                                                    placeholder="请输入结案"
                                                 />
                                             )}
                                         </FormItem>
@@ -178,8 +313,8 @@ class ComplaintDetails extends Component {
                                 <Row>
                                     <Col span={8} >
                                         <FormItem label="给用户发短信" {...formItemLayout}>
-                                            {getFieldDecorator('SendMessage')(
-                                                <Radio.Group initialValue={1}>
+                                            {getFieldDecorator('sendMessage', { initialValue: 1 })(
+                                                <Radio.Group>
                                                     <Radio value={1}>否</Radio>
                                                     <Radio value={2}>是</Radio>
                                                 </Radio.Group>
@@ -210,7 +345,7 @@ class ComplaintDetails extends Component {
                                 <Row>
                                     <Col span={8}>
                                         <FormItem label='投诉状态' {...formItemLayout}>
-                                            {getFieldDecorator('ComplainStatus')(
+                                            {getFieldDecorator('complainStatus')(
                                                 <Select initialValue="1" onChange={this.switchover.bind(this)}>
                                                     <Option value="1">结案</Option>
                                                     <Option value="2">生成工单</Option>
@@ -223,8 +358,8 @@ class ComplaintDetails extends Component {
                                 <Row>
                                     <Col span={8}>
                                         <FormItem label="工单标题" {...formItemLayout}>
-                                            {getFieldDecorator('WorkOrderTitle')(
-                                                <Input placeholder="" />
+                                            {getFieldDecorator('workOrderTitle')(
+                                                <Input placeholder="请输入工单标题" />
                                             )}
                                         </FormItem>
                                     </Col>
@@ -233,24 +368,26 @@ class ComplaintDetails extends Component {
                                     <Col span={8}>
                                         <Col span={12} style={{ marginRight: "-30%" }}>
                                             <FormItem label="优先级" {...formItemLayout}>
-                                                {getFieldDecorator('Priority')(
-                                                    <Select initialValue="1" onChange={handleChange}>
-                                                        <Option value="1">请选择</Option>
-                                                        <Option value="2">一般</Option>
-                                                        <Option value="3">紧急</Option>
-                                                        <Option value="4">立即处理</Option>
+                                                {getFieldDecorator('priority')(
+                                                    <Select placeholder="请选择">
+                                                        <Option value="一般">一般</Option>
+                                                        <Option value="紧急">紧急</Option>
+                                                        <Option value="立即处理">立即处理</Option>
                                                     </Select>
                                                 )}
                                             </FormItem>
                                         </Col>
                                         <Col span={12} style={{ float: "right" }}>
                                             <FormItem label="指派" {...formItemLayout}>
-                                                {getFieldDecorator('Designate')(
-                                                    <Select initialValue="1" onChange={handleChange}>
-                                                        <Option value="1">请选择</Option>
-                                                        <Option value="2">XX小姐</Option>
-                                                        <Option value="3">张三</Option>
-                                                        <Option value="4">李四</Option>
+                                                {getFieldDecorator('adminId')(
+                                                    <Select placeholder="请选择">
+                                                        {
+                                                            adminList.map((item, index) => {
+                                                                return (
+                                                                    <Option key={item.id} value={item.id}>{item.name}</Option>
+                                                                )
+                                                            })
+                                                        }
                                                     </Select>
                                                 )}
                                             </FormItem>
@@ -260,9 +397,9 @@ class ComplaintDetails extends Component {
                                 <Row>
                                     <Col span={8} >
                                         <FormItem label="工单内容" {...formItemLayout}>
-                                            {getFieldDecorator('WorkOrderContent')(
+                                            {getFieldDecorator('workOrderContent')(
                                                 <TextArea rows={5}
-                                                    placeholder=""
+                                                    placeholder="请输入工单内容"
                                                 />
                                             )}
                                         </FormItem>
@@ -291,7 +428,7 @@ class ComplaintDetails extends Component {
                                 <Row>
                                     <Col span={8}>
                                         <FormItem label='投诉状态' {...formItemLayout}>
-                                            {getFieldDecorator('ComplainStatus')(
+                                            {getFieldDecorator('complainStatus')(
                                                 <Select initialValue="1" onChange={this.switchover.bind(this)}>
                                                     <Option value="1">结案</Option>
                                                     <Option value="2">生成工单</Option>
@@ -304,12 +441,16 @@ class ComplaintDetails extends Component {
                                 <Row>
                                     <Col span={8} >
                                         <FormItem label="关闭原因" {...formItemLayout}>
-                                            {getFieldDecorator('ClosureReason')(
-                                                <Radio.Group initialValue={1} onChange={(value) => { this.gaibian(value) }}>
+                                            {getFieldDecorator('close', {
+                                                initialValue: 1
+                                            })(
+                                                <Radio.Group onChange={(value) => { this.gaibian(value) }}>
                                                     <Radio value={1}>无效内容</Radio>
                                                     <Radio value={2}>问题不存在</Radio>
                                                     <Radio value={3}>
-                                                        <Input disabled={nengbunengtian} placeholder="请输入原因" />
+                                                        {getFieldDecorator('closeReason')(
+                                                            <Input disabled={nengbunengtian} placeholder="请输入原因" />
+                                                        )}
                                                     </Radio>
                                                 </Radio.Group>
                                             )}
@@ -362,48 +503,48 @@ class ComplaintDetails extends Component {
                             <Col span={20}>
                                 <Col span={8}>
                                     <label>投诉分类：</label>
-                                    <span>{complainInformation.type}</span>
+                                    <span>{complaintsInfo.type || '--'}</span>
                                 </Col>
                                 <Col span={24}>
                                     <label>投诉内容：</label>
                                     <span>
-                                        {complainInformation.content}
+                                        {complaintsInfo.content || '--'}
                                     </span>
                                 </Col>
                                 <Col span={24}>
                                     <Col span={8}>
                                         <label style={{ marginLeft: 14, }}>泊位号：</label>
-                                        <span>{complainInformation.spaceNo}</span>
+                                        <span>{complaintsInfo.spaceNo || '--'}</span>
                                     </Col>
                                     <Col span={8}>
                                         <label style={{ marginLeft: 14, }}>车牌号：</label>
-                                        <span>{complainInformation.plateNo}</span>
+                                        <span>{complaintsInfo.plateNo || '--'}</span>
                                     </Col>
                                 </Col>
                                 <Col span={8}>
                                     <label>停车时间：</label>
-                                    <span>{complainInformation.parkTime}</span>
+                                    <span>{complaintsInfo.parkTime || '--'}</span>
                                 </Col>
                                 <Col span={8}>
                                     <label>联系电话：</label>
-                                    <span>{complainInformation.contactTel}</span>
+                                    <span>{complaintsInfo.contactTel || '--'}</span>
                                 </Col>
                                 <Col span={24} style={{ marginTop: 12, }}>
                                     <label style={{ float: "left", marginTop: 12, marginLeft: 28, }}>照片：</label>
                                     <span>
-                                        {complainInformation.photo}
+                                        {complaintsInfo.photo || '--'}
                                     </span>
                                 </Col>
                                 <Col span={8} style={{ marginTop: 12, }}>
                                     <label>投诉来源：</label>
                                     <span>
-                                        {complainInformation.source}
+                                        {complaintsInfo.source || '--'}
                                     </span>
                                 </Col>
                                 <Col span={8} style={{ marginTop: 12, }}>
                                     <label>投诉时间：</label>
                                     <span>
-                                        {complainInformation.time}
+                                        {complaintsInfo.time || '--'}
                                     </span>
                                 </Col>
                             </Col>

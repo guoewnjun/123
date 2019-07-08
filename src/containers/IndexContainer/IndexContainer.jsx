@@ -77,7 +77,7 @@ export default class IndexContainer extends Component {
                 // 获取favicon
                 const iconHref = d.data.favicon || 'resources/images/favicon.ico';
                 this.getFavicon(iconHref);
-                window.OPERATOR_NAME = d.data.name || '城市路内停车管理';
+                window.OPERATOR_NAME = '大树停车';
                 this.setState({
                     operatorName: window.OPERATOR_NAME
                 });
@@ -532,7 +532,7 @@ export default class IndexContainer extends Component {
                                 {getContent()}
                             </div>
                             <Footer className="parking-foot">
-                                Copyright © 2018 智而行科技有限公司
+                                Copyright © 2018 {window.OPERATOR_NAME}有限公司
                             </Footer>
                         </Layout>
                     </Layout>

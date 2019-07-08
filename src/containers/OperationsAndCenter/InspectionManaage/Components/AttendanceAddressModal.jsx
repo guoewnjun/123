@@ -1,4 +1,5 @@
-import React, {Component, Fragment} from 'react';
+import React, {Component} from 'react';
+import PropTypes from 'prop-types';
 
 import {Row, Input, Form, Menu, Dropdown, Spin, message} from 'antd';
 import '../Styles/Inspection.css'
@@ -7,7 +8,7 @@ const FormItem = Form.Item;
 const MenuItem = Menu.Item;
 
 class AttendanceAddressModal extends Component {
-    constructor (props) {
+    constructor(props) {
         super(props);
         this.mapInstance = null;
         this.autoComplete = null;
@@ -24,11 +25,11 @@ class AttendanceAddressModal extends Component {
     }
 
     // 组件挂载之前
-    componentWillMount () {
+    componentWillMount() {
     }
 
     // 组件挂载后
-    componentDidMount () {
+    componentDidMount() {
         this.mapInstance = new window.AMap.Map('Container', {
             resizeEnable: true,
             zoom: 11,
@@ -36,10 +37,10 @@ class AttendanceAddressModal extends Component {
         });
         this.mapInstance.on('complete', () => {
             const markerIcon = {
-                icon: 'https://webapi.window.AMap.com/theme/v1.3/markers/n/mark_r.png',
+                icon: 'https://webapi.AMap.com/theme/v1.3/markers/n/mark_r.png',
                 label: '自定义选点',
             };
-            this.mapInstance.plugin(['window.AMap.MouseTool'], () => {
+            window.AMap.plugin(['AMap.MouseTool', 'AMap.Autocomplete','AMap.PlaceSearch'], () => {
                 this.AMapTool = new window.AMap.MouseTool(this.mapInstance);
                 this.AMapTool.marker(markerIcon); // 启用marker工具
                 this.AMapTool.on('draw', ({ type, obj }) => {
@@ -53,24 +54,19 @@ class AttendanceAddressModal extends Component {
                         this.mapInstance.clearInfoWindow()
                     }
                 });
-            });
-            window.AMap.plugin('AMap.Autocomplete', () => {
+
+                // 搜索插件
+                let placeSearchOptions = {
+                    city: '全国',
+                    map: this.mapInstance
+                };
+                this.placeSearch = new window.AMap.PlaceSearch(placeSearchOptions);
+
+                // 自动补全
                 let autoOptions = {
                     input: 'search',
                 };
                 this.autoComplete = new window.AMap.Autocomplete(autoOptions);
-            });
-            window.AMap.plugin('AMap.PlaceSearch', () => {
-                let autoOptions = {
-                    city: '全国',
-                    map: this.mapInstance
-                };
-                this.placeSearch = new window.AMap.PlaceSearch(autoOptions);
-            });
-            this.mapInstance.on('click', () => {
-                if (this.AMapTool) {
-                    this.AMapTool.marker(markerIcon);// 启用marker工具
-                }
             });
             this.mapInstance.on('zoomend', () => {
                 this.AMapZoom = this.mapInstance.getZoom();
@@ -82,12 +78,12 @@ class AttendanceAddressModal extends Component {
     }
 
     // 组件卸载之前
-    componentWillUnmount () {
+    componentWillUnmount() {
         this.mapInstance.destroy()
     }
 
     // 自动补全
-    autoInput () {
+    autoInput() {
         let keyword = document.getElementById("search").value;
         if (keyword) {
             this.autoComplete.search(keyword, (status, result) => {
@@ -117,15 +113,15 @@ class AttendanceAddressModal extends Component {
     }
 
     // 选中下拉列表中的兴趣点
-    selectPOI (obj) {
+    selectPOI(obj) {
         // console.log(obj);
         let name = obj.key.split('_')[1];
         this.placeSearch.search(name, (status, result) => {
             if (status === 'complete') {
 
-            }else if (status === 'error') {
+            } else if (status === 'error') {
                 message.warning(result)
-            }else if (status === 'no_data') {
+            } else if (status === 'no_data') {
                 message.warning('没有找到相关地点')
             }
         });
@@ -146,12 +142,13 @@ class AttendanceAddressModal extends Component {
             if (data) {
                 const detailAddress = `${data.pname}${data.cityname}${data.adname}${data.name}`;
                 const location = data.location;
+                console.log(location);
                 this.props.form.setFieldsValue({ address: detailAddress, location: location });
             }
         })
     }
 
-    render () {
+    render() {
         const { POIMenu, dropDownVisible, mapLoading } = this.state;
         const { form } = this.props;
         const { getFieldDecorator } = form;
@@ -201,7 +198,7 @@ class AttendanceAddressModal extends Component {
                                     required: true,
                                     whitespace: true,
                                     message: '请输入地址！'
-                                },{
+                                }, {
                                     max: 50,
                                     message: '考勤地址最多输入50位！'
                                 }],
@@ -209,8 +206,13 @@ class AttendanceAddressModal extends Component {
                                 <Input placeholder='请输入'/>
                             )}
                         </FormItem>
-                        <FormItem style={{ display: 'none' }}>
-                            {getFieldDecorator('location')(
+                        <FormItem label='坐标' style={this.props.showLocation ? {} : { display: 'none' }}>
+                            {getFieldDecorator('location', {
+                                rules: [{
+                                    required: this.props.showLocation,
+                                    message: '请选择坐标！'
+                                }],
+                            })(
                                 <Input placeholder='请输入'/>
                             )}
                         </FormItem>
@@ -221,4 +223,10 @@ class AttendanceAddressModal extends Component {
     }
 }
 
+AttendanceAddressModal.propTypes = {
+    showLocation: PropTypes.bool,
+};
+AttendanceAddressModal.defaultProps = {
+    showLocation: false,
+};
 export default Form.create()(AttendanceAddressModal)

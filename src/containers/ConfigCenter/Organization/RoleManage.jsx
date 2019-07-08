@@ -67,14 +67,16 @@ class RoleManage extends Component {
      * @param type
      */
     configData(d, type) {
-        if (type == HttpClient.requestSuccess) {
+        if (type === HttpClient.requestSuccess) {
             //成功-------在这里做你的数据处理，需要提示的自己加
             this.setState({
                 loading: false,
                 total: d.data.total,
                 currentCount: d.data.size,
                 dataList: d.data.list,
-            })
+            });
+            // TODO 权限的管理的问题
+            console.log('表格数据：', d.data.list)
         } else {
             //失败----做除了报错之外的操作
             this.setState({
@@ -86,7 +88,7 @@ class RoleManage extends Component {
     loadPermissions() {
         HttpClient.query(window.MODULE_PARKING_INFO + `/centerConsole/info/permissionsList`,
             "GET", {}, (d, type) => {
-                if (type == HttpClient.requestSuccess) {
+                if (type === HttpClient.requestSuccess) {
                     let list = _.toArray(d.data);
                     let treeData = [];
                     for (let x in list) {
@@ -95,6 +97,8 @@ class RoleManage extends Component {
                     this.setState({
                         permissionTreeData: treeData,
                     });
+                    // TODO 权限的管理的问题
+                    console.log('permissionTreeData', treeData)
                 }
             });
     }
@@ -120,15 +124,13 @@ class RoleManage extends Component {
                 children: child
             };
         }
-
-
     }
 
     //删除角色
     deleteRole(id) {
         let data = {roleId: id};
         HttpClient.query(window.MODULE_PARKING_INFO + `/centerConsole/info/deleteRole`, "POST", JSON.stringify(data), (d, type) => {
-            if (type == HttpClient.requestSuccess) {
+            if (type === HttpClient.requestSuccess) {
                 message.success("删除成功");
                 if (this.state.currentCount === 1 && this.state.pageNum > 1) {//最后一条
                     this.state.pageNum -= 1;
@@ -167,6 +169,35 @@ class RoleManage extends Component {
 
     }
 
+    selectRole(value, node, extra) {
+        // let RoleIds = [],
+        //     allCheckedNodes = extra.allCheckedNodes;
+        // console.log('allCheckedNodes：', allCheckedNodes);
+        // allCheckedNodes && allCheckedNodes.forEach(nodesItem => {
+        //     if (nodesItem.node) { //点击复选框
+        //         if (nodesItem.children) { // 选中整个部门
+        //             nodesItem.children.forEach(nodesItemChildren => {
+        //                 let userId = nodesItemChildren.node.key.split('_')[1];
+        //                 RoleIds.push(userId)
+        //             });
+        //         } else { // 选中员工
+        //             let userId = nodesItem.node.key.split('_')[1];
+        //             RoleIds.push(userId)
+        //         }
+        //     } else { //点击Tag上的×取消选择
+        //         if (nodesItem.key.split('_')[0] === 'department') { // 部门
+        //             nodesItem.props.children.forEach(nodesItemChildren => {
+        //                 let userId = nodesItemChildren.props.value.split('_')[1];
+        //                 RoleIds.push(userId)
+        //             });
+        //         } else { // 员工
+        //             let userId = nodesItem.props.value.split('_')[1];
+        //             RoleIds.push(userId)
+        //         }
+        //     }
+        // });
+    }
+
     checkModal() {
         if (!this.state.submitLoading) {
             this.state.submitLoading = true;
@@ -196,7 +227,7 @@ class RoleManage extends Component {
                         };
                         HttpClient.query(window.MODULE_PARKING_INFO + `/centerConsole/info/updateRole`, "POST", JSON.stringify(data), (d, type) => {
                             this.state.submitLoading = false;
-                            if (type == HttpClient.requestSuccess) {
+                            if (type === HttpClient.requestSuccess) {
                                 this.setState({
                                     visible: false,
                                 });
@@ -400,6 +431,7 @@ class RoleManage extends Component {
                                             allowClear
                                             showSearch
                                             treeNodeFilterProp='title'
+                                            onChange={this.selectRole.bind(this)}
                                         />
                                     )}
                                 </FormItem>

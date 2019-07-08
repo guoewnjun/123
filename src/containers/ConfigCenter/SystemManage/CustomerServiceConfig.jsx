@@ -69,7 +69,7 @@ export default class CustomerServiceConfig extends Component {
                             });
                             if (type === HttpClient.requestSuccess) {
                                 message.success(d.data);
-                                window.location.hash = 'SystemManage/CustomerService'
+                                history.back(-1)
                             }
                         })
                     }
@@ -116,7 +116,7 @@ export default class CustomerServiceConfig extends Component {
                     <div className="form-bottom-fixed"
                          style={this.props.collapsed ? {width: "calc(100% - 80px)"} : {width: "calc(100% - 256px)"}}>
                         <Button className="partnerList_search_button" onClick={() => {
-                            window.history.back(-1)
+                            history.back(-1)
                         }}>取 消</Button>
                         <Button type="primary" style={{width: 65}} onClick={this.submit.bind(this)}>提 交</Button>
                     </div>

@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
-import { Button, Form, Table, Row, Col, Input, Spin, Card, Select, Radio, Timeline } from 'antd';
+import { Button, Form, Table, Row, Col, Input, Spin, Card, Select, Radio, Timeline, message } from 'antd';
 import { HttpClient } from "@/common/HttpClient";
 
 const { Option } = Select;
 const FormItem = Form.Item;
 const { TextArea } = Input;
 
-export default class FacilityMaintenanceDetails extends Component {
+class FacilityMaintenanceDetails extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -15,6 +15,7 @@ export default class FacilityMaintenanceDetails extends Component {
             loading: false, //表格加载状态
             datum: {},
             lists: [],
+            adminList: []       //运营人员列表
         }
     }
 
@@ -34,8 +35,10 @@ export default class FacilityMaintenanceDetails extends Component {
         }
         HttpClient.query(`/parking-resource/road/maintenance/warning/device/dispose/detail?id=${uId}`, 'GET', null, this.handleQueryData.bind(this))
         HttpClient.query(`/parking-resource/road/maintenance/warning/device/dispose/history?id=${uId}`, 'GET', null, this.handleQueryData2.bind(this))
+        HttpClient.query(`/parking-info/admin/user/simple/maintenance`, 'GET', null, this.handleGetMaintenance.bind(this))
     }
 
+    //获取工单详情
     handleQueryData(d, type) {
         const data = d.data;
         if (type === HttpClient.requestSuccess) {
@@ -50,6 +53,7 @@ export default class FacilityMaintenanceDetails extends Component {
         })
     }
 
+    //获取工单处理记录
     handleQueryData2(d, type) {
         const data = d.data;
         if (type === HttpClient.requestSuccess) {
@@ -64,6 +68,17 @@ export default class FacilityMaintenanceDetails extends Component {
         })
     }
 
+    handleGetMaintenance(d, type) {
+        const data = d.data;
+        if (type === HttpClient.requestSuccess) {
+            this.setState({
+                adminList: data,
+            })
+        } else {
+            //失败----做除了报错之外的操作
+        }
+    }
+
     chuli(e) {
         this.setState({
             xianshi: true,
@@ -71,8 +86,27 @@ export default class FacilityMaintenanceDetails extends Component {
     }
 
     refer() {
-        const refercon = this.state.refer;
-        alert(refercon);
+        let params = {};
+        params.id = this.state.datum.id;
+        this.props.form.validateFields((err, values) => {
+            if (err) return;
+            params.disposeType = values.disposeType
+            params.disposer = values.disposer
+            params.content = values.content
+            // console.log(params)
+            HttpClient.query(`/parking-resource/road/maintenance/warning/device/dispose/dispose`, 'GET', params, (d, type) => {
+                if (type === HttpClient.requestSuccess) {
+                    message.success('提交成功')
+                    this.loadData();
+                    this.props.form.resetFields();
+                    this.setState({
+                        xianshi: false
+                    })
+                } else {
+                    //失败----做除了报错之外的操作
+                }
+            })
+        })
     }
 
     // 组件挂载之前
@@ -88,7 +122,8 @@ export default class FacilityMaintenanceDetails extends Component {
     componentWillUnmount() {
     }
     render() {
-        const { uId, xianshi, loading, datum, lists } = this.state;
+        const { getFieldDecorator } = this.props.form;
+        const { uId, xianshi, loading, datum, lists, adminList } = this.state;
         const formItemLayout = {
             labelCol: { span: 5 },
             wrapperCol: { span: 19 },
@@ -102,7 +137,7 @@ export default class FacilityMaintenanceDetails extends Component {
         // ];
 
         const listItem = lists.map((str) =>
-            <Timeline.Item>
+            <Timeline.Item key={str.id}>
                 {str.createTime + '  --------  '}{str.opinion}
             </Timeline.Item>
         );
@@ -114,24 +149,47 @@ export default class FacilityMaintenanceDetails extends Component {
                             <Row>
                                 <Col span={24}>
                                     <FormItem label='工单状态' {...formItemLayout}>
-                                        <Select defaultValue="请选择" style={{ width: '200px' }}>
-                                            <Option value="1">自行处理中</Option>
-                                            <Option value="2">厂家处理中</Option>
-                                        </Select>
+                                        {getFieldDecorator('disposeType', {
+                                            rules: [{
+                                                required: true,
+                                                whitespace: true,
+                                                message: '请选择工单状态'
+                                            }]
+                                        })(
+                                            <Select placeholder="请选择" style={{ width: '200px' }}>
+                                                <Option value="自行处理中">自行处理中</Option>
+                                                <Option value="厂家处理中">厂家处理中</Option>
+                                                <Option value="验收中">验收中</Option>
+                                                <Option value="工单完成">工单完成</Option>
+                                            </Select>)}
                                     </FormItem>
                                 </Col>
                                 <Col span={24} style={{ marginTop: '20px' }}>
                                     <FormItem label='指派' {...formItemLayout}>
-                                        <Select defaultValue="1" style={{ width: '200px', }}>
-                                            <Option value="1">请选择</Option>
-                                        </Select>
+                                        {getFieldDecorator('disposer', {
+                                            rules: [{
+                                                required: true,
+                                                whitespace: true,
+                                                message: '请选择指派人员'
+                                            }]
+                                        })(
+                                            <Select placeholder='请选择' style={{ width: '200px', }}>
+                                                {adminList.map((item, index) => {
+                                                    return (<Option value={item.name} key={item.id}>{item.name}</Option>)
+                                                })}
+                                            </Select>)}
                                     </FormItem>
                                 </Col>
                                 <Col span={24}>
                                     <FormItem label='处理说明' {...formItemLayout}>
-                                        <TextArea rows={6} style={{ width: '500px' }} onChange={(e) => {
-                                            this.state.refer = e.target.value;
-                                        }} />
+                                        {getFieldDecorator('content', {
+                                            rules: [{
+                                                required: true,
+                                                whitespace: true,
+                                                message: '请输入处理说明'
+                                            }]
+                                        })(
+                                            <TextArea rows={6} style={{ width: '500px' }} />)}
                                     </FormItem>
                                 </Col>
                                 <Col span={24}>
@@ -179,107 +237,111 @@ export default class FacilityMaintenanceDetails extends Component {
                         </div>
                     </div>
                     <div className='page-content page-content-transparent'>
-                        <Card title='设备信息' >
-                            <Row>
-                                <Col span={8} style={{ marginLeft: '30px' }}>
-                                    <label>路段名称：</label>
-                                    <span>{datum.parkingName || '---'}</span>
-                                </Col>
-                                <Col span={8} style={{ marginLeft: '70px' }}>
-                                    <label>关联车位：</label>
-                                    <span>{datum.parkingSpaces}</span>
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col span={8} style={{ marginLeft: '30px' }}>
-                                    <label>设备类型：</label>
-                                    <span>{datum.deviceType || '---'}</span>
-                                </Col>
-                                <Col span={8} style={{ marginLeft: '70px' }}>
-                                    <label>设备型号：</label>
-                                    <span>{datum.deviceModel || '---'}</span>
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col span={8} style={{ marginLeft: '30px' }}>
-                                    <label>设备ID：</label>
-                                    <span>{datum.deviceId || '---'}</span>
-                                </Col>
-                                <Col span={8} style={{ marginLeft: '70px' }}>
-                                    <label>硬件ID：</label>
-                                    <span>{datum.hardwareId || '---'}</span>
-                                </Col>
-                                <Col span={8} style={{ marginLeft: '30px' }}>
-                                    <label>设备厂家：</label>
-                                    <span>{datum.factory || '---'}</span>
-                                </Col>
-                                <Col span={8} style={{ marginLeft: '70px' }}>
-                                    <label>设备地址：</label>
-                                    <span>{datum.address || '---'}</span>
-                                </Col>
-                                <Col span={8} style={{ marginLeft: '30px' }}>
-                                    <label>设备状态：</label>
-                                    <span>{datum.online || '---'}</span>
-                                </Col>
-                            </Row>
-                        </Card>
-                        <Card title='工单基本信息' >
-                            <Row>
-                                <Col span={8} style={{ marginLeft: '30px' }}>
-                                    <label>工单编号：</label>
-                                    <span >{this.state.uId || '---'}</span>
-                                </Col>
-                                <Col span={8} style={{ marginLeft: '70px' }}>
-                                    <label>工单标题：</label>
-                                    <span >{datum.caption || '---'}</span>
-                                </Col>
+                        <Spin spinning={loading}>
+                            <Card title='设备信息' >
+                                <Row>
+                                    <Col span={8} style={{ marginLeft: '30px' }}>
+                                        <label>路段名称：</label>
+                                        <span>{datum.parkingName || '---'}</span>
+                                    </Col>
+                                    <Col span={8} style={{ marginLeft: '70px' }}>
+                                        <label>关联车位：</label>
+                                        <span>{datum.parkingSpaces}</span>
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col span={8} style={{ marginLeft: '30px' }}>
+                                        <label>设备类型：</label>
+                                        <span>{datum.deviceType || '---'}</span>
+                                    </Col>
+                                    <Col span={8} style={{ marginLeft: '70px' }}>
+                                        <label>设备型号：</label>
+                                        <span>{datum.deviceModel || '---'}</span>
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col span={8} style={{ marginLeft: '30px' }}>
+                                        <label>设备ID：</label>
+                                        <span>{datum.deviceId || '---'}</span>
+                                    </Col>
+                                    <Col span={8} style={{ marginLeft: '70px' }}>
+                                        <label>硬件ID：</label>
+                                        <span>{datum.hardwareId || '---'}</span>
+                                    </Col>
+                                    <Col span={8} style={{ marginLeft: '30px' }}>
+                                        <label>设备厂家：</label>
+                                        <span>{datum.factory || '---'}</span>
+                                    </Col>
+                                    <Col span={8} style={{ marginLeft: '70px' }}>
+                                        <label>设备地址：</label>
+                                        <span>{datum.address || '---'}</span>
+                                    </Col>
+                                    <Col span={8} style={{ marginLeft: '30px' }}>
+                                        <label>设备状态：</label>
+                                        <span>{datum.online || '---'}</span>
+                                    </Col>
+                                </Row>
+                            </Card>
+                            <Card title='工单基本信息' >
+                                <Row>
+                                    <Col span={8} style={{ marginLeft: '30px' }}>
+                                        <label>工单编号：</label>
+                                        <span >{this.state.uId || '---'}</span>
+                                    </Col>
+                                    <Col span={8} style={{ marginLeft: '70px' }}>
+                                        <label>工单标题：</label>
+                                        <span >{datum.caption || '---'}</span>
+                                    </Col>
 
-                            </Row>
-                            <Row>
-                                <Col span={8} style={{ marginLeft: '30px' }}>
-                                    <label>工单内容：</label>
-                                    <span>{datum.content || '---'}</span>
-                                </Col>
-                                <Col span={8} style={{ marginLeft: '70px' }}>
-                                    <label>工单状态：</label>
-                                    <span>{datum.operator || '---'}</span>
-                                </Col>
-                            </Row>
-                            <Row>
+                                </Row>
+                                <Row>
+                                    <Col span={8} style={{ marginLeft: '30px' }}>
+                                        <label>工单内容：</label>
+                                        <span>{datum.content || '---'}</span>
+                                    </Col>
+                                    <Col span={8} style={{ marginLeft: '70px' }}>
+                                        <label>工单状态：</label>
+                                        <span>{datum.state || '---'}</span>
+                                    </Col>
+                                </Row>
+                                <Row>
 
-                                <Col span={8} style={{ marginLeft: '30px' }}>
-                                    <label>优先级：</label>
-                                    <span>{datum.priority || '---'}</span>
-                                </Col>
-                            </Row>
-                            <Row>
-                                <Col span={8} style={{ marginLeft: '30px' }}>
-                                    <label>工单发起人：</label>
-                                    <span>{datum.operator || '手机APP'}</span>
-                                </Col>
-                                <Col span={8} style={{ marginLeft: '70px' }}>
-                                    <label>创建时间：</label>
-                                    <span>{gettime(datum.createTime) || '2019-05-05 21:20'}</span>
-                                </Col>
-                            </Row>
-                        </Card>
-                        <Card title='处理记录'>
-                            <Row>
-                                <Col span={16} style={{ marginLeft: '30px' }}>
-                                    <Timeline>
-                                        {listItem}
-                                    </Timeline>
-                                </Col>
-                                <Col span={6} style={{ marginLeft: '30px' }}>
-                                    <Button type='primary' onClick={(e) => { this.chuli(e) }} style={{ marginTop: '40px' }}>处理</Button>
-                                </Col>
-                            </Row>
-                        </Card>
-                        {gongdanchuli()}
-
+                                    <Col span={8} style={{ marginLeft: '30px' }}>
+                                        <label>优先级：</label>
+                                        <span>{datum.priority || '---'}</span>
+                                    </Col>
+                                </Row>
+                                <Row>
+                                    <Col span={8} style={{ marginLeft: '30px' }}>
+                                        <label>工单发起人：</label>
+                                        <span>{datum.operator || '手机APP'}</span>
+                                    </Col>
+                                    <Col span={8} style={{ marginLeft: '70px' }}>
+                                        <label>创建时间：</label>
+                                        <span>{gettime(datum.createTime) || '2019-05-05 21:20'}</span>
+                                    </Col>
+                                </Row>
+                            </Card>
+                            <Card title='处理记录'>
+                                <Row>
+                                    <Col span={16} style={{ marginLeft: '30px' }}>
+                                        <Timeline>
+                                            {listItem}
+                                        </Timeline>
+                                    </Col>
+                                    {datum.state != '工单完成' ?
+                                        <Col span={6} style={{ marginLeft: '30px' }}>
+                                            <Button type='primary' onClick={(e) => { this.chuli(e) }} style={{ marginTop: '40px' }}>处理</Button>
+                                        </Col> : ''}
+                                </Row>
+                            </Card>
+                            {gongdanchuli()}
+                        </Spin>
                     </div>
                 </div>
             </div>
         );
     }
 }
+
+export default Form.create()(FacilityMaintenanceDetails)

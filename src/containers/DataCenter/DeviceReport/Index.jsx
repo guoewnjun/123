@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Empty, Row, Col} from "antd";
+import {Row, Col} from "antd";
 
 import {HttpClientImmidIot} from "@/common/HttpClientImmidIot";
 import AnnularChart from './components/AnnularChart';//引入环形图

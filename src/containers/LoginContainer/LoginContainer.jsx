@@ -1,19 +1,24 @@
-import React, { Component } from 'react';
-import { Card, Checkbox, Button, Input, Icon, Form, message } from 'antd';
-import { HttpClient } from "../../common/HttpClient";
+import React, {Component} from 'react';
+import {Card, Checkbox, Button, Input, Icon, Form, message} from 'antd';
+import {HttpClient} from "@/common/HttpClient";
 import _ from 'lodash';
 import './Style/LoginContainer.css';
+import {getUserIP} from '@/common/SystemFunction';
+import moment from 'moment';
 
 const FormItem = Form.Item;
 
 class LoginContainer extends Component {
     constructor(props) {
         super(props);
+        this.IP = undefined;
+        this.getVerifyCodeTime = undefined;
         this.state = {
             autoLogin: false,
             loadLogin: false,
             username: '',
             password: '',
+            isNeedVarifyCode: false,
         };
     }
 
@@ -21,6 +26,9 @@ class LoginContainer extends Component {
     }
 
     componentDidMount() {
+        getUserIP((ip) => {
+            this.IP = ip
+        });
         if (window.isInvalidToLogin) { // 防止出现多个提示信息
             message.warning('认证失效，请重新登录');
             window.isInvalidToLogin = false;
@@ -58,8 +66,10 @@ class LoginContainer extends Component {
                     password: values.password,
                     username: _.trim(values.username),
                     operatorId: window.OPERATOR_ID,
+                    ip: this.IP,
+                    varifyCode: values.varifyCode || ''
                 };
-                HttpClient.query(window.MODULE_PARKING_AUTHORITY + '/admin/token', 'POST', JSON.stringify(data), this.handleLogin.bind(this));
+                HttpClient.query(`${window.MODULE_PARKING_AUTHORITY}/admin/token`, 'POST', JSON.stringify(data), this.handleLogin.bind(this));
             }
         });
     };
@@ -86,26 +96,54 @@ class LoginContainer extends Component {
             }
         } else {
             //失败----做除了报错之外的操作
+            if (d.error.code === 10018) {
+                this.setState({
+                    isNeedVarifyCode: true
+                })
+            }
         }
+    }
+
+    // 获取验证码
+    getVerifyCode() {
+        if (this.getVerifyCodeTime) {
+            if (this.getVerifyCodeTime > moment().subtract(5, 'm').unix()) {
+                message.warning('五分钟内无需获取验证码');
+                return
+            }
+        }
+        const params = {
+            mobileNumber: this.props.form.getFieldValue('username'),
+        };
+        let url = `${window.MODULE_PARKING_AUTHORITY}/admin/address/getVerificationCode`;
+        HttpClient.query(url, 'POST', params, (d, type) => {
+            if (type === HttpClient.requestSuccess) {
+                message.success('验证码发送成功，验证码五分钟内有效');
+                this.getVerifyCodeTime = moment().unix(); //秒时间戳
+            } else {
+                this.setState({
+                    isNeedVarifyCode: true
+                })
+            }
+        }, 'application/x-www-form-urlencoded')
     }
 
     render() {
         const { getFieldDecorator } = this.props.form;
-        const { autoLogin, loadLogin, username, password } = this.state;
+        const { autoLogin, loadLogin, username, password, isNeedVarifyCode } = this.state;
         return (
             <div className='container'>
                 <div className='content'>
                     <div className='top'>
                         <div className='header'>
-                            <img style={{ width: 50, height: 50 }} src={window.LOGO_SRC} />
+                            <img style={{ width: 60, height: 50 }} src={window.LOGO_SRC}/>
                             <span style={{
                                 color: "white",
                                 fontSize: "33px",
                                 lineHeight: "52px",
                                 margin: "0 20px"
                             }}>
-                                {/* {OPERATOR_NAME} */}
-                                大树停车运营平台
+                                 {window.OPERATOR_NAME}运营中台
                             </span>
                         </div>
                     </div>
@@ -119,10 +157,17 @@ class LoginContainer extends Component {
                                 <FormItem>
                                     {getFieldDecorator('username', {
                                         initialValue: username,
-                                        rules: [{ required: true, message: '请输入用户名!' }],
+                                        rules: [{
+                                            required: true,
+                                            whitespace: true,
+                                            message: '请输入手机号码',
+                                        }, {
+                                            pattern: new RegExp("^1\\d{10}$"),
+                                            message: '请输入正确的手机号',
+                                        }],
                                     })(
                                         <Input className='login-form-input'
-                                            prefix={<Icon type="user" style={{ fontSize: 13 }} />} placeholder="账户" />
+                                               prefix={<Icon type="user" style={{ fontSize: 13 }}/>} placeholder="账户"/>
                                     )}
                                 </FormItem>
                                 <FormItem>
@@ -131,24 +176,38 @@ class LoginContainer extends Component {
                                         rules: [{ required: true, message: '请输入密码!' }],
                                     })(
                                         <Input className='login-form-input'
-                                            prefix={<Icon type="lock" style={{ fontSize: 13 }} />} type="password"
-                                            placeholder="密码" onPressEnter={this.handleSubmit.bind(this)} />
+                                               prefix={<Icon type="lock" style={{ fontSize: 13 }}/>} type="password"
+                                               placeholder="密码" onPressEnter={this.handleSubmit.bind(this)}/>
                                     )}
                                 </FormItem>
+                                {
+                                    isNeedVarifyCode && (
+                                        <FormItem>
+                                            {getFieldDecorator('varifyCode', {
+                                                rules: [{ required: true, message: '请输入验证码!' }],
+                                            })(
+                                                <Input className='login-form-input' style={{ width: '72%' }}
+                                                       placeholder="验证码" onPressEnter={this.handleSubmit.bind(this)}/>
+                                            )}
+                                            <Button style={{ width: '25%', height: '40px', float: 'right' }}
+                                                    onClick={this.getVerifyCode.bind(this)}>验证码</Button>
+                                        </FormItem>
+                                    )
+                                }
                                 <FormItem>
                                     <Button type="primary" htmlType="submit" loading={loadLogin}
-                                        className="login-form-button">
+                                            className="login-form-button">
                                         登录
                                     </Button>
                                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        {getFieldDecorator('autoLogin', {
+                                        {/*{getFieldDecorator('autoLogin', {
                                             valuePropName: 'checked',
                                             initialValue: autoLogin,
                                         })(
                                             <Checkbox onChange={this.changeAutoLogin.bind(this)}>
                                                 下次自动登录
                                             </Checkbox>
-                                        )}
+                                        )}*/}
                                         <a style={{ fontSize: '14px', lineHeight: '22px' }} onClick={(e) => {
                                             location.hash = '/ResetPassword';
                                         }}>忘记密码</a>
@@ -158,7 +217,7 @@ class LoginContainer extends Component {
                         </div>
                     </Card>
                 </div>
-                <footer className='login-footer'>Copyright © 2018 智而行科技有限公司</footer>
+                <footer className='login-footer'>Copyright © 2018 {window.OPERATOR_NAME}有限公司</footer>
             </div>
         )
     }

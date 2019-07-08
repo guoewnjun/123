@@ -13,6 +13,7 @@ class VisualizationBerth extends Component {
     state = {
         streetBerthData: [],
         districtOptions: [],
+        subAreaValue: undefined,
         areaOptions: [],
         spinning: false,
     };
@@ -49,6 +50,9 @@ class VisualizationBerth extends Component {
     }
 
     selectArea(value) {
+        this.setState({
+            subAreaValue: undefined,
+        });
         const params = {
             cityCode: window.cityCode,
             areaCode: value
@@ -78,7 +82,7 @@ class VisualizationBerth extends Component {
     }
 
     render() {
-        const { districtOptions, areaOptions, streetBerthData, spinning } = this.state;
+        const { districtOptions, areaOptions, streetBerthData, spinning, subAreaValue } = this.state;
         const Option = Select.Option;
         return (
             <Fragment>
@@ -104,8 +108,14 @@ class VisualizationBerth extends Component {
                         style={{ flexGrow: 1 }}
                         placeholder="请选择"
                         optionFilterProp="children"
+                        value={subAreaValue}
                         allowClear
-                        onChange={(value) => this.payLoad.subAreaName = value}
+                        onChange={(value) => {
+                            this.setState({
+                                subAreaValue: value
+                            });
+                            this.payLoad.subAreaName = value
+                        }}
                     >
                         {
                             areaOptions.map(item => (
@@ -127,7 +137,7 @@ class VisualizationBerth extends Component {
                                 renderItem={item => (
                                     <List.Item>
                                         <List.Item.Meta
-                                            title={<a>{item.roadName}</a>}
+                                            title={<a onClick={() => this.props.zoomInRoad(item)}>{item.roadName}</a>}
                                             description={`泊位数量：剩余${item.freeSpaceCount}个，总共${item.spaceCount}个`}
                                         />
                                     </List.Item>

@@ -81,7 +81,8 @@ class EditChargeTimes extends Component {
                     }, () => {
                         if (type === HttpClient.requestSuccess) {
                             message.success('修改成功');
-                            location.hash = `${location.hash}/ChargeTimesDetails?id=${d.data}`
+                            location.hash = `${location.hash.replace(/EditChargeTimes/, 'ChargeTimesDetails').split('?')[0]}?id=${d.data}`
+                            // location.hash = `${location.hash}/ChargeTimesDetails?id=${d.data}`
                         }
                     });
                 })

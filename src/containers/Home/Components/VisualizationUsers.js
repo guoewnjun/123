@@ -99,7 +99,7 @@ class VisualizationUsers extends Component {
                 </Row>
                 <Row type='flex' align='middle' style={{ marginBottom: 10 }}>
                     <label>工号：</label>
-                    <Input style={{ flexGrow: 1, width: 'unset' }} placeholder="请输入"
+                    <Input disabled title='该选项暂时无法使用' style={{ flexGrow: 1, width: 'unset' }} placeholder="请输入"
                            onChange={(e => this.payLoad.workNum = e.target.value)}/>
                 </Row>
                 <Row style={{ marginBottom: 10 }}>

@@ -29,7 +29,7 @@ export default class ResetPassword extends Component {
                 <div className='content'>
                     <ResetPasswordCar context='忘记密码' />
                 </div>
-                <footer className='reset-footer'>Copyright © 2018 智而行科技有限公司</footer>
+                <footer className='reset-footer'>Copyright © 2018 {window.OPERATOR_NAME}有限公司</footer>
             </div>
         );
     }

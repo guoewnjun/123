@@ -7,7 +7,7 @@ import SectionPriceSettingContent from "./Components/SectionDetailCard/SectionPr
 import Exception from "../../../components/Exception/index";
 
 export default class ChargeTimesDetails extends Component {
-    constructor (props) {
+    constructor(props) {
         super(props);
         this.state = {
             id: this.props.location.query.id,
@@ -38,11 +38,11 @@ export default class ChargeTimesDetails extends Component {
     }
 
     // 组件挂载之前
-    componentWillMount () {
+    componentWillMount() {
     }
 
     // 组件挂载后
-    componentDidMount () {
+    componentDidMount() {
         this.setState({
             loading: true
         });
@@ -62,10 +62,15 @@ export default class ChargeTimesDetails extends Component {
     }
 
     // 组件卸载之前
-    componentWillUnmount () {
+    componentWillUnmount() {
     }
 
-    render () {
+    edit() {
+        // const pureHash = location.hash.split('?')[0];
+        location.hash = location.hash.replace(/ChargeTimesDetails/, 'EditChargeTimes')
+    }
+
+    render() {
         if (!window.checkPageEnable('chargeTimesEdit')) return <Exception type='403'/>;
         const { payLoad, loading } = this.state;
         const titleStyle = {
@@ -107,9 +112,7 @@ export default class ChargeTimesDetails extends Component {
                             {
                                 window.checkPageEnable('chargeTimesEdit') && (
                                     <div style={{ position: 'absolute', right: 0, bottom: 10 }}>
-                                        <Button type="primary" onClick={() => {
-                                            location.hash = `${location.hash}/EditChargeTimes?id=${this.state.id}`
-                                        }}>编辑</Button>
+                                        <Button type="primary" onClick={() => this.edit()}>编辑</Button>
                                     </div>
                                 )
                             }

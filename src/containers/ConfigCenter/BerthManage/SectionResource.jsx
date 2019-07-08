@@ -17,11 +17,14 @@ import {
     Pagination,
     Popconfirm,
     Cascader,
-    Badge
+    Badge,
+    Divider
 } from 'antd';
 import {HttpClient} from '@/common/HttpClient.jsx';
 import Exception from '@/components/Exception';
 import {custom} from "@/common/SystemStyle";
+import AttendanceAddressModal from "../../OperationsAndCenter/InspectionManaage/Components/AttendanceAddressModal";
+import SectionVisualizationManage from "./SectionVisualizationManage";
 
 const { TextArea } = Input;
 const FormItem = Form.Item;
@@ -32,23 +35,26 @@ const auditStatus = {
 
 
 class SectionResource extends Component {
-    constructor (props) {
+    constructor(props) {
         super(props);
         message.config({
             duration: 1
         });
 
         this.state = {
+            amapVisible: false,
             currentPage: 1,            // 当前页面
             limit: 10,       // 页面条数
             total: 0,          // 总共查询数量
             //列表参数
             parkingList: [],
             companyList: [],
+            subAreaList: [],
             batchList: [],
             //筛选参数
             parkingName: '',
             partnerCompanyId: undefined,
+            subAreaId: undefined,
             parkingState: undefined,
             provinceId: undefined,
             cityId: undefined,
@@ -61,6 +67,7 @@ class SectionResource extends Component {
             temporaryProvinceId: undefined,
             temporaryCityId: undefined,
             temporaryAreaId: undefined,
+            temporarySubAreaId: undefined,
             //各类状态
             loading: true,      // 载入
             isBatch: false,     // 批量处理，是否隐藏其他按钮
@@ -73,33 +80,37 @@ class SectionResource extends Component {
                 provinceId: '',
                 cityId: '',
                 areaId: '',
+                subAreaId: '',
                 partnerCompanyId: '',
                 parkingState: 0,
-                parkingDesc: ''
+                parkingDesc: '',
+                longitude: '', //经度
+                latitude: '', //纬度
             },
             selectedRowKeys: [],
             //省市区
             options: [],
-            inSubmit: false
+            inSubmit: false,
+            areaSelectIsDisabled: true,
         }
     }
 
-    componentWillMount () {
+    componentWillMount() {
 
     }
 
-    componentDidMount () {
+    componentDidMount() {
         this.handleCompanyListQuerys();
         this.handleParkingListQuerys();
         this.getRegion();
     }
 
-    getRegion () {
+    getRegion() {
         HttpClient.query(window.MODULE_PARKING_INFO + '/admin/adminRegion', 'GET', null, this.regionData.bind(this));
     }
 
     // 获取行政区回调
-    regionData (d, type) {
+    regionData(d, type) {
         if (type == HttpClient.requestSuccess) {
             if (d.success) {
                 this.setState({
@@ -109,13 +120,28 @@ class SectionResource extends Component {
         }
     }
 
+    //获取片区列表
+    fetchSubAreaList() {
+        HttpClient.query(window.MODULE_PARKING_INFO + `/admin/city/subAreaInfo`, "GET", {
+            cityCode: this.state.addResource.cityId,
+            areaCode: this.state.addResource.areaId
+        }, (d, type) => {
+            if (type === HttpClient.requestSuccess) {
+                this.setState({
+                    subAreaList: d.data,
+                    areaSelectIsDisabled: false
+                })
+            }
+        });
+    }
+
     //获取公司列表
-    handleCompanyListQuerys () {
+    handleCompanyListQuerys() {
         HttpClient.query(window.MODULE_PARKING_INFO + `/admin/reviewPassCompany`, "GET", {}, this.fetchCompanyList.bind(this));
     }
 
-    fetchCompanyList (e, type) {
-        if (type == HttpClient.requestSuccess) {
+    fetchCompanyList(e, type) {
+        if (type === HttpClient.requestSuccess) {
             this.setState({
                 companyList: e.data
             })
@@ -123,7 +149,7 @@ class SectionResource extends Component {
     }
 
     //路段资源列表
-    handleParkingListQuerys () {
+    handleParkingListQuerys() {
         //转菊花
         this.setState({
             loading: true
@@ -154,11 +180,14 @@ class SectionResource extends Component {
         if (this.state.areaId !== undefined) {
             params.areaId = this.state.areaId;
         }
+        if (this.state.subAreaId !== undefined) {
+            params.areaId = this.state.subAreaId;
+        }
         console.log(params);
         HttpClient.query(window.MODULE_PARKING_RESOURCE + `/admin/resource/parking`, "GET", params, this.fetchParkingList.bind(this));
     }
 
-    fetchParkingList (e, type) {
+    fetchParkingList(e, type) {
         this.setState({
             loading: false
         });
@@ -178,7 +207,7 @@ class SectionResource extends Component {
     }
 
     //单个停启用
-    handleChangeStatus (e) {
+    handleChangeStatus(e) {
         this.setState({
             loading: true
         });
@@ -191,7 +220,7 @@ class SectionResource extends Component {
 
     }
 
-    singleOperateResponse (e, type) {
+    singleOperateResponse(e, type) {
         this.setState({
             loading: false
         });
@@ -202,7 +231,7 @@ class SectionResource extends Component {
     }
 
     //批量停启用
-    handleMoreActionMenuClick (e) {
+    handleMoreActionMenuClick(e) {
         let batchList = this.state.batchList;
         if (batchList.length > 0) {
             this.setState({
@@ -217,7 +246,7 @@ class SectionResource extends Component {
         }
     }
 
-    batchOperateResponse (e, type) {
+    batchOperateResponse(e, type) {
         this.setState({
             loading: false
         });
@@ -232,12 +261,14 @@ class SectionResource extends Component {
     }
 
     //新增
-    insertRoadResources (hidden) {
+    insertRoadResources(hidden) {
         this.props.form.validateFieldsAndScroll(((err, values) => {
             if (!err) {
                 if (this.state.inSubmit === true) {
                     return;
                 }
+                this.state.addResource.longitude = values.addParkingLocation.lng;
+                this.state.addResource.latitude = values.addParkingLocation.lat;
                 this.state.inSubmit = true;
                 HttpClient.query(window.MODULE_PARKING_RESOURCE + `/admin/resource/parking`, "POST", JSON.stringify(this.state.addResource), hidden ? this.fetchInsetResponseWithHidden.bind(this) : this.fetchInsetResponseWithoutHidden.bind(this));
             }
@@ -245,7 +276,7 @@ class SectionResource extends Component {
 
     }
 
-    fetchInsetResponseWithoutHidden (e, type) {
+    fetchInsetResponseWithoutHidden(e, type) {
         this.state.inSubmit = false;
         if (type === HttpClient.requestSuccess) {
             message.success(e.data);
@@ -258,16 +289,18 @@ class SectionResource extends Component {
                 provinceId: '',
                 cityId: '',
                 areaId: '',
+                subAreaId: '',
                 partnerCompanyId: '',
                 parkingState: 0,
                 parkingDesc: ''
             };
             //重置
-            this.props.form.resetFields(['addParkingRecordNo', 'addParkingName', 'addStreetName', 'addAdministrativeArea', 'addPartnerCompanyId', 'addParkingDesc']);
+            // this.props.form.resetFields(['addParkingRecordNo', 'addParkingName', 'addStreetName', 'addAdministrativeArea', 'addPartnerCompanyId', 'addParkingDesc']);
+            this.props.form.resetFields();
         }
     }
 
-    fetchInsetResponseWithHidden (e, type) {
+    fetchInsetResponseWithHidden(e, type) {
         this.state.inSubmit = false;
         if (type === HttpClient.requestSuccess) {
             this.setState({
@@ -276,12 +309,13 @@ class SectionResource extends Component {
             message.success(e.data);
             this.handleParkingListQuerys();
             //重置
-            this.props.form.resetFields(['addParkingRecordNo', 'addParkingName', 'addStreetName', 'addAdministrativeArea', 'addPartnerCompanyId', 'addParkingDesc']);
+            // this.props.form.resetFields(['addParkingRecordNo', 'addParkingName', 'addStreetName', 'addAdministrativeArea', 'addPartnerCompanyId', 'addParkingDesc']);
+            this.props.form.resetFields();
         }
     }
 
     // 跳转页面
-    handleToSectionDetails (id) {
+    handleToSectionDetails(id) {
         if (window.checkPageEnable("sectionDetail")) {
             window.location.hash = `${location.hash}/SectionDetails?id=${id}`;
         } else {
@@ -291,21 +325,22 @@ class SectionResource extends Component {
     }
 
     //打开新建弹窗
-    handleAdd () {
+    handleAdd() {
         this.setState({
             isAdd: true
         });
     }
 
-    handleCancel () {
+    handleCancel() {
         this.setState({
             isAdd: false
         });
-        this.props.form.resetFields(['addParkingRecordNo', 'addParkingName', 'addStreetName', 'addAdministrativeArea', 'addPartnerCompanyId', 'addParkingDesc']);
+        // this.props.form.resetFields(['addParkingRecordNo', 'addParkingName', 'addStreetName', 'addAdministrativeArea', 'addPartnerCompanyId', 'addParkingDesc']);
+        this.props.form.resetFields();
     }
 
     //批量操作开关
-    handleBatchOperation () {
+    handleBatchOperation() {
         this.setState({
             isBatch: !this.state.isBatch,
             batchList: [],
@@ -314,22 +349,27 @@ class SectionResource extends Component {
     }
 
     //列表-公司选择器 新增时
-    handleCompanyInsertChange (e) {
+    handleCompanyInsertChange(e) {
         this.state.addResource.partnerCompanyId = e;
     }
 
+    //列表-片区选择器 新增时
+    handleSubAreaInsertChange(e) {
+        this.state.addResource.subAreaId = e;
+    }
+
     //列表-公司选择器
-    handleCompanyChange (e) {
+    handleCompanyChange(e) {
         this.state.temporaryCompanyId = e;
     }
 
     //状态选择器
-    handleConditionChange (e) {
+    handleConditionChange(e) {
         this.state.temporaryParkingState = e;
     }
 
     //列表-省市区联级选择
-    onCascaderChange (value, selectedOptions) {
+    onCascaderChange(value, selectedOptions) {
         if (!selectedOptions.length) {
             this.state.temporaryProvinceId = undefined;
             this.state.temporaryCityId = undefined;
@@ -348,34 +388,39 @@ class SectionResource extends Component {
     }
 
     //新建-省市区联级选择
-    onCascaderChangeWhenInsert (value, selectedOptions) {
-        if (selectedOptions[0]) {
+    onCascaderChangeWhenInsert(value, selectedOptions) {
+        if (value.length > 2) {
             this.state.addResource.provinceId = selectedOptions[0].value;
-        }
-        if (selectedOptions[1]) {
             this.state.addResource.cityId = selectedOptions[1].value;
-        }
-        if (selectedOptions[2]) {
             this.state.addResource.areaId = selectedOptions[2].value;
+            this.fetchSubAreaList();
+        } else {
+            this.state.addResource.provinceId = '';
+            this.state.addResource.cityId = '';
+            this.state.addResource.areaId = '';
+            this.setState({
+                subAreaList: [],
+                areaSelectIsDisabled: true
+            })
         }
     }
 
     //分页
-    onPageChange (page, pageSize) {
+    onPageChange(page, pageSize) {
         this.state.currentPage = page;
         this.state.limit = pageSize;
         this.handleParkingListQuerys();
     }
 
     // 切换页面条数
-    onShowSizeChange (page, pageSize) {
+    onShowSizeChange(page, pageSize) {
         this.state.currentPage = 1;
         this.state.limit = pageSize;
         this.handleParkingListQuerys();
     };
 
     //切换分页后 获取选择状态
-    getSelectRowKeys (list) {
+    getSelectRowKeys(list) {
         //提取本页数据
         let currentSelectedRowKeys = [];
         this.state.batchList.map(batchItem => {
@@ -391,11 +436,12 @@ class SectionResource extends Component {
     }
 
     //提交查询
-    submitQuery () {
+    submitQuery() {
         this.state.currentPage = 1;
         //这里吧input 赋值
         this.state.parkingName = this.state.temporaryParkingName;
         this.state.partnerCompanyId = this.state.temporaryCompanyId;
+        this.state.subAreaId = this.state.temporarySubAreaId;
         this.state.parkingState = this.state.temporaryParkingState;
         this.state.provinceId = this.state.temporaryProvinceId;
         this.state.cityId = this.state.temporaryCityId;
@@ -413,11 +459,12 @@ class SectionResource extends Component {
     }
 
     //重置
-    resetFilter () {
+    resetFilter() {
         this.props.form.resetFields();
 
         this.state.parkingName = "";
         this.state.partnerCompanyId = undefined;
+        this.state.subAreaId = undefined;
         this.state.parkingState = undefined;
         this.state.provinceId = undefined;
         this.state.cityId = undefined;
@@ -427,6 +474,7 @@ class SectionResource extends Component {
 
         this.state.temporaryParkingName = '';
         this.state.temporaryCompanyId = undefined;
+        this.state.temporarySubAreaId = undefined;
         this.state.temporaryParkingState = undefined;
         this.state.temporaryProvinceId = undefined;
         this.state.temporaryCityId = undefined;
@@ -435,7 +483,7 @@ class SectionResource extends Component {
         this.handleParkingListQuerys();
     }
 
-    displayData (row, key1, key2) {
+    displayData(row, key1, key2) {
         if (row.parkingPriceVO[key1] === null || row.parkingPriceVO[key2] === null) {
             return "未设置";
         } else {
@@ -443,7 +491,7 @@ class SectionResource extends Component {
         }
     }
 
-    configState (status) {
+    configState(status) {
         let content = null;
         switch (parseInt(status)) {
             case 0://失败
@@ -457,8 +505,27 @@ class SectionResource extends Component {
 
     }
 
+    mapOk() {
+        const form = this.detailAddress.props.form;
+        form.validateFields((err, values) => {
+            if (err) {
+                return;
+            }
+            this.props.form.setFieldsValue({ addParkingLocation: values.location });
+            this.setState({
+                amapVisible: false
+            })
+        });
+    }
+
+    mapCancel() {
+        this.setState({
+            amapVisible: false
+        })
+    }
+
     //渲染
-    render () {
+    render() {
         //判断页面权限
         if (!window.checkPageEnable("/SectionResource")) {
             return <Exception type={403}/>
@@ -493,6 +560,10 @@ class SectionResource extends Component {
                 dataIndex: 'administrativeArea',
                 render: (value, row) => (
                     <span>{row.provinceName !== null ? row.provinceName : ""}{row.cityName !== null ? ("/" + row.cityName) : ""}{row.areaName !== null ? ("/" + row.areaName) : ""}</span>)
+            }, {
+                title: '所属片区',
+                dataIndex: 'subAreaName',
+                width: 200,
             }, {
                 title: '所属公司',
                 dataIndex: 'partnerCompanyName',
@@ -626,7 +697,7 @@ class SectionResource extends Component {
             selectedRowKeys: this.state.selectedRowKeys
         };
 
-        console.log(this.props.form);
+        // console.log(this.props.form);
 
         return (
             <div className="page">
@@ -649,6 +720,7 @@ class SectionResource extends Component {
                                     <FormItem {...formItemLayout} label='行政区域'>
                                         {getFieldDecorator('regions')(
                                             <Cascader placeholder="省/市/区，县"
+                                                      showSearch
                                                       options={this.state.options}
                                                       onChange={this.onCascaderChange.bind(this)}/>
                                         )}
@@ -698,6 +770,7 @@ class SectionResource extends Component {
                                     <FormItem {...formItemLayout} label='行政区域'>
                                         {getFieldDecorator('regions')(
                                             <Cascader placeholder="省/市/区，县"
+                                                      showSearch
                                                       options={this.state.options}
                                                       onChange={this.onCascaderChange.bind(this)}/>
                                         )}
@@ -750,6 +823,8 @@ class SectionResource extends Component {
                                         </Button>
                                     </Dropdown>
                                 ) : ''}
+                                <Button onClick={() => location.hash = `${location.hash}/SectionVisualizationManage`}
+                                        type='primary' style={{ float: 'right' }}>路段可视化管理</Button>
                             </div>
                             :
                             ''
@@ -763,7 +838,7 @@ class SectionResource extends Component {
                             className="sectionResource_table"
                             rowKey="id"
                             columns={columns}
-                            scroll={{ x: '180%' }}
+                            scroll={{ x: '150%' }}
                             dataSource={this.state.parkingList}
                             pagination={false}
                             rowSelection={this.state.isBatch ? rowSelection : null}
@@ -857,6 +932,22 @@ class SectionResource extends Component {
                                 />
                             )}
                         </FormItem>
+                        <FormItem {...modalFormItem} label="路段坐标">
+                            {getFieldDecorator('addParkingLocation', {
+                                rules: [{
+                                    required: true,
+                                    message: '请选择路段坐标'
+                                }]
+                            })(
+                                <Input placeholder="请输入"
+                                       style={{ width: '75%' }}
+                                       disabled={true}
+                                />
+                            )}
+                            <Button style={{ width: '24%', marginLeft: '1%' }} type='primary' onClick={() => {
+                                this.setState({ amapVisible: true })
+                            }}>添加坐标</Button>
+                        </FormItem>
                         <FormItem {...modalFormItem} label="街道名称">
                             {getFieldDecorator('addStreetName', {
                                 rules: [
@@ -885,8 +976,31 @@ class SectionResource extends Component {
                                     }]
                             })(
                                 <Cascader placeholder="省/市/区，县"
+                                          showSearch
                                           options={this.state.options}
                                           onChange={this.onCascaderChangeWhenInsert.bind(this)}/>
+                            )}
+                        </FormItem>
+                        <FormItem {...modalFormItem} label="所属片区">
+                            {getFieldDecorator('addAreaId', {
+                                rules: [
+                                    {
+                                        required: true,
+                                        message: '请输入所属片区'
+                                    }]
+                            })(
+                                <Select
+                                    disabled={this.state.areaSelectIsDisabled}
+                                    showSearch
+                                    placeholder="请输入"
+                                    optionFilterProp="children"
+                                    onChange={this.handleSubAreaInsertChange.bind(this)}
+                                >
+                                    {this.state.subAreaList.map(item => {
+                                        return <Select.Option key={item.subAreaCode}
+                                                              value={item.subAreaCode}>{item.subAreaName}</Select.Option>
+                                    })}
+                                </Select>
                             )}
                         </FormItem>
                         <FormItem {...modalFormItem} label="所属公司">
@@ -930,6 +1044,24 @@ class SectionResource extends Component {
                             )}
                         </FormItem>
                     </Form>
+                </Modal>
+
+                {/*高德地图*/}
+                <Modal
+                    visible={this.state.amapVisible}
+                    title='添加坐标'
+                    mask={false}
+                    destroyOnClose
+                    maskClosable={false}
+                    onOk={this.mapOk.bind(this)}
+                    onCancel={this.mapCancel.bind(this)}
+                    bodyStyle={{ margin: 0 }}
+                    width={900}
+                >
+                    <AttendanceAddressModal
+                        showLocation
+                        wrappedComponentRef={formRef => this.detailAddress = formRef}
+                    />
                 </Modal>
             </div>
         )

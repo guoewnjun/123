@@ -5,71 +5,107 @@ import {
     Axis,
     Tooltip
 } from 'bizcharts';
-import _ from 'lodash';
+import {Empty} from 'antd';
+import moment from 'moment';
 
-class DatePayment extends Component {
-
-    state = {};
-
-    componentWillMount() {
-
+class dayPayment extends Component {
+    constructor(props) {
+        super(props);
+        this.durationDay = [];
     }
+
+    state = {
+        sourceData: []
+    };
 
     componentDidMount() {
-
+        this.updateDurationTime();
     }
 
-    componentWillUnmount() {
+    componentWillReceiveProps(nextProps, nextContext) {
+        if (nextProps.startDay !== this.props.startDay || nextProps.endDay !== this.props.endDay) {
+            this.updateDurationTime({ startDay: nextProps.startDay, endDay: nextProps.endDay });
+        }
+        //不太清楚是否会对相同长度的不同内容的数组作比较
+        if (nextProps.dayList !== this.props.dayList) {
+            this.updateDataSource(nextProps);
+        }
+    }
 
+    // 更新时间段
+    updateDurationTime({ startDay, endDay } = this.props) {
+        let arr = [];
+        let durationDate = parseInt(moment(endDay - startDay).format('DDD'));
+        for (let i = 0; i < durationDate; i++) {
+            let day = moment(startDay).add(i, 'days');
+            arr.push(day.format('YYYY-MM-DD'))
+        }
+        this.durationDay = arr;
+    }
+
+    // 更新数据源
+    updateDataSource(nextProps) {
+        let sourceData = [];
+        this.durationDay.forEach(duration => {
+            let obj = {
+                day: duration,
+                money: 0
+            };
+            nextProps.dayList.forEach(item => {
+                if (duration === item.day) {
+                    obj.money = item.money;
+                }
+            });
+            sourceData.push(obj)
+        });
+        this.setState({
+            sourceData
+        })
     }
 
     render() {
-        const genData = () => {
-            let data = [];
-            for (let i = 0; i < 30; i++) {
-                const obj = {
-                    date: `${i + 1}`,
-                    value: _.random(0, 30)
-                };
-                data.push(obj)
-            }
-            return data;
-        };
-        const data = genData();
+        const { sourceData } = this.state;
         const cols = {
-            value: {
+            money: {
+                alias: '金额',
                 min: 0
             },
-            date: {
+            day: {
                 range: [0, 1]
             }
         };
         return (
             <div>
-                <div style={{ fontSize: 20, paddingLeft: 60 }}>每日缴费金额统计</div>
-                <Chart height={400} data={data} scale={cols} forceFit>
-                    <Axis name="date"/>
-                    <Axis name="value"/>
-                    <Tooltip
-                        crosshairs={{
-                            type: "y"
-                        }}
-                    />
-                    <Geom type="line" position="date*value" size={2}/>
-                    <Geom
-                        type="point"
-                        position="date*value"
-                        size={4}
-                        shape={"circle"}
-                        style={{
-                            stroke: "#fff",
-                            lineWidth: 1
-                        }}
-                    />
-                </Chart>
+                <div style={{ fontSize: 20, paddingLeft: 60 }}>{this.props.DatePaymentTitle}</div>
+                {
+                    sourceData.length > 0 ? (
+                        <Chart height={400} data={sourceData} scale={cols} forceFit>
+                            <Axis name="day"/>
+                            <Axis name="money"/>
+                            <Tooltip
+                                crosshairs={{
+                                    type: "y"
+                                }}
+                            />
+                            <Geom type="line" position="day*money" size={2} shape={"smooth"}/>
+                            <Geom
+                                type="point"
+                                position="day*money"
+                                size={4}
+                                shape={"circle"}
+                                style={{
+                                    stroke: "#fff",
+                                    lineWidth: 1
+                                }}
+                            />
+                        </Chart>
+                    ) : (
+                        <Empty style={{ marginBottom: 20 }}/>
+                    )
+                }
             </div>
         );
     }
 }
 
-export default DatePayment;
+export default dayPayment;

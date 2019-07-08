@@ -67,6 +67,7 @@ export default class Visualization extends Component {
                     if (this.cityBerthMarker.getPosition()) {
                         this.cityBerthMarker.show();
                     } else {
+                        // 获取市区泊位，并添加到地图上
                         HttpClient.query('/parking-resource/admin/parking/road/space/count', 'GET', {
                             areaType: 'area',
                             cityCode: window.cityCode
@@ -77,10 +78,14 @@ export default class Visualization extends Component {
                                                         <div class='markerLngLat'></div>
                                                         <span class='markerContent'>${data.areaName}：${data.count}个泊位</span>
                                                      </div>`;
-                                this.cityBerthMarker.setPosition(new window.AMap.LngLat(data.longitude, data.latitude));
+                                const cityCenter = new window.AMap.LngLat(data.longitude, data.latitude);
+                                this.cityBerthMarker.setPosition(cityCenter);
                                 this.cityBerthMarker.setContent(markerContent);
                                 this.cityBerthMarker.setMap(this.mapInstance);
                                 this.cityBerthMarker.show();
+                                this.cityBerthMarker.on('click', () => {
+                                    this.mapInstance.setZoomAndCenter(11, cityCenter)
+                                })
                             }
                         });
                     }
@@ -97,7 +102,7 @@ export default class Visualization extends Component {
                         const params = { areaType: 'area', cityCode: window.cityCode };
                         this.getBerthOnMap(params)
                     }
-                } else if (13 <= zoom && zoom <= 16) { //片区
+                } else if (13 <= zoom && zoom <= 14) { //片区
                     this.cityBerthMarker.hide();
                     this.districtMarkerGroup.hide();
                     this.streetMarkerGroup.hide();
@@ -107,7 +112,7 @@ export default class Visualization extends Component {
                         const params = { areaType: 'subArea', cityCode: window.cityCode };
                         this.getBerthOnMap(params)
                     }
-                } else if (zoom >= 17) { //街道
+                } else if (zoom >= 15) { //街道
                     this.cityBerthMarker.hide();
                     this.districtMarkerGroup.hide();
                     this.areaMarkerGroup.hide();
@@ -152,11 +157,18 @@ export default class Visualization extends Component {
                         topWhenClick: true,
                         extData: item
                     });
-                    if (params.areaType === 'parking') {
-                        marker.on('click', () => {
-                            location.hash = `Home/Visualization/BerthDetails?id=${item.areaCode}`
-                        })
-                    }
+                    marker.on('click', () => {
+                        switch (params.areaType) {
+                            case 'area':
+                                this.mapInstance.setZoomAndCenter(14, new window.AMap.LngLat(item.longitude, item.latitude));
+                                break;
+                            case 'subArea':
+                                this.mapInstance.setZoomAndCenter(15, new window.AMap.LngLat(item.longitude, item.latitude));
+                                break;
+                            default:
+                                location.hash = `${location.hash}/BerthDetails?id=${item.areaCode}&areaName=${item.areaName}`;
+                        }
+                    });
                     markers.push(marker)
                 });
                 if (params.areaType === 'area') {
@@ -195,11 +207,11 @@ export default class Visualization extends Component {
                     this.areaMarkerGroup.hide();
                     this.streetMarkerGroup.hide();
                     this.districtMarkerGroup.show();
-                } else if (13 <= zoom && zoom <= 16) { //片区
+                } else if (13 <= zoom && zoom <= 14) { //片区
                     this.districtMarkerGroup.hide();
                     this.areaMarkerGroup.show();
                     this.streetMarkerGroup.hide();
-                } else if (zoom >= 17) { //街道
+                } else if (zoom >= 15) { //街道
                     this.districtMarkerGroup.hide();
                     this.areaMarkerGroup.hide();
                     this.streetMarkerGroup.show();
@@ -234,7 +246,17 @@ export default class Visualization extends Component {
             if (this.deviceMarkerGroup.getOverlays().length > 0) {
                 this.deviceMarkerGroup.show();
             } else {
-                // this.getDevice(null);
+                this.mapInstance.plugin(["AMap.DistrictSearch"], () => {
+                    new window.AMap.DistrictSearch({
+                        extensions: 'all',
+                        subdistrict: 0
+                    }).search(window.cityCode, (status, result) => {
+                        const center = result.districtList[0].center;
+                        let deviceParams = {};
+                        deviceParams.geo_longlat = JSON.stringify([center.lng, center.lat]);
+                        this.getDevice(deviceParams);
+                    })
+                });
             }
         }
     }
@@ -249,27 +271,20 @@ export default class Visualization extends Component {
     // 获取设备
     getDevice(params) {
         this.deviceMarkerGroup.clearOverlays();
-        $.ajax({
-            "url": 'https://iotdev.triplego.cn/admin/devices',
-            "async": true,
-            "cache": false,
-            "method": 'GET',
-            "data": params,
-            "dataType": 'json',
-            timeout: 40000,
-            "crossDomain": true,
-            success: (d) => {
+        HttpClient.query('https://iotdev.triplego.cn/admin/devices', 'GET', params, (d, type) => {
+            if (type === HttpClient.requestSuccess) {
                 if (d.ack_code === 'ok') {
                     const data = d.data;
                     const markers = [];
                     data.forEach(item => {
+                        const srcUrl = `./resources/mapIcons/${item.sub_type}_${item.device_status}.png`;
+                        let markerContent = `<div style="display: flex; justify-content: center; flex-direction: column; align-items: center">
+                            <div><img style="width: 40px; height: 40px; border-radius: 50%" src=${srcUrl} /></div>
+                        </div>`;
                         const marker = new window.AMap.Marker({
                             position: new window.AMap.LngLat(item.geo_longlat[0], item.geo_longlat[1]),
                             topWhenClick: true,
-                            icon: new window.AMap.Icon({
-                                image: `./resources/mapIcons/${item.sub_type}_${item.device_status}.png`,
-                                imageSize: new window.AMap.Size(30, 30),
-                            }),
+                            content: markerContent,
                             extData: item
                         });
 
@@ -283,9 +298,6 @@ export default class Visualization extends Component {
                     this.deviceMarkerGroup.addOverlays(markers);
                     this.deviceMarkerGroup.setMap(this.mapInstance)
                 }
-            },
-            error: (e) => {
-                message.error("服务器异常！");
             }
         });
     }
@@ -301,44 +313,52 @@ export default class Visualization extends Component {
             UWBCAM: '超宽带定位+视频',
             USON: '超声波'
         };
+        if (!extData.activated) {
+            message.warning('该设备未激活');
+            return;
+        }
+        if (!extData.device_id) {
+            message.warning('未找到该设备id');
+            return
+        }
         const params = {
-            service: 'admin.monitor',
-            version: '2.0',
-            timestamp: +moment(),
-            hardware_id: extData.hardware_id
+            device_id: extData.device_id
         };
-        $.ajax({
-            "url": `https://iotdev.triplego.cn/admin/monitor`,
-            "async": true,
-            "cache": false,
-            "method": 'GET',
-            "data": params,
-            "dataType": 'json',
-            timeout: 40000,
-            "crossDomain": true,
-            success: (d) => {
+        const infoWindow = new window.AMap.InfoWindow({
+            autoMove: true,
+            offset: new window.AMap.Pixel(8, -30)
+        });
+        const loadingInfo = `<div class="ant-spin-nested-loading" style="max-width: 500px; min-width: 200px; padding: 20px">
+                                <div>
+                                    <div class="ant-spin ant-spin-spinning ant-spin-show-text">
+                                        <span class="ant-spin-dot ant-spin-dot-spin">
+                                            <i class="ant-spin-dot-item"></i><i class="ant-spin-dot-item"></i>
+                                            <i class="ant-spin-dot-item"></i><i class="ant-spin-dot-item"></i>
+                                        </span>
+                                        <div class="ant-spin-text">加载中...</div>
+                                    </div>
+                                </div>
+                            </div>`;
+        infoWindow.setContent(loadingInfo);
+        infoWindow.open(this.mapInstance, infoWindowPosition);
+        HttpClient.query('https://iotdev.triplego.cn/admin/monitor', 'GET', params, (d, type) => {
+            if (type === HttpClient.requestSuccess) {
                 if (d.ack_code === 'ok') {
-                    const infoWindow = new window.AMap.InfoWindow({
-                        autoMove: true,
-                        offset: new window.AMap.Pixel(8, -30)
-                    });
-                    const info = `<div style="max-width: 500px; padding: 10px">
-                           <p>设备类型：${device_type[d.device_type]}</p>
-                           <p>设备型号：${d.device_model}</p>
-                           <p>硬件ID：${d.hardware_id}</p>
+                    const info = `<div style="width: 260px; padding: 20px">
+                           <p>设备类型：${d.device_type ? device_type[d.device_type] : ''}</p>
+                           <p>设备型号：${d.device_model || ''}</p>
+                           <p>硬件ID：${d.hardware_id || ''}</p>
                            <p>设备厂家：${d.device_vendor || ''}</p>
-                           <p>坐标：${d.monitor_status.geo_longlat.join(',') || ''}</p>
-                           <p>设备电量：${d.monitor_status.battery || ''}</p>
-                           <p>设备温度：${d.monitor_status.temperature || ''}</p>
+                           <p>坐标：${d.monitor_status ? d.monitor_status.geo_longlat.join(',') : ''}</p>
+                           <p>设备电量：${d.monitor_status ? d.monitor_status.battery : ''}</p>
+                           <p>设备温度：${d.monitor_status ? d.monitor_status.temperature : ''}</p>
                            <p>设备状态：${d.device_status || ''}</p>
                            <p>最后状态更新时间：${d.time_created ? moment(d.time_created).format('YYYY-MM-DD HH:mm:ss') : ''}</p>
                       </div>`;
                     infoWindow.setContent(info);
-                    infoWindow.open(this.mapInstance, infoWindowPosition);
                 }
-            },
-            error: (e) => {
-                message.error("服务器异常！");
+            } else if (type === HttpClient.requestServiceError) {
+                infoWindow.close();
             }
         });
     }
@@ -346,9 +366,10 @@ export default class Visualization extends Component {
     // 设备查询
     searchDevice(values) {
         this.deviceParams = this.filterParams(values);
-        this.deviceParams.service = 'admin.devices';
-        this.deviceParams.version = '2.0';
-        this.deviceParams.timestamp = +moment();
+        if (Object.keys(this.deviceParams).length === 0) {
+            message.warning('请选择区域或者片区');
+            return
+        }
         if (this.deviceParams.areaCode && !this.deviceParams.geo_longlat) { //只选了区域
             this.mapInstance.plugin(["AMap.DistrictSearch"], () => {
                 new window.AMap.DistrictSearch({
@@ -367,27 +388,36 @@ export default class Visualization extends Component {
 
     // 获取在线地图人员
     getUsersOnMap() {
-        HttpClient.query(`${window.MODULE_PARKING_INSPECTION}/monitoringCenter/${window.cityCode}/getInspectionMembersByAreaId`, 'GET', null, (d, type) => {
+        this.setState({
+            spinning: true
+        });
+        HttpClient.query(`${window.MODULE_PARKING_INSPECTION}/monitoringCenter/${window.cityCode}/getInspectionMembersByAreaId`, 'GET', { areaType: 'city' }, (d, type) => {
             if (type === HttpClient.requestSuccess) {
-                const data = d.data;
+                // TODO 当多个人员坐标一样时，显示一个tooltip，内容为人员名称
+                const data = d.data || [];
                 const markers = [];
                 data.forEach((item, index) => {
                     let markerContent = `<div style="display: flex; justify-content: center; flex-direction: column; align-items: center">
-                            <div class=''><img style="width: 30px; height: 30px;" src=${item.imageUrl} /></div>
+                            <div><img style="width: 40px; height: 40px; border-radius: 50%" src=${item.imageUrl || './resources/mapIcons/userAvatar.png'} /></div>
                         </div>`;
-                    const marker = new window.AMap.Marker({
-                        position: new window.AMap.LngLat(item.signLongitude, item.signLatitude),
-                        content: markerContent,
-                        topWhenClick: true,
-                        extData: item
-                    });
-                    marker.on('click', () => {
-                        location.hash = `${location.hash}/UserDetail?id=${item.userId}`
-                    });
-                    markers.push(marker);
+                    if (item.signLatitude && item.signLongitude) {
+                        const marker = new window.AMap.Marker({
+                            position: new window.AMap.LngLat(item.signLongitude, item.signLatitude),
+                            content: markerContent,
+                            topWhenClick: true,
+                            extData: item
+                        });
+                        marker.on('click', () => {
+                            location.hash = `${location.hash}/UserDetail?id=${item.userId}`
+                        });
+                        markers.push(marker);
+                    }
                 });
                 this.usersMarkerGroup.addOverlays(markers);
-                this.usersMarkerGroup.setMap(this.mapInstance)
+                this.usersMarkerGroup.setMap(this.mapInstance);
+                this.setState({
+                    spinning: false
+                });
             }
         })
     }
@@ -400,6 +430,15 @@ export default class Visualization extends Component {
             }
         });
         return newParams
+    }
+
+    // 泊位--缩放到路段
+    zoomInRoad(value) {
+        if (value.longitude && value.latitude) {
+            this.mapInstance.setZoomAndCenter(18, new window.AMap.LngLat(value.longitude, value.latitude));
+        } else {
+            message.warning('该路段暂无坐标')
+        }
     }
 
     render() {
@@ -435,7 +474,7 @@ export default class Visualization extends Component {
                                     <Tabs defaultActiveKey="1" onChange={this.panelTabChange.bind(this)}>
                                         <TabPane tab="泊位" key="1">
                                             <Suspense fallback={null}>
-                                                <Berth/>
+                                                <Berth zoomInRoad={this.zoomInRoad.bind(this)}/>
                                             </Suspense>
                                         </TabPane>
                                         <TabPane tab="人员" key="2">

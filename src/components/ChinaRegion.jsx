@@ -28,7 +28,7 @@ export default class ChinaRegion extends Component {
 
     // 获取行政区回调
     regionData(d, type) {
-        if (type == HttpClient.requestSuccess) {
+        if (type === HttpClient.requestSuccess) {
             //成功-------在这里做你的数据处理，需要提示的自己加
             if (d.success && this._isMounted) {
                 this.setState({
@@ -41,10 +41,14 @@ export default class ChinaRegion extends Component {
         }
     }
 
+    filter(inputValue, path) {
+        return path.some(option => option.label.toLowerCase().indexOf(inputValue.toLowerCase()) > -1);
+    }
+
     render() {
-        const {options} = this.state;
+        const { options } = this.state;
         return (
-            <Cascader {...this.props} options={options}/>
+            <Cascader {...this.props} options={options} showSearch={{ filter: this.filter }}/>
         );
     }
 }

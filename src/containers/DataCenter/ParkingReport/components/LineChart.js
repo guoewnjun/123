@@ -24,76 +24,54 @@ export default class LineChart extends PureComponent {
 
 
   render() {
+    const list = this.props.data;
+    const list1 = [];
+    for (var i = 0; i < list.length; i++) {
+      list1.push({day:list[i].day,inout:'入场',count:list[i].in});
+      list1.push({day:list[i].day,inout:'出场',count:list[i].out});
+    }
 
-    // const data = [
-    //    {
-    //      year: "1991",
-    //      value: 3
-    //    },
-    //    {
-    //      year: "1992",
-    //      value: 4
-    //    },
-    //    {
-    //      year: "1993",
-    //      value: 3.5
-    //    },
-    //    {
-    //      year: "1994",
-    //      value: 5
-    //    },
-    //    {
-    //      year: "1995",
-    //      value: 4.9
-    //    },
-    //    {
-    //      year: "1996",
-    //      value: 6
-    //    },
-    //    {
-    //      year: "1997",
-    //      value: 7
-    //    },
-    //    {
-    //      year: "1998",
-    //      value: 9
-    //    },
-    //    {
-    //      year: "1999",
-    //      value: 13
-    //    }
-    //  ];
      const cols = {
-       revenue: {
+       '入场': {
          min: 0,
        },
-       time: {
+       '出场': {
+         min: 0,
+       },
+       day: {
          range: [0, 1],
        }
      };
      return (
          <div>
-          <Chart height={500} data={this.props.data} scale={cols} forceFit>
+          <Chart height={500} data={list1} scale={cols}
+          padding={[100, 100, 100, 30]} forceFit>
             <Legend />
-            <Axis name="time" />
-            <Axis name="revenue" />
+            <Axis name="day" />
+            <Axis name="count" />
             <Tooltip
               crosshairs={{
                 type: "y"
               }}
             />
-            <Geom type="line" position="time*revenue" size={2} color={'zhuangtai'}/>
-            <Geom
-              type="point"
-              position="time*revenue"
-              size={4}
-              color={'zhuangtai'}
-              shape={"circle"}
-              style={{
-                stroke: "#fff",
-                lineWidth: 1
-              }}
-            />
+            <Tooltip
+            crosshairs={{
+              type: 'y',
+            }}
+          />
+          <Geom type="line" position="day*count" size={2} color={'inout'}
+            shape={"smooth"}/>
+          <Geom
+            type="point"
+            position="day*count"
+            size={4}
+            shape={'circle'}
+            color={'inout'}
+            style={{
+              stroke: '#fff',
+              lineWidth: 1,
+            }}
+          />
           </Chart>
         </div>
      );

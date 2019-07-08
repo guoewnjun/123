@@ -47,48 +47,48 @@ class ParkingRevenueAndExpenditureSummary extends Component {
     // 组件挂载后
     componentDidMount() {
         // if (window.window.checkPageEnable('/FinancialReportsDownload')) {
-            if (window.currentIsSystemAdmin) { // 运营方
+        if (window.currentIsSystemAdmin) { // 运营方
+            this.loadData(this.state.optionalParams);
+            // 获取所有合作公司
+            HttpClient.query(window.MODULE_PARKING_INFO + '/admin/reviewPassCompany', 'GET', null, (d, type) => {
+                if (type === HttpClient.requestSuccess) {
+                    this.setState({
+                        passCompanyList: d.data
+                    });
+                }
+            });
+            // 获取所有所做公司所属路段
+            HttpClient.query(window.MODULE_PARKING_RESOURCE + '/admin/resource/parking/getParkingByPartnerCompany', 'GET', null, (d, type) => {
+                if (type === HttpClient.requestSuccess) {
+                    this.setState({
+                        parkingOfPartnerCompany: d.data
+                    })
+
+                }
+            })
+        } else { // 合作方
+            const param = {
+                partnerCompanyId: localStorage.getItem('partnerCompanyId')
+            };
+            // 获取合作方当前公司所属路段
+            HttpClient.query(window.MODULE_PARKING_RESOURCE + '/admin/resource/parking/getParkingByPartnerCompany', 'GET', param, (d, type) => {
+                if (type === HttpClient.requestSuccess) {
+                    this.setState({
+                        parkingOfPartnerCompany: d.data
+                    })
+
+                }
+            });
+            this.setState({
+                optionalParams: {
+                    ...this.state.optionalParams,
+                    partnerCompanyId: param.partnerCompanyId
+                },
+                partnerCompanyName: localStorage.getItem('partnerCompanyName')
+            }, () => {
                 this.loadData(this.state.optionalParams);
-                // 获取所有合作公司
-                HttpClient.query(window.MODULE_PARKING_INFO + '/admin/reviewPassCompany', 'GET', null, (d, type) => {
-                    if (type === HttpClient.requestSuccess) {
-                        this.setState({
-                            passCompanyList: d.data
-                        });
-                    }
-                });
-                // 获取所有所做公司所属路段
-                HttpClient.query(window.MODULE_PARKING_RESOURCE + '/admin/resource/parking/getParkingByPartnerCompany', 'GET', null, (d, type) => {
-                    if (type === HttpClient.requestSuccess) {
-                        this.setState({
-                            parkingOfPartnerCompany: d.data
-                        })
-
-                    }
-                })
-            } else { // 合作方
-                const param = {
-                    partnerCompanyId: localStorage.getItem('partnerCompanyId')
-                };
-                // 获取合作方当前公司所属路段
-                HttpClient.query(window.MODULE_PARKING_RESOURCE + '/admin/resource/parking/getParkingByPartnerCompany', 'GET', param, (d, type) => {
-                    if (type === HttpClient.requestSuccess) {
-                        this.setState({
-                            parkingOfPartnerCompany: d.data
-                        })
-
-                    }
-                });
-                this.setState({
-                    optionalParams: {
-                        ...this.state.optionalParams,
-                        partnerCompanyId: param.partnerCompanyId
-                    },
-                    partnerCompanyName: localStorage.getItem('partnerCompanyName')
-                }, () => {
-                    this.loadData(this.state.optionalParams);
-                });
-            }
+            });
+        }
         // }
     }
 
@@ -126,25 +126,12 @@ class ParkingRevenueAndExpenditureSummary extends Component {
         if (!d) return;
         const data = d.data;
         if (type === HttpClient.requestSuccess) {
-            if (this.state.activeATab === 0) {
-                this.setState({
-                    FinancialDetailRecord: data.list
-                })
-            } else if (this.state.activeATab === 1) {
-                data.list.forEach((item, index) => {
-                    item.id = index;
-                });
-                this.setState({
-                    FinancialSummaryRecord: data.list
-                })
-            } else if (this.state.activeATab === 2) {
-                data.list.forEach((item, index) => {
-                    item.id = index;
-                });
-                this.setState({
-                    InspectionChargeRecord: data.list
-                })
-            }
+            data.list.forEach((item, index) => {
+                item.id = index
+            });
+            this.setState({
+                FinancialSummaryRecord: data.list
+            })
         } else {
             //失败----做除了报错之外的操作
         }
@@ -219,7 +206,6 @@ class ParkingRevenueAndExpenditureSummary extends Component {
     // 财报停车记录总表页
     onReportSummaryTabClick() {
         if (this.state.loading) return;
-        this.state.activeATab = 1;
         const optionalParams = {
             ...this.state.optionalParams,
             inspectionGroupId: null,
@@ -504,5 +490,6 @@ class ParkingRevenueAndExpenditureSummary extends Component {
         );
     }
 }
+
 const WrapperParkingRevenueAndExpenditureSummary = Form.create()(ParkingRevenueAndExpenditureSummary);
 export default WrapperParkingRevenueAndExpenditureSummary;

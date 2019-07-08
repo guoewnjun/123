@@ -16,6 +16,7 @@ import {
   Facet,
   Util
 } from "bizcharts";
+import _ from "lodash";
 
 
 //折线
@@ -24,65 +25,27 @@ export default class LineChart extends PureComponent {
 
 
   render() {
-
-    // const data = [
-    //    {
-    //      year: "1991",
-    //      value: 3
-    //    },
-    //    {
-    //      year: "1992",
-    //      value: 4
-    //    },
-    //    {
-    //      year: "1993",
-    //      value: 3.5
-    //    },
-    //    {
-    //      year: "1994",
-    //      value: 5
-    //    },
-    //    {
-    //      year: "1995",
-    //      value: 4.9
-    //    },
-    //    {
-    //      year: "1996",
-    //      value: 6
-    //    },
-    //    {
-    //      year: "1997",
-    //      value: 7
-    //    },
-    //    {
-    //      year: "1998",
-    //      value: 9
-    //    },
-    //    {
-    //      year: "1999",
-    //      value: 13
-    //    }
-    //  ];
      const cols = {
        revenue: {
          min:0,
-         percent: {
-          formatter: val => `${val}%`
+         ratio: {
+          formatter: val => _.ceil((val * 100), 2) + '%'
          }
        },
-         time: {
+         day: {
            range: [0, 1],
          }
      }
      return (
          <div>
-          <Chart height={500} data={this.props.data} scale={cols} forceFit>
+          <Chart height={500} data={this.props.data} scale={cols}
+          padding={[100, 100, 100, 100]}  forceFit>
             <Legend />
-            <Axis name="time" />
+            <Axis name="day" />
             <Axis
-              name="revenue"
+              name="ratio"
               label={{
-                formatter: val => `${val}%`
+                formatter: val => _.ceil((val * 100), 2) + '%'
               }}
             />
             <Tooltip
@@ -90,13 +53,32 @@ export default class LineChart extends PureComponent {
                 type: "y"
               }}
             />
-            <Geom type="line" position="time*revenue" size={2} color={'zhuangtai'}/>
+            <Geom type="line" position="day*ratio" size={2}
+            shape={"smooth"} tooltip={[
+                'day*ratio',
+                (day, ratio) => {
+                    ratio = ratio;
+                    return {
+                        name: "周转率",
+                        value: _.ceil((ratio * 100), 2) + '%',
+                    };
+                },
+            ]}/>
             <Geom
               type="point"
-              position="time*revenue"
+              position="day*ratio"
               size={4}
-              color={'zhuangtai'}
               shape={"circle"}
+              tooltip={[
+                  'day*ratio',
+                  (day, ratio) => {
+                      ratio = ratio;
+                      return {
+                          name: "周转率",
+                          value: _.ceil((ratio * 100), 2) + '%'
+                      };
+                  },
+              ]}
               style={{
                 stroke: "#fff",
                 lineWidth: 1

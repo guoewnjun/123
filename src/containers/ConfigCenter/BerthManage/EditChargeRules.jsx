@@ -1,14 +1,11 @@
 import React, {Component} from 'react';
-// import {CSS} from "./Style/Rule.css";
 import './Style/SectionResource.css'
 import {HttpClient} from "@/common/HttpClient";
 import {custom} from "@/common/SystemStyle";
 
 import RuleEdit from './Components/RuleEdit';
-// import RuleDisplay from './Components/RuleDisplay';
 
 import {message, Spin} from "antd";
-// import {Global} from "@/common/SystemFunction";
 import Exception from '@/components/Exception';
 
 export default class EditChargeRules extends Component {
@@ -62,11 +59,13 @@ export default class EditChargeRules extends Component {
     }
 
     submit (newId) {
-        window.location.hash = `${location.hash}DisplayChargeRules?id=${newId}`;
+        const replacedStr = location.hash.split('?id=')[1];
+        location.hash = location.hash.replace(/EditChargeRules/, 'DisplayChargeRules').replace(replacedStr, newId)
     }
 
     cancelEdit () {
-        window.location.hash = window.location.hash.split("#")[1].replace("EditChargeRules", "DisplayChargeRules");
+        // location.hash = location.hash.replace("EditChargeRules", "DisplayChargeRules");
+        history.back(-1)
     }
 
     render () {
