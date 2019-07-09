@@ -137,8 +137,10 @@ class FacilityMaintenanceDetails extends Component {
         // ];
 
         const listItem = lists.map((str) =>
-            <Timeline.Item key={str.id}>
-                {str.createTime + '  --------  '}{str.opinion}
+            <Timeline.Item key={str.id} style={{whiteSpace: 'pre-wrap'}}>
+                {str.createTime+'       '}{'处理人：' + (str.operator?str.operator:'--') + '\r\n'}
+                {'                                        '+'指派人：' + (str.disposer?str.disposer:'--') + '\r\n'}
+                {'                                        '+'处理意见：' + (str.opinion?str.opinion:'--')}
             </Timeline.Item>
         );
         const gongdanchuli = () => {
@@ -164,7 +166,7 @@ class FacilityMaintenanceDetails extends Component {
                                             </Select>)}
                                     </FormItem>
                                 </Col>
-                                <Col span={24} style={{ marginTop: '20px' }}>
+                                <Col span={24}>
                                     <FormItem label='指派' {...formItemLayout}>
                                         {getFieldDecorator('disposer', {
                                             rules: [{
