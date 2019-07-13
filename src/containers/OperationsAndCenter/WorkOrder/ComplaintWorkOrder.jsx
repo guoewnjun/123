@@ -2,7 +2,7 @@ import React, {Component} from "react";
 import {
     Button, Form, Select, Radio, Table, Row, Col, DatePicker, Input, Spin, Pagination, Switch, Badge,
 } from "antd";
-import {HttpClientImmidIot} from "@/common/HttpClientImmidIot";
+import {HttpClient} from "@/common/HttpClient";
 
 
 const FormItem = Form.Item;
@@ -49,7 +49,7 @@ class ComplaintWorkOrder extends Component {
 
     // 点击跳转详情
     idClick (id) {
-        window.location.hash = `${location.hash}/ComplainWorkOrderDetails?id=${id}`;
+        window.location.hash = `${location.hash}/ComplaintWorkOrderDetails?id=${id}`;
     }
 
     // 筛选参数
@@ -74,7 +74,7 @@ class ComplaintWorkOrder extends Component {
             ...otherParams
         };
         params = this.filterOtherParams(params);
-        HttpClientImmidIot.query("/OperationsAndCenter/WorkOrder/ComplaintWorkOrder", "GET", params, this.handleQueryData.bind(this))
+        HttpClient.query('/parking-person-info/business/complaints/dispose/list', 'GET', params, this.handleQueryData.bind(this))
     }
 
 
@@ -83,7 +83,7 @@ class ComplaintWorkOrder extends Component {
     // loadData回调函数
     handleQueryData(d, type) {
         const data = d.data;
-        if (type === HttpClientImmidIot.requestSuccess) {
+        if (type === HttpClient.requestSuccess) {
             this.setState({
                 AlarmRecord: data.list,
                 total: data.total
@@ -155,75 +155,75 @@ class ComplaintWorkOrder extends Component {
 
           const columns = [
               {
-                  title: "工单编号",
-                  dataIndex: "uId",
-                  render: (value) =>  (
-                      <a onClick={this.idClick.bind(this, value)} style={{ color: "#1890FF" }}>{value}</a>),
-              }, {
                   title: "工单级别",
-                  dataIndex: "workorderPriority",
+                  dataIndex: "priority",
                     render: (text, record) => {
-                        if(record.workorderPriority=="1"){
+                        if(text=="普通"){
                             return(<span><Badge status="success" />
-                            一般
+                            普通
                             </span>)
-                        }else if(record.workorderPriority=="2"){
+                        }else if(text=="紧急"){
                             return(<span><Badge status="warning" />
                             紧急
                             </span>)
-                        }else if(record.workorderPriority=="3"){
+                        }else if(text=="严重"){
                             return(<span><Badge status="error" />
-                            立即处理
+                            严重
                             </span>)
                         }else{
                             return(<span>
-                            {record.workorderPriority}
+                            {text}
                             </span>)
                         }
                     },
-              }, {
+              },{
+                  title: "工单编号",
+                  dataIndex: "id",
+                  render: (value) =>  (
+                      <a onClick={this.idClick.bind(this, value)} style={{ color: "#1890FF" }}>{value}</a>),
+              },  {
                   title: "工单标题",
-                  dataIndex: "workorderHeadline",
+                  dataIndex: "caption",
                   render: (value) => value || "--",
               }, {
                   title: "投诉人手机号",
-                  dataIndex: "phoneNum",
+                  dataIndex: "mobile",
                   render: (value) => value || "--",
               }, {
                   title: "投诉时间",
-                  dataIndex: "creationTime",
+                  dataIndex: "time",
                   render: (value) => value || "--",
               }, {
                   title: "投诉来源",
-                  dataIndex: "comfrom",
+                  dataIndex: "source",
                   render: (value) => value || "--",
               },{
                   title: "工单提交人",
-                  dataIndex: "workorderInitiator",
+                  dataIndex: "operator",
                   render: (value) => value || "--",
               },{
                   title: "当前处理人",
-                  dataIndex: "currentHandler",
+                  dataIndex: "disposer",
                   render: (value) => value || "--",
               },{
                   title: "工单状态",
-                  dataIndex: "workorderState",
+                  dataIndex: "state",
                     render: (text, record) => {
-                        if(record.workorderState=="1"){
+                        if(text=="待处理"){
                             return(<span><Badge status="default" />
                             待处理
                             </span>)
-                        }else if(record.workorderState=="2"){
+                        }else if(text=="处理中"){
                             return(<span><Badge status="error" />
                             处理中
                             </span>)
-                        }else if(record.workorderState=="3"){
+                        }else if(text=="已结案"){
                             return(<span><Badge status="success" />
                             已结案
                             </span>)
                         }else{
                             return(<span>
-                            {record.workorderState}
+                            {text}
                             </span>)
                         }
                     },
@@ -249,7 +249,7 @@ class ComplaintWorkOrder extends Component {
                         <Row gutter={48}>
                             <Col span={8}>
                                 <FormItem label="工单编号" {...formItemLayout}>
-                                    {getFieldDecorator("workorderNumber")(
+                                    {getFieldDecorator("id")(
                                         <Input placeholder="请输入" onChange={(e) => {
                                             this.state.otherParams.workorderNumber = e.target.value;
                                         }}/>
@@ -258,7 +258,7 @@ class ComplaintWorkOrder extends Component {
                             </Col>
                             <Col span={8}>
                                 <FormItem label="投诉人手机号" {...formItemLayout}>
-                                    {getFieldDecorator("phoneNumber")(
+                                    {getFieldDecorator("mobile")(
                                         <Input placeholder="请输入" onChange={(e) => {
                                             this.state.otherParams.phoneNumber = e.target.value;
                                         }}/>
@@ -280,32 +280,38 @@ class ComplaintWorkOrder extends Component {
                         <Row gutter={48}>
                             <Col span={8}>
                                 <FormItem label="投诉来源" {...formItemLayout}>
-                                    <Select defaultValue="all"  onChange={handleChange}>
-                                        <Option value="all">全部</Option>
-                                        <Option value="WeChatOfficialAccount ">微信公众号</Option>
-                                        <Option value="PayTreasureServiceNumber">支付宝服务号</Option>
-                                        <Option value="APP">APP</Option>
-                                    </Select>
+                                    {getFieldDecorator("comfrom")(
+                                        <Select defaultValue="all"  onChange={handleChange}>
+                                            <Option value="all">全部</Option>
+                                            <Option value="WeChatOfficialAccount ">微信公众号</Option>
+                                            <Option value="PayTreasureServiceNumber">支付宝服务号</Option>
+                                            <Option value="APP">APP</Option>
+                                        </Select>
+                                    )}
                                 </FormItem>
                             </Col>
                             <Col span={8}>
                                 <FormItem label="工单级别" {...formItemLayout}>
-                                    <Select defaultValue="all"  onChange={handleChange}>
-                                        <Option value="all">全部</Option>
-                                        <Option value="general">一般</Option>
-                                        <Option value="urgency">紧急</Option>
-                                        <Option value="atOnce">立即处理</Option>
-                                    </Select>
+                                    {getFieldDecorator("workorderPriority")(
+                                        <Select defaultValue="all"  onChange={handleChange}>
+                                            <Option value="all">全部</Option>
+                                            <Option value="general">一般</Option>
+                                            <Option value="urgency">紧急</Option>
+                                            <Option value="atOnce">立即处理</Option>
+                                        </Select>
+                                    )}
                                 </FormItem>
                             </Col>
                             <Col span={8}>
                                 <FormItem label="工单状态" {...formItemLayout}>
-                                    <Select defaultValue="all"  onChange={handleChange}>
-                                        <Option value="all">全部</Option>
-                                        <Option value="Pending">待处理</Option>
-                                        <Option value="InHand ">处理中</Option>
-                                        <Option value="ClosedOrders">已结案</Option>
-                                    </Select>
+                                    {getFieldDecorator("workorderState")(
+                                        <Select defaultValue="all"  onChange={handleChange}>
+                                            <Option value="all">全部</Option>
+                                            <Option value="Pending">待处理</Option>
+                                            <Option value="InHand ">处理中</Option>
+                                            <Option value="ClosedOrders">已结案</Option>
+                                        </Select>
+                                    )}
                                 </FormItem>
                             </Col>
                         </Row>

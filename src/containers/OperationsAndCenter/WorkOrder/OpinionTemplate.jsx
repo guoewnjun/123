@@ -2,7 +2,7 @@ import React, {Component} from "react";
 import {
     Button, Form, Select, Radio, Table, Row, Col, DatePicker, Input, Spin, Pagination, Switch, Badge, Modal,Popconfirm
 } from "antd";
-import {HttpClientImmidIot} from "../../../common/HttpClientImmidIot";
+import {HttpClient} from "../../../common/HttpClient";
 
 
 const FormItem = Form.Item;
@@ -17,6 +17,7 @@ class OpinionTemplate extends Component {
     constructor(props) {
         super(props);
         this.state = {
+
             loading: false, //表格加载状态
             AlarmRecord: [
             ], //表格数据
@@ -108,14 +109,15 @@ class OpinionTemplate extends Component {
             ...otherParams
         };
         params = this.filterOtherParams(params);
-        HttpClientImmidIot.query("/OperationsAndCenter/WorkOrder/ComplainWorkOrder", "GET", params, this.handleQueryData.bind(this))
+        HttpClient.query("/parking-info/dictionary/opinion/list", "GET", params, this.handleQueryData.bind(this))
     }
 
 
     // loadData回调函数
     handleQueryData(d, type) {
         const data = d.data;
-        if (type === HttpClientImmidIot.requestSuccess) {
+
+        if (type === HttpClient.requestSuccess) {
             this.setState({
                 AlarmRecord: data.list,
                 total: data.total
@@ -134,7 +136,14 @@ class OpinionTemplate extends Component {
         this.setState({
             pageNum: 1
         });
-        this.loadData(1, pageSize, this.state.otherParams)
+        const params = {};
+        params.id = this.state.AlarmRecord.id;
+        this.props.form.validateFields((err, values) => {
+            if (err) return;
+            params.caption = values.OpinionTitle
+            params.type = values.OpinionClassify
+        })
+        this.loadData(1, pageSize, params)
     }
 
     //重置
@@ -158,9 +167,24 @@ class OpinionTemplate extends Component {
 
      handleDelete = key => {
        const dataSource = [...this.state.AlarmRecord];
-       this.setState({ AlarmRecord: dataSource.filter(item => item.key !== key) });
+       HttpClient.query("/parking-info/dictionary/delete/id", "POST", key, this.handleQueryData1.bind(this))
      };
 
+     // loadData回调函数
+     handleQueryData1(d, type) {
+         const data = d.data;
+         if (type === HttpClient.requestSuccess) {
+             this.setState({
+                 AlarmRecord: data.list,
+                 total: data.total
+             })
+         } else {
+             //失败----做除了报错之外的操作
+         }
+         this.setState({
+             loading: false,
+         })
+     }
 
     // deleteLine() {
     // const tab2=document.getElementById('Table');//获取枚举table对象
@@ -186,48 +210,53 @@ class OpinionTemplate extends Component {
     render() {
 
     const {
-        loading, pageNum, pageSize, AlarmRecord, total, otherParams: {warningDisposeStatus}, visible, confirmLoading, ModalText
+        loading, pageNum, pageSize, AlarmRecord, total, otherParams: {warningDisposeStatus}, visible, confirmLoading, ModalTex,
     } = this.state;
-
-    const { Option } = Select;
+    const {getFieldDecorator} = this.props.form;
 
     //意见分类点击事件
-    function handleChange(value) {
-      console.log(`selected ${value}`);
-    }
+
 
         const columns = [
               {
                   title: "意见标题",
-                  dataIndex: "workorderHeadline",
+                  dataIndex: "caption",
                   render: (value) => value || "--",
               },{
                   title: "意见分类",
-                  dataIndex: "comfrom",
+                  dataIndex: "type",
                   render: (value) => value || "--",
               }, {
                   title: "添加时间",
-                  dataIndex: "creationTime",
+                  dataIndex: "updateTime",
                   render: (value) => value || "--",
               }, ,{
                   title: "操作",
                   dataIndex: "Operation",
                   render:(text, record)  =>this.state.AlarmRecord.length >= 1 ? (
-                      <Popconfirm title="确定删除本行?" onConfirm={() => this.handleDelete(record.key)}>
-                        <a>Delete</a>
+                      <Popconfirm title="是否删除本条意见?" onConfirm={() => this.handleDelete(record.id)}>
+                        <a>删除</a>
                       </Popconfirm>
                       ) : "--",
               },
           ];
 
-        const {getFieldDecorator} = this.props.form;
 
         const formItemLayout = {
             labelCol: {span: 5},
             wrapperCol: {span: 19},
         };
-
-
+        const list = [];
+        for (let i = 0; i < this.state.AlarmRecord.length; i++) {
+            list.push({value:this.state.AlarmRecord[i].type})
+        }
+        for (let i = 0; i < list.length; i++) {
+            list[i].key = i+1;
+        }
+        console.log(list[0]);
+        const selectOption = list.map((str) =>
+            <Option value = {str.key} >{str.value}</Option>
+        );
 
         return (
              <div className="page">
@@ -240,19 +269,15 @@ class OpinionTemplate extends Component {
                             <Col span={8}>
                                 <FormItem label="意见标题" {...formItemLayout}>
                                     {getFieldDecorator("OpinionTitle")(
-                                        <Input placeholder="请输入" onChange={(e) => {
-                                            this.state.otherParams.workorderHeadline = e.target.value;
-                                        }}/>
+                                        <Input placeholder="请输入" />
                                     )}
                                 </FormItem>
                             </Col>
                             <Col span={8}>
                                 <FormItem label="意见分类" {...formItemLayout}>
                                     {getFieldDecorator("OpinionClassify")(
-                                        <Select defaultValue="all"  onChange={handleChange}>
-                                            <Option value="all">全部</Option>
-                                            <Option value="classify1">分类1</Option>
-                                            <Option value="classify2">分类2</Option>
+                                        <Select placeholder='请选择' allowClear='true'>
+                                            {selectOption}
                                         </Select>
                                     )}
                                 </FormItem>
@@ -273,9 +298,8 @@ class OpinionTemplate extends Component {
                                         <Row>
                                             <Col span={20} style={{marginTop:20,}}>
                                                 <FormItem label="意见类型" {...formItemLayout}>
-                                                    {getFieldDecorator("OpinionType")(
-                                                        <Select defaultValue="select"  onChange={handleChange}>
-                                                            <Option value="select">请选择</Option>
+                                                    {getFieldDecorator("OpinionClassify")(
+                                                        <Select placeholder='请选择' allowClear='true'>
                                                             <Option value="classify1">分类1</Option>
                                                             <Option value="classify2">分类2</Option>
                                                             <Option value="AddOpinionType">添加意见类型</Option>

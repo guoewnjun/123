@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {
-    Button, Form, Select, Table, Row, Col, DatePicker, Input, Spin, Pagination, Badge, Switch, Card, List, Timeline, Radio,
+    Button, Form, Select, Table, Row, Col, DatePicker, Input, Spin, Pagination, Badge, Switch, Card, List, Timeline, Radio, message
 } from 'antd';
 import {HttpClient} from '@/common/HttpClient.jsx';
 
@@ -12,7 +12,7 @@ const { TextArea } = Input;
 
 const FormItem = Form.Item;
 
-export default class ComplaintWorkOrderDetails extends Component {
+class ComplaintWorkOrderDetails extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -39,7 +39,10 @@ export default class ComplaintWorkOrderDetails extends Component {
             uId = this.state.uId
         };
         // params = this.filterOtherParams(params);
-        HttpClient.query(`/OperationsAndCenter/WorkOrder/ComplainWorkOrder/ComplainWorkOrderDetails?id=${uId}`, 'GET', null, this.handleQueryData.bind(this))
+        HttpClient.query(`/parking-person-info/business/complaints/dispose/detail/complaints?id=${uId}`, 'GET', null, this.handleQueryData.bind(this))
+        HttpClient.query(`/parking-person-info/business/complaints/dispose/detail/dispose?id=${uId}`, 'GET', null, this.handleQueryData2.bind(this))
+        HttpClient.query(`/parking-person-info/business/complaints/dispose/detail/history?id=${uId}`, 'GET', null, this.handleQueryData1.bind(this))
+        // HttpClient.query(`/OperationsAndCenter/WorkOrder/ComplainWorkOrder/ComplainWorkOrderDetails?id=${uId}`, 'GET', null, this.handleQueryData.bind(this))
     }
 
     // 处理工单
@@ -62,9 +65,29 @@ export default class ComplaintWorkOrderDetails extends Component {
         const data = d.data;
         if (type === HttpClient.requestSuccess) {
             this.setState({
-                shuju: data.shuju,
-                tousu: data.tousu,
-                lista: data.lista,
+                tousu: data,
+            })
+        } else {
+            //失败----做除了报错之外的操作
+        }
+    }
+    // loadData回调函数
+    handleQueryData2(d, type) {
+        const data = d.data;
+        if (type === HttpClient.requestSuccess) {
+            this.setState({
+                shuju: data,
+            })
+        } else {
+            //失败----做除了报错之外的操作
+        }
+    }
+    // loadData回调函数
+    handleQueryData1(d, type) {
+        const data = d.data;
+        if (type === HttpClient.requestSuccess) {
+            this.setState({
+                lista: data,
             })
         } else {
             //失败----做除了报错之外的操作
@@ -73,12 +96,32 @@ export default class ComplaintWorkOrderDetails extends Component {
 
 
 
-
     //提交按钮
-    tijiao(e) {
-      alert("已提交");
+    tijiao() {
+        let params = {};
+        params.id = this.state.datum.id;
+        this.props.form.validateFields((err, values) => {
+            if (err) return;
+            params.state = values.workorderState
+            params.content = values.CaseContent
+            params.adwise = values.SendMessage
+            params.toDisposer = values.Designate
+            params.toDisposerId = values.Designate
+            // console.log(params)
+            HttpClient.query(`/parking-person-info/business/complaints/dispose/dispose`, 'POST', params, (d, type) => {
+                if (type === HttpClient.requestSuccess) {
+                    message.success('提交成功')
+                    this.loadData();
+                    this.props.form.resetFields();
+                    this.setState({
+                        xianshi: false
+                    })
+                } else {
+                    //失败----做除了报错之外的操作
+                }
+            })
+        })
     }
-
 
 	// 组件挂载之前
     componentWillMount() {
@@ -93,8 +136,8 @@ export default class ComplaintWorkOrderDetails extends Component {
     componentWillUnmount() {
     }
     render() {
-        const {switchover,show, uId,shuju,tousu,}= this.state;
-
+        const {switchover,show, uId,shuju,tousu,lista}= this.state;
+        const {getFieldDecorator} = this.props.form;
         const formItemLayout = {
             labelCol: {span: 5},
             wrapperCol: {span: 19},
@@ -104,18 +147,63 @@ export default class ComplaintWorkOrderDetails extends Component {
           console.log(`selected ${value}`);
         }
 
-        const lista = [
-            {shijian:'12点',neirong:'Create a servicessashdkjashdsd servicessashdkjashdsd'},
-            {shijian:'12点',neirong:'Cre servicessashdkjashdsd'},
-            {shijian:'12点',neirong:'Create servicessashdkjashdsd'},
-            {shijian:'12点',neirong:'Create a servicessashdkj'},
-        ];
+        // const lista = [
+        //     {shijian:'12点',neirong:'Create a servicessashdkjashdsd servicessashdkjashdsd'},
+        //     {shijian:'12点',neirong:'Cre servicessashdkjashdsd'},
+        //     {shijian:'12点',neirong:'Create servicessashdkjashdsd'},
+        //     {shijian:'12点',neirong:'Create a servicessashdkj'},
+        // ];
         // {moment().format('YYYY-MM-DD HH:mm:ss')} Create a servicessashdkjashdsd servicessashdkjashdsd
-        const listItems = lista.map((liststr) =>
-                <Timeline.Item>
-                    {liststr.shijian}{liststr.neirong}
-                </Timeline.Item>
-            );
+        for (let i = 0; i < lista.length; i++) {
+            lista[i].id = i+1;
+        }
+        const listItems = lista.map((str) =>{
+            if(str.disposeType === '结案'){
+                return(
+                    <Timeline.Item key={str.id}>
+                        <Row>
+                            <Col span={4}>
+                            {str.time}
+                            </Col>
+                            <Col span={18}>
+                                <Row>
+                                    <Col span={24}>
+                                        <a>{(str.operator?str.operator:'--')}</a>{((str.id==lista.length)?('发起了工单，'):'')}将工单设置为已结案
+                                    </Col>
+                                    <Col span={24}>
+                                        结案内容：{str.content?str.content:'--'}
+                                    </Col>
+                                    <Col span={24}>
+                                        给用户发短信：{str.adwise?'是':'否'}
+                                    </Col>
+                                </Row>
+                            </Col>
+                        </Row>
+                    </Timeline.Item>
+                )
+            }else{
+                return(
+                    <Timeline.Item key={str.id}>
+                        <Row>
+                            <Col span={4}>
+                            {str.time}
+                            </Col>
+                            <Col span={18}>
+                                <Row>
+                                    <Col span={24}>
+                                        <a>{str.operator?str.operator:'--'}</a>{((str.id==lista.length)?('发起了工单，'):'')}把工单指派给了<a>{str.disposer?str.disposer:'--'}</a>
+                                    </Col>
+                                    <Col span={24}>
+                                        处理内容：{str.content?str.content:'--'}
+                                    </Col>
+                                </Row>
+                            </Col>
+                        </Row>
+                    </Timeline.Item>
+                )
+            }
+        }
+        );
         const chulijilu=()=>{
             if(show){
                 if(switchover=="1"){
@@ -128,10 +216,12 @@ export default class ComplaintWorkOrderDetails extends Component {
                                 <Row>
                                     <Col span={8}>
                                         <FormItem label='工单状态' {...formItemLayout}>
-                                            <Select defaultValue="1" onChange={this.switchover.bind(this)}>
-                                                <Option value="1">结案</Option>
-                                                <Option value="2">处理中</Option>
-                                            </Select>
+                                            {getFieldDecorator("workorderState")(
+                                                <Select defaultValue="1" onChange={this.switchover.bind(this)}>
+                                                    <Option value="1">结案</Option>
+                                                    <Option value="2">处理中</Option>
+                                                </Select>
+                                            )}
                                         </FormItem>
                                     </Col>
                                 </Row>
@@ -145,44 +235,54 @@ export default class ComplaintWorkOrderDetails extends Component {
                                 <Row style={{marginTop:"25px"}}>
                                     <Col span={8}>
                                         <FormItem label="常用意见" {...formItemLayout}>
-                                            <Select defaultValue="1"  onChange={handleChange}>
-                                                <Option value="1">请选择意见分类</Option>
-                                            </Select>
+                                            {getFieldDecorator("OpinionClassify")(
+                                                <Select defaultValue="1"  onChange={handleChange}>
+                                                    <Option value="1">请选择意见分类</Option>
+                                                </Select>
+                                            )}
                                         </FormItem>
                                     </Col>
                                     <Col span={6} style={{marginLeft:"10px"}}>
                                         <FormItem>
-                                            <Select defaultValue="1"  onChange={handleChange}>
-                                                <Option value="1">请选择意见分类</Option>
-                                            </Select>
+                                            {getFieldDecorator("OpinionTitle")(
+                                                <Select defaultValue="1"  onChange={handleChange}>
+                                                    <Option value="1">请选择意见标题</Option>
+                                                </Select>
+                                            )}
                                         </FormItem>
                                     </Col>
                                     <Col span={6} style={{marginLeft:"10px"}}>
-                                        <Button>添加意见</Button>
+                                        {getFieldDecorator("AddOpinions")(
+                                            <Button>添加意见</Button>
+                                        )}
                                     </Col>
                                 </Row>
                                 <Row>
                                     <Col span={8} >
                                         <FormItem label="结案内容" {...formItemLayout}>
-                                            <TextArea rows={5}
-                                                placeholder=""
-                                            />
+                                            {getFieldDecorator("CaseContent")(
+                                                <TextArea rows={5}
+                                                    placeholder=""
+                                                />
+                                            )}
                                         </FormItem>
                                     </Col>
                                 </Row>
                                 <Row>
                                     <Col span={8} >
                                         <FormItem label="给用户发短信" {...formItemLayout}>
-                                            <Radio.Group defaultValue={1}>
-                                                <Radio value={1}>否</Radio>
-                                                <Radio value={2}>是</Radio>
-                                            </Radio.Group>
+                                            {getFieldDecorator("SendMessage")(
+                                                <Radio.Group defaultValue={1}>
+                                                    <Radio value={1}>否</Radio>
+                                                    <Radio value={2}>是</Radio>
+                                                </Radio.Group>
+                                            )}
                                         </FormItem>
                                     </Col>
                                 </Row>
                                 <Row>
                                     <Col span={4} style={{textAlign: "center"}}>
-                                        <Button type="primary" onClick={(e)=>{this.tijiao(e)}}>
+                                        <Button type="primary" onClick={(e)=>{this.tijiao.bind(this)}}>
                                         <span>提交</span>
                                         </Button>
                                     </Col>
@@ -200,37 +300,43 @@ export default class ComplaintWorkOrderDetails extends Component {
                                 <Row>
                                     <Col span={8}>
                                         <FormItem label='工单状态' {...formItemLayout}>
-                                            <Select defaultValue="2" onChange={this.switchover.bind(this)}>
-                                                <Option value="1">结案</Option>
-                                                <Option value="2">处理中</Option>
-                                            </Select>
+                                            {getFieldDecorator("workorderState")(
+                                                <Select defaultValue="2" onChange={this.switchover.bind(this)}>
+                                                    <Option value="1">结案</Option>
+                                                    <Option value="2">处理中</Option>
+                                                </Select>
+                                            )}
                                         </FormItem>
                                     </Col>
                                 </Row>
                                 <Row>
                                     <Col span={8}>
                                         <FormItem label="指派" {...formItemLayout}>
-                                            <Select defaultValue="1"  onChange={handleChange}>
-                                                <Option value="1">请选择</Option>
-                                                <Option value="2">XX小姐</Option>
-                                                <Option value="3">张三</Option>
-                                                <Option value="4">李四</Option>
-                                            </Select>
+                                            {getFieldDecorator("Designate")(
+                                                <Select defaultValue="1"  onChange={handleChange}>
+                                                    <Option value="1">请选择</Option>
+                                                    <Option value="2">XX小姐</Option>
+                                                    <Option value="3">张三</Option>
+                                                    <Option value="4">李四</Option>
+                                                </Select>
+                                            )}
                                         </FormItem>
                                     </Col>
                                 </Row>
                                 <Row>
                                     <Col span={8} >
                                         <FormItem label="处理说明" {...formItemLayout}>
-                                            <TextArea rows={5}
-                                                placeholder=""
-                                            />
+                                            {getFieldDecorator("ProcessingSpecification")(
+                                                <TextArea rows={5}
+                                                    placeholder=""
+                                                />
+                                            )}
                                         </FormItem>
                                     </Col>
                                 </Row>
                                 <Row>
                                     <Col span={4} style={{textAlign: "center"}}>
-                                        <Button type="primary" onClick={(e)=>{this.tijiao(e)}}>
+                                        <Button type="primary" onClick={(e)=>{this.tijiao.bind(this)}}>
                                         <span>提交</span>
                                         </Button>
                                     </Col>
@@ -266,31 +372,31 @@ export default class ComplaintWorkOrderDetails extends Component {
                         <Row>
                             <Col span={8}>
                                 <label>工单编号：</label>
-                                <span>{uId}</span>
+                                <span>{uId||'--'}</span>
                             </Col>
                             <Col span={8}>
                                 <label>工单标题：</label>
-                                <span>{shuju.workorderHeadline?shuju.workorderHeadline:"--"}</span>
+                                <span>{shuju.caption||'--'}</span>
                             </Col>
                         </Row>
                         <Row>
                             <Col span={8}>
                                 <label>工单级别：</label>
-                                <span>{shuju.workorderPriority}</span>
+                                <span>{shuju.priority||'--'}</span>
                             </Col>
                             <Col span={8}>
                                 <label>工单发起人：</label>
-                                <span>{shuju.workorderInitiator}</span>
+                                <span>{shuju.operator||'--'}</span>
                             </Col>
                         </Row>
                         <Row>
                             <Col span={8}>
                                 <label>投诉时间：</label>
-                                <span>{shuju.creationTime}</span>
+                                <span>{shuju.time||'--'}</span>
                             </Col>
                             <Col span={8}>
                                 <label>投诉内容：</label>
-                                <span>{shuju.contentrs}</span>
+                                <span>{shuju.content||'--'}</span>
                             </Col>
                         </Row>
                     </Card>
@@ -301,47 +407,47 @@ export default class ComplaintWorkOrderDetails extends Component {
                         <Row>
                             <Col span={8}>
                                 <label>投诉类型：</label>
-                                <span>{tousu.ComplaintsType}</span>
+                                <span>{tousu.type||'--'}</span>
                             </Col>
                             <Col span={8}>
                                 <label>投诉内容：</label>
-                                <span>{tousu.Contentrs}</span>
+                                <span>{tousu.content||'--'}</span>
                             </Col>
                         </Row>
                         <Row>
                             <Col span={8}>
                                 <label>泊位号：</label>
-                                <span>{tousu.TheBerthNo}</span>
+                                <span>{tousu.TheBerthNo||'--'}</span>
                             </Col>
                             <Col span={8}>
                                 <label>车牌号：</label>
-                                <span>{tousu.LicensePlateNumber}</span>
+                                <span>{tousu.LicensePlateNumber||'--'}</span>
                             </Col>
                         </Row>
                         <Row>
                             <Col span={8}>
                                 <label>停车时间：</label>
-                                <span>{tousu.StoppingTime}</span>
+                                <span>{tousu.parkTime||'--'}</span>
                             </Col>
                             <Col span={8}>
                                 <label>联系电话：</label>
-                                <span>{tousu.PhoneNumber}</span>
+                                <span>{tousu.mobile||'--'}</span>
                             </Col>
                         </Row>
                         <Row>
                             <Col span={8}>
                                 <label>照片：</label>
-                                <img src={tousu.photo}/>
+                                <img src={tousu.photos||'--'}/>
                             </Col>
                         </Row>
                         <Row>
                             <Col span={8}>
                                 <label>投诉来源：</label>
-                                <span>{tousu.comfrom}</span>
+                                <span>{tousu.source||'--'}</span>
                             </Col>
                             <Col span={8}>
                                 <label>投诉时间：</label>
-                                <span>{shuju.creationTime}</span>
+                                <span>{shuju.time||'--'}</span>
                             </Col>
                         </Row>
                     </Card>
@@ -355,11 +461,11 @@ export default class ComplaintWorkOrderDetails extends Component {
                                 {listItems}
                                 </Timeline>
                             </Col>
-                            <Col span={4} style={{textAlign: "center"}}>
+                            {((lista[0]?(lista[0].disposeType):'') != '结案')?(<Col span={4} style={{textAlign: "center"}}>
                                 <Button style={{Color:'white',marginTop:"80px",}} type="primary" onClick={(e)=>{this.chuli(e)}}>
                                 <span>处理</span>
                                 </Button>
-                            </Col>
+                            </Col>):('')}
                         </Row>
                     </Card>
                     {chulijilu()}
@@ -368,3 +474,5 @@ export default class ComplaintWorkOrderDetails extends Component {
     		);
     }
 }
+const WrapperComplaintWorkOrderDetails = Form.create()(ComplaintWorkOrderDetails);
+export default WrapperComplaintWorkOrderDetails;

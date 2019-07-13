@@ -51,7 +51,6 @@ class ComplaintDetails extends Component {
             const data = d.data;
             if (type === HttpClient.requestSuccess) {
                 //成功-------在这里做你的数据处理
-                console.log(data[0].list)
                 this.setState({
                     opinionEntry: data[0].list,
                 });
@@ -81,7 +80,6 @@ class ComplaintDetails extends Component {
         const data = d.data;
         if (type === HttpClient.requestSuccess) {
             //成功-------在这里做你的数据处理
-            console.log(data)
             this.setState({
                 complaintsInfo: data.complaintsInfo,
                 disposedInfo: data.disposeInfo
@@ -125,7 +123,6 @@ class ComplaintDetails extends Component {
         let params = {};
         params.id = this.state.uId;
         this.props.form.validateFields((err, values) => {
-            console.log(values)
             switch (values.complainStatus) {
                 case '1':
                     params.state = '结案'
@@ -166,10 +163,8 @@ class ComplaintDetails extends Component {
                     }
                     break;
             }
-            console.log(params)
             HttpClient.query(`/parking-person-info/business/complaints/dispose`, 'POST', params, (d, type) => {
                 const data = d.data;
-                console.log(d)
                 if (type === HttpClient.requestSuccess) {
                     //成功-------在这里做你的数据处理
                     // this.setState({
@@ -232,10 +227,6 @@ class ComplaintDetails extends Component {
             labelCol: { span: 5 },
             wrapperCol: { span: 19 },
         };
-
-        function handleChange(value) {
-            console.log(`selected ${value}`);
-        }
 
         const chulijilu = () => {
             if (show) {

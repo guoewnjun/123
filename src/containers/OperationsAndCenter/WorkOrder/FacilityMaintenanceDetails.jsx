@@ -137,10 +137,25 @@ class FacilityMaintenanceDetails extends Component {
         // ];
 
         const listItem = lists.map((str) =>
-            <Timeline.Item key={str.id} style={{whiteSpace: 'pre-wrap'}}>
-                {str.createTime+'       '}{'处理人：' + (str.operator?str.operator:'--') + '\r\n'}
-                {'                                        '+'指派人：' + (str.disposer?str.disposer:'--') + '\r\n'}
-                {'                                        '+'处理意见：' + (str.opinion?str.opinion:'--')}
+            <Timeline.Item key={str.id}>
+                <Row>
+                    <Col span={4}>
+                    {str.createTime}
+                    </Col>
+                    <Col span={18}>
+                        <Row>
+                            <Col span={24}>
+                                处理人：{str.operator?str.operator:'--'}
+                            </Col>
+                            <Col span={24}>
+                                指派人：{str.disposer?str.disposer:'--'}
+                            </Col>
+                            <Col span={24}>
+                                处理意见：{str.opinion?str.opinion:'--'}
+                            </Col>
+                        </Row>
+                    </Col>
+                </Row>
             </Timeline.Item>
         );
         const gongdanchuli = () => {
