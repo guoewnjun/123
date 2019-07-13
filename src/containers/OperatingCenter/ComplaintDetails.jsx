@@ -531,9 +531,7 @@ class ComplaintDetails extends Component {
                                 </Col>
                                 <Col span={24} style={{ marginTop: 12, }}>
                                     <label style={{ float: "left", marginTop: 12, marginLeft: 28, }}>照片：</label>
-                                    <span>
-                                        {complaintsInfo.photo || '--'}
-                                    </span>
+                                    <img src={complaintsInfo.photo || '--'} style={{width:100}}/>
                                 </Col>
                                 <Col span={8} style={{ marginTop: 12, }}>
                                     <label>投诉来源：</label>

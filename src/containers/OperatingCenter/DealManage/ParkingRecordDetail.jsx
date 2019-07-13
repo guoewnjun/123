@@ -11,8 +11,8 @@ const payType = ['钱包余额支付', '微信支付', '人工收费-支付宝',
 const carType = ['基础-小型车+蓝牌非新能源车', '大型车+蓝牌非新能源车', '小型车+绿牌新能源车', '大型车+绿牌新能源车'];
 const parkOrderType = ['系统创建(UWB)', '用户购买时长', '稽查贴条'];
 // 0：停车中 1：行程结束 2：退款中 3：欠费
-const parkStatus = ['success', 'default', 'processing', 'error', 'error', 'default'];
-const parkStatusText = ['停车中', '行程结束', '退款中', '欠费', '异常', '已关闭'];
+const parkStatus = ['success', 'default', 'processing', 'error', 'error', 'default', "error"];
+const parkStatusText = ['停车中', '行程结束', '退款中', '欠费', '异常', '已关闭', '没有提醒离场'];
 const photoType = ['驶入泊位照片', '驶出泊位照片', '停车中的照片'];
 
 export default class ParkingRecordDetail extends Component {

@@ -309,7 +309,25 @@ class AppealDetail extends Component {
     render() {
         if (!window.checkPageEnable('appealDetail')) return <Exception type={403}/>;
         const { appealData, loading } = this.state;
-        if (!appealData && !loading) return <Exception type='500'/>;
+        if (!appealData && !loading) return (
+            <div className='page'>
+                <div className='page-header' style={{ paddingBottom: 8 }}>
+                    <div style={{ position: 'relative', height: 50 }}>
+                        <div style={{ float: 'left' }}>订单号：{this.props.location.query.orderId}
+                            {
+                                window.checkPageEnable('parkingRecordDetail') && (
+                                    <a onClick={this.getOrderDetail.bind(this)}
+                                       style={{
+                                           padding: '0 5px 5px 5px',
+                                           fontSize: 14
+                                       }}>查看订单详情>></a>
+                                )
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
         const tabs = ['最新申诉处理', '历史申诉处理'];
         const statusText = ['待处理', '已通过', '已拒绝'];
         const statusBoolean = appealData && appealData.status === 0 && this.state.currentTab === 0;

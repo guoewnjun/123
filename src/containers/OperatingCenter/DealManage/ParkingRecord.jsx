@@ -31,6 +31,7 @@ const status = {
     2: '退款中',
     3: '欠费',
     4: '异常',
+    6: '没有提醒离场',
 };
 
 class ParkingRecord extends Component {
@@ -219,7 +220,15 @@ class ParkingRecord extends Component {
             labelCol: { span: 5 },
             wrapperCol: { span: 19 },
         };
-
+        const statusColor = {
+            0: 'success',
+            1: 'default',
+            5: 'default',
+            3: 'error',
+            4: 'error',
+            2: 'processing',
+            6: 'error'
+        };
         // 停车记录
         const columns = [
             {
@@ -276,7 +285,7 @@ class ParkingRecord extends Component {
                 render: (value) => (
                     <div style={{ minWidth: 70 }}>
                         <Badge status={
-                            value === 0 ? 'success' : (value === 1 || value === 5 ? 'default' : (value === 3 || value === 4 ? 'error' : 'processing'))
+                            statusColor[value]
                         } text={status[value]}/>
                     </div>
                 )

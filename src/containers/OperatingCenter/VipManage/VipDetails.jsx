@@ -313,7 +313,7 @@ export default class VipDetails extends Component {
                             <Row>
                                 <Col span={8}>
                                     <label>出生年月：</label>
-                                    <span>{baseInfo.birthday ?gettime1(baseInfo.birthday): '--'}</span>
+                                    <span>{baseInfo.birthday ?baseInfo.birthday: '--'}</span>
                                 </Col>
                                 <Col span={8}>
                                     <label>电子邮箱：</label>
@@ -327,7 +327,7 @@ export default class VipDetails extends Component {
                                 </Col>
                                 <Col span={8}>
                                     <label>注册时间：</label>
-                                    <span>{baseInfo.regTime ?gettime2(baseInfo.regTime): '--'}</span>
+                                    <span>{baseInfo.regTime ?baseInfo.regTime: '--'}</span>
                                 </Col>
                             </Row>
                             <Row>
