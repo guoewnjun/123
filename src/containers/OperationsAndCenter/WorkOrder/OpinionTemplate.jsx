@@ -297,7 +297,7 @@ class OpinionTemplate extends Component {
        let params = {id:key};
        HttpClient.query("/parking-info/dictionary/delete/id"+'?id='+key, "POST",params, this.handleQueryDatashanchu.bind(this));
      };
-     
+
     handleQueryDatashanchu(d, type){
         this.loadData();
     };
@@ -330,7 +330,17 @@ class OpinionTemplate extends Component {
     } = this.state;
     const {getFieldDecorator} = this.props.form;
 
-
+    const  gettime=(str)=>{
+           const arr=str.split("T");
+           const d=arr[0];
+           const darr = d.split('-');
+           const t=arr[1];
+           const tarr = t.split('.000');
+           const marr = tarr[0].split(':');
+           const dd = parseInt(darr[0])+"/"+parseInt(darr[1])+"/"+parseInt(darr[2])+" "+parseInt(marr[0])+":"+parseInt(marr[1])+":"+parseInt(marr[2]);
+           //console.log(parseInt(marr[0])+"点");
+           return dd;
+         };
 
     //意见分类点击事件
 
@@ -347,7 +357,7 @@ class OpinionTemplate extends Component {
               }, {
                   title: "添加时间",
                   dataIndex: "updateTime",
-                  render: (value) => value || "--",
+                  render: (value) => value?gettime(value):"--",
               }, ,{
                   title: "操作",
                   dataIndex: "Operation",
