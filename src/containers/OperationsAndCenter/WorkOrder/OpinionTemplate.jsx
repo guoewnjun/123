@@ -60,7 +60,7 @@ class OpinionTemplate extends Component {
                  params.caption = values.addOpinionTitle
                  // console.log(params)
                  this.setState({visible:false});
-                 HttpClient.query(`/parking-info/dictionary/opinion/new`, 'POST', params, (d, type) => {
+                 HttpClient.query(`/parking-info/dictionary/opinion/new?type=`+values.addOpinionClassify+'&&content='+values.addOpinionContent+'&&caption='+values.addOpinionTitle, 'POST', params, (d, type) => {
                      if (type === HttpClient.requestSuccess) {
                          message.success('提交成功')
                          this.loadData();
@@ -78,6 +78,11 @@ class OpinionTemplate extends Component {
                          //失败----做除了报错之外的操作
                      }
                  })
+                 this.props.form.setFieldsValue({
+                         addOpinionClassify:'',
+                         addOpinionTitle:'',
+                         addOpinionContent:'',
+                       });
              })
          }
 
@@ -288,13 +293,14 @@ class OpinionTemplate extends Component {
     }
 
 
-     handleDelete(key){
+    handleDelete(key){
        let params = {id:key};
-       console.log(params);
-       HttpClient.query("/parking-info/dictionary/delete/id"+'?id='+key, "POST", params, this.loadData.bind(this));
-       // this.setState({ AlarmRecord: dataSource.filter(item => item.id !== key) });
+       HttpClient.query("/parking-info/dictionary/delete/id"+'?id='+key, "POST",params, this.handleQueryDatashanchu.bind(this));
      };
-
+     
+    handleQueryDatashanchu(d, type){
+        this.loadData();
+    };
 
     // deleteLine() {
     // const tab2=document.getElementById('Table');//获取枚举table对象
@@ -316,7 +322,6 @@ class OpinionTemplate extends Component {
     componentWillUnmount() {
 
     }
-
     render() {
 
     const {
@@ -348,8 +353,6 @@ class OpinionTemplate extends Component {
                   dataIndex: "Operation",
                   render:(text, record)  =>this.state.AlarmRecord.length >= 1 ? (
                       <span>
-                          <a onClick={() => this.showModal2(record.id)}>编辑</a>
-                          <Divider type="vertical" />
                           <Popconfirm title="是否删除本条意见?" onConfirm={() => this.handleDelete(record.id)}>
                                 <a>删除</a>
                           </Popconfirm>
@@ -358,6 +361,34 @@ class OpinionTemplate extends Component {
               },
           ];
 
+            //编辑方法
+            // const columns = [
+            //       {
+            //           title: "意见标题",
+            //           dataIndex: "caption",
+            //           render: (value) => value || "--",
+            //       },{
+            //           title: "意见分类",
+            //           dataIndex: "type",
+            //           render: (value) => value || "--",
+            //       }, {
+            //           title: "添加时间",
+            //           dataIndex: "updateTime",
+            //           render: (value) => value || "--",
+            //       }, ,{
+            //           title: "操作",
+            //           dataIndex: "Operation",
+            //           render:(text, record)  =>this.state.AlarmRecord.length >= 1 ? (
+            //               <span>
+            //                  <a onClick={() => this.showModal2(record.id)}>编辑</a>
+            //                   <Divider type="vertical" />
+            //                   <Popconfirm title="是否删除本条意见?" onConfirm={() => this.handleDelete(record.id)}>
+            //                         <a>删除</a>
+            //                   </Popconfirm>
+            //               </span>
+            //               ) : "--",
+            //       },
+            //   ];
 
         const formItemLayout = {
             labelCol: {span: 5},
